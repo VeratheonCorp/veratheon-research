@@ -1,0 +1,15 @@
+[project]
+name = "market-research-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alpha-vantage",
+    "mypy>=1.15.0",
+    "numpy>=2.2.5",
+    "openai-agents>=0.0.14",
+    "pandas>=2.2.3",
+    "pydantic[mypy]>=2.11.4",
+    "python-dotenv>=0.21.0",
+]
