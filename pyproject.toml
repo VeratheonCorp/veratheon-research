@@ -6,10 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "alpha-vantage",
-    "mypy>=1.15.0",
+    "dotenv>=0.9.9",
     "numpy>=2.2.5",
     "openai-agents>=0.0.14",
     "pandas>=2.2.3",
-    "pydantic[mypy]>=2.11.4",
     "python-dotenv>=0.21.0",
 ]
