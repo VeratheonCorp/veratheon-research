@@ -14,4 +14,6 @@ class Researcher:
         print(f"Free Cash Flow: {company_diligence.company_financials.free_cash_flow}")
         print(f"Closing Price: {company_diligence.company_financials.global_quote['05. price']}")
         print(f"Is Thesis Upside: {company_diligence.is_thesis_upside}")
-        
+        print(f"GPD Growth Rate Annual: {company_diligence.macroeconomics.real_gdp_growth_annual}")
+        print(f"GDP Growth Rate Quarterly: {company_diligence.macroeconomics.real_gdp_growth_quarterly}")
+        print(f"Bry-Boschan Peak Trough: {company_diligence.macroeconomics.bry_boschan_peak_trough}")
