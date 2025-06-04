@@ -1,29 +1,29 @@
 To evaluate whether a given price target for any equity—whether above or below today’s market price and over a horizon of up to five years—is reasonable, I would proceed through the following structured, disciplined steps:
     Clarify the Parameters
-        done - Current Price (P₀): Note today’s market price.
-        done - Target Price (Pₜ): Record the proposed price target and whether it implies upside or downside.
-        done - Time Horizon (T): Define the exact horizon (e.g. six months, two years, five years).
-        TODO - Assumptions & Scope: Determine whether forecasts should be conservative or aggressive, whether dividends are in scope, and whether share count is expected to change (buybacks, dilution).
+        * done - Current Price (P₀): Note today’s market price.
+        * done - Target Price (Pₜ): Record the proposed price target and whether it implies upside or downside.
+        * done - Time Horizon (T): Define the exact horizon (e.g. six months, two years, five years).
+        * TODO - Assumptions & Scope: Determine whether forecasts should be conservative or aggressive, whether dividends are in scope, and whether share count is expected to change (buybacks, dilution).
     Macro & Industry Context
-        Economic Cycle: Assess where the economy is in the cycle (expansion, peak, downturn, recovery) and its likely path over T.
-        Interest Rates & Inflation: Incorporate forecasts for rates and inflation, since they drive discount rates and consumer/business behavior.
-        Regulatory & Geopolitical Factors: Identify any pending regulatory changes or geopolitical risks that could materially affect the industry.
-        Industry Life-Cycle & Competitive Dynamics: Map the company’s industry to a life-cycle stage (growth, maturity, decline) and evaluate competitive intensity (Porter’s Five Forces).
+        * done - Economic Cycle: Assess where the economy is in the cycle (expansion, peak, downturn, recovery) and its likely path over T.
+        * done - Interest Rates & Inflation: Incorporate forecasts for rates and inflation, since they drive discount rates and consumer/business behavior.
+        * TODO - Regulatory & Geopolitical Factors: Identify any pending regulatory changes or geopolitical risks that could materially affect the industry.
+        * TODO - Industry Life-Cycle & Competitive Dynamics: Map the company’s industry to a life-cycle stage (growth, maturity, decline) and evaluate competitive intensity (Porter’s Five Forces).
     Fundamental Analysis
-        Historical Financials: Compile at least 3–5 years of revenue, EBITDA, free cash flow (FCF), margins, and balance-sheet metrics.
-        Growth Drivers & Sustainability: Project revenue growth drivers—new products, markets, pricing power—and test assumptions against past performance and peer benchmarks.
-        Profitability & Capital Efficiency: Analyze historical and forecasted margins, return on invested capital (ROIC) versus cost of capital (WACC), and working-capital trends.
-        Balance-Sheet Health: Check leverage ratios (Debt/EBITDA, Debt/Equity), liquidity (current ratio), and covenants; model how they evolve under stress scenarios.
+        * done - Historical Financials: Compile at least 3–5 years of revenue, EBITDA, free cash flow (FCF), margins, and balance-sheet metrics.
+        * Growth Drivers & Sustainability: Project revenue growth drivers—new products, markets, pricing power—and test assumptions against past performance and peer benchmarks.
+        * Partial - Profitability & Capital Efficiency: Analyze historical and forecasted margins, return on invested capital (ROIC) versus cost of capital (WACC), and working-capital trends.
+        * LLM TODO - Balance-Sheet Health: Check leverage ratios (Debt/EBITDA, Debt/Equity), liquidity (current ratio), and covenants; model how they evolve under stress scenarios.
     Valuation Modeling
         Discounted Cash-Flow (DCF)
-            Forecast unlevered FCF over an explicit period (usually 5–10 years).
+            * done - Forecast unlevered FCF over an explicit period (usually 5–10 years).
             Choose an appropriate terminal-value methodology (Gordon Growth vs. Exit Multiple).
-            Estimate WACC, incorporating current risk-free rate, equity risk premium, beta, and cost of debt.
+            * Estimate WACC, incorporating current risk-free rate, equity risk premium, beta, and cost of debt.
             Derive intrinsic equity value and implied per-share price, then compare to Pₜ.
         Relative (Multiples) Valuation
-            Select relevant peers with similar size, growth, and risk profile.
-            Compile multiples (P/E, EV/EBITDA, P/S, P/FCF) both historical and projected.
-            Apply appropriate multiple to your forecasted metric, derive implied price.
+            * Select relevant peers with similar size, growth, and risk profile.
+            * Compile multiples (P/E, EV/EBITDA, P/S, P/FCF) both historical and projected.
+            * Apply appropriate multiple to your forecasted metric, derive implied price.
         Sum-of-the-Parts (if diversified): Value each division separately and aggregate.
     Scenario & Sensitivity Analysis
         Best-, Base-, and Worst-Case: Define scenarios (e.g. high growth vs. recession vs. solicitation).
@@ -48,3 +48,12 @@ To evaluate whether a given price target for any equity—whether above or below
     Ongoing Monitoring
         Establish a watch-list of key triggers (earnings beats/misses, macro updates, competitor moves).
         Set periodic checkpoints (quarterly or semi-annual) to revisit and refresh the model, adjusting Pₜ as new information arrives.
+    
+    Main strategy: 
+        * How far away from the current price, is the price target?
+        * When thinking about the target price, and the difference to the current price, we need to think if there is anything we can forecast that will justify that price move. 
+        * How many times has the companies stock ever achieved this price action?
+            * If the price differential is high, relative to current price (i.e. 20% increase/decrease or more), how many times has the company price action performed this way?
+                * What were the market conditions?
+            * If the price differential is low, relative to current price (i.e. 3% increase/decrease), does the stock trade mostly sideways or slow climb up? 
+            

@@ -36,8 +36,7 @@ class Macroeconomics(BaseModel):
     real_gdp_growth_quarterly:        Dict[str, float] = {}
     bry_boschan_peak_trough:          Dict[str, Any] = {}
 
-    def __init__(self, **data: Any):
-        super().__init__(**data)
+    def model_post_init(self, __context):
         self.fetch_all()
         self.real_gdp_growth_annual = self._calculate_real_gdp_growth(self.real_gdp_annual)
         self.real_gdp_growth_quarterly = self._calculate_real_gdp_growth(self.real_gdp_quarterly)

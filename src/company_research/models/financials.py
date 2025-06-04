@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from src.clients.alpha_vantage_client import AlphaVantageClient
 
 class Financials(BaseModel):
@@ -15,7 +15,7 @@ class Financials(BaseModel):
     macd_daily: Optional[float] = None
     bollinger_bands_daily: Optional[Dict[str, Any]] = None
 
-    free_cash_flow: Optional[float] = None
+    free_cash_flow: Optional[List[float]] = None
     fcf_margin:   Optional[float] = None
     roic:         Optional[float] = None
     fixed_asset_turnover: Optional[float] = None
@@ -31,8 +31,8 @@ class Financials(BaseModel):
     rd_pct:                 Optional[float] = None
     capex_pct:              Optional[float] = None
 
-    def __init__(self, symbol: str, **data: Any):
-        super().__init__(symbol=symbol, **data)
+    def model_post_init(self, __context):
+        """Initialize financial data after Pydantic initialization."""
         self.fetch_all()
         self.calculate_derived_metrics()
 
@@ -72,24 +72,33 @@ class Financials(BaseModel):
         self.rd_pct = self._calculate_rd_pct()
         self.capex_pct = self._calculate_capex_pct()
 
-    def _calculate_free_cash_flow(self) -> Optional[float]:
+    def _calculate_free_cash_flow(self) -> Optional[List[float]]:
         cash_flows = self.cash_flow.get("annualReports", [])
         if not cash_flows:
             return None
-        cf_cur = cash_flows[0]
+        
         get = lambda d,k: float(d.get(k, 0) or 0)
-        op_cf = get(cf_cur, "operatingCashflow")
-        capex = get(cf_cur, "capitalExpenditures")
-        return op_cf + capex
+        fcf_list = []
+        
+        # Calculate FCF for up to 10 years (or however many reports are available)
+        for cf_report in cash_flows[:10]:
+            op_cf = get(cf_report, "operatingCashflow")
+            capex = get(cf_report, "capitalExpenditures")
+            fcf = op_cf + capex
+            fcf_list.append(fcf)
+        
+        return fcf_list if fcf_list else None
 
     def _calculate_fcf_margin(self) -> Optional[float]:
         income_statements = self.income_statement.get("annualReports", [])
-        if not income_statements:
+        if not income_statements or not self.free_cash_flow:
             return None
         is_cur = income_statements[0]
         get = lambda d,k: float(d.get(k, 0) or 0)
         revenue = get(is_cur, "totalRevenue")
-        return self.free_cash_flow / revenue if revenue and self.free_cash_flow else None
+        # Use the most recent FCF value (first in the list)
+        recent_fcf = self.free_cash_flow[0]
+        return recent_fcf / revenue if revenue and recent_fcf else None
 
     def _calculate_roic(self) -> Optional[float]:
         balance_sheets = self.balance_sheet.get("annualReports", [])
@@ -128,12 +137,14 @@ class Financials(BaseModel):
 
     def _calculate_debt_to_fcf(self) -> Optional[float]:
         balance_sheets = self.balance_sheet.get("annualReports", [])
-        if not balance_sheets:
+        if not balance_sheets or not self.free_cash_flow:
             return None
         bs_cur = balance_sheets[0]
         get = lambda d,k: float(d.get(k, 0) or 0)
         liabilities = get(bs_cur, "totalLiabilities")
-        return liabilities / self.free_cash_flow if self.free_cash_flow else None
+        # Use the most recent FCF value (first in the list)
+        recent_fcf = self.free_cash_flow[0]
+        return liabilities / recent_fcf if recent_fcf else None
 
     def _calculate_interest_coverage(self) -> Optional[float]:
         income_statements = self.income_statement.get("annualReports", [])
