@@ -1,35 +1,31 @@
 from typing import Dict, Any
 from pydantic import BaseModel
 from src.clients.alpha_vantage_client import AlphaVantageClient
+from datetime import datetime, timedelta
 
 class Macroeconomics(BaseModel):
     # Annual data fields
     real_gdp_annual:               Dict[str, Any] = {}
-    federal_funds_rate_annual:     Dict[str, Any] = {}
     inflation_rate_annual:         Dict[str, Any] = {}
-    nonfarm_payrolls_annual:       Dict[str, Any] = {}
     
     # Quarterly data fields
     real_gdp_quarterly:               Dict[str, Any] = {}
-    real_gdp_per_capita_quarterly:    Dict[str, Any] = {}
-    federal_funds_rate_quarterly:     Dict[str, Any] = {}
-    nonfarm_payrolls_quarterly:       Dict[str, Any] = {}
 
     # Monthly data fields
     consumer_price_index_monthly:   Dict[str, Any] = {}
     retail_sales_monthly:       Dict[str, Any] = {}
     durable_goods_monthly:       Dict[str, Any] = {}
+    federal_funds_rate_monthly:       Dict[str, Any] = {}
     unemployment_rate_monthly:      Dict[str, Any] = {}
     nonfarm_payrolls_monthly:     Dict[str, Any] = {}
 
     # Daily data fields
-    treasury_yield_3month_daily:       Dict[str, Any] = {}
-    treasury_yield_2year_daily:         Dict[str, Any] = {}
-    treasury_yield_5year_daily:       Dict[str, Any] = {}
-    treasury_yield_7year_daily:       Dict[str, Any] = {}
-    treasury_yield_10year_daily:     Dict[str, Any] = {}
-    treasury_yield_30year_daily:     Dict[str, Any] = {}
-    federal_funds_rate_daily:     Dict[str, Any] = {}
+    treasury_yield_3month_monthly:    Dict[str, Any] = {}
+    treasury_yield_2year_monthly:     Dict[str, Any] = {}
+    treasury_yield_5year_monthly:     Dict[str, Any] = {}
+    treasury_yield_7year_monthly:     Dict[str, Any] = {}
+    treasury_yield_10year_monthly:    Dict[str, Any] = {}
+    treasury_yield_30year_monthly:    Dict[str, Any] = {}
     
     # Calculated fields
     real_gdp_growth_annual:           Dict[str, float] = {}
@@ -46,34 +42,42 @@ class Macroeconomics(BaseModel):
         client = AlphaVantageClient()
         
         # Fetch annual data
-        self.real_gdp_annual             = client.run_query("REAL_GDP&interval=annual")
-        self.inflation_rate_annual       = client.run_query("INFLATION&interval=annual")
-        self.nonfarm_payrolls_annual     = client.run_query("NONFARM_PAYROLL&interval=annual")
+        raw = client.run_query("REAL_GDP&interval=annual")
+        self.real_gdp_annual = self._truncate_data(raw, 'annual')
+        raw = client.run_query("INFLATION&interval=annual")
+        self.inflation_rate_annual = self._truncate_data(raw, 'annual')
         
         # Fetch quarterly data
-        self.real_gdp_quarterly             = client.run_query("REAL_GDP&interval=quarterly")
-        self.real_gdp_per_capita_quarterly  = client.run_query("REAL_GDP_PER_CAPITA&interval=quarterly")
+        raw = client.run_query("REAL_GDP&interval=quarterly")
+        self.real_gdp_quarterly = self._truncate_data(raw, 'quarterly')
 
         # Fetch monthly data
-        self.consumer_price_index_monthly   = client.run_query("CPI&interval=monthly")
-        self.retail_sales_monthly         = client.run_query("RETAIL_SALES&interval=monthly")
-        self.durable_goods_monthly       = client.run_query("DURABLES&interval=monthly")
-        self.unemployment_rate_monthly      = client.run_query("UNEMPLOYMENT_RATE&interval=monthly")
-        self.nonfarm_payrolls_monthly     = client.run_query("NONFARM_PAYROLL&interval=monthly")
+        raw = client.run_query("CPI&interval=monthly")
+        self.consumer_price_index_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("RETAIL_SALES&interval=monthly")
+        self.retail_sales_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("DURABLES&interval=monthly")
+        self.durable_goods_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("FEDERAL_FUNDS_RATE&interval=monthly")
+        self.federal_funds_rate_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("UNEMPLOYMENT")
+        self.unemployment_rate_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("NONFARM_PAYROLL&interval=monthly")
+        self.nonfarm_payrolls_monthly = self._truncate_data(raw, 'monthly')
 
         # Fetch treasury yield data
-        self.treasury_yield_3month_daily    = client.run_query("TREASURY_YIELD_3MONTH&interval=daily")
-        self.treasury_yield_2year_daily     = client.run_query("TREASURY_YIELD_2YEAR&interval=daily")
-        self.treasury_yield_5year_daily     = client.run_query("TREASURY_YIELD_5YEAR&interval=daily")
-        self.treasury_yield_7year_daily     = client.run_query("TREASURY_YIELD_7YEAR&interval=daily")
-        self.treasury_yield_10year_daily    = client.run_query("TREASURY_YIELD_10YEAR&interval=daily")
-        self.treasury_yield_30year_daily    = client.run_query("TREASURY_YIELD_30YEAR&interval=daily")
-
-        # Fetch federal funds rate data
-        self.federal_funds_rate_daily       = client.run_query("FEDERAL_FUNDS_RATE&interval=daily")
-
-
-        
+        raw = client.run_query("TREASURY_YIELD&interval=monthly&maturity=3month")
+        self.treasury_yield_3month_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("TREASURY_YIELD&interval=monthly&maturity=2year")
+        self.treasury_yield_2year_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("TREASURY_YIELD&interval=monthly&maturity=5year")
+        self.treasury_yield_5year_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("TREASURY_YIELD&interval=monthly&maturity=7year")
+        self.treasury_yield_7year_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("TREASURY_YIELD&interval=monthly&maturity=10year")
+        self.treasury_yield_10year_monthly = self._truncate_data(raw, 'monthly')
+        raw = client.run_query("TREASURY_YIELD&interval=monthly&maturity=30year")
+        self.treasury_yield_30year_monthly = self._truncate_data(raw, 'monthly')
 
     def _calculate_real_gdp_growth(self, gdp_data: Dict[str, Any]) -> Dict[str, float]:
         """Calculate year-over-year real GDP growth rate for the most recent period."""
@@ -97,23 +101,6 @@ class Macroeconomics(BaseModel):
             return {sorted_data[0]['date']: round(growth_rate, 2)}
         
         return {}
-
-    def _calculate_latest_unemployment_rate(self, unemployment_data: Dict[str, Any]) -> Dict[str, float]:
-        """Get the most recent unemployment rate."""
-        if not unemployment_data or 'data' not in unemployment_data:
-            return {}
-        
-        data_points = unemployment_data['data']
-        
-        # Sort data by date to get the most recent data point
-        sorted_data = sorted(data_points, key=lambda x: x['date'], reverse=True)
-        
-        if not sorted_data:
-            return {}
-        
-        # Get the most recent unemployment rate
-        latest_data = sorted_data[0]
-        return {latest_data['date']: float(latest_data['value'])}
 
     def _calculate_bry_boschan_peak_trough(self) -> Dict[str, Any]:
         """
@@ -253,4 +240,28 @@ class Macroeconomics(BaseModel):
                 return "peak"
         
         return "unknown"
+    
+    def _truncate_data(self, dataset: Dict[str, Any], interval: str) -> Dict[str, Any]:
+        """Keep only the most recent N periods: 6 months for daily, 5 years for monthly/quarterly, 10 years for annual."""
+        if not dataset or 'data' not in dataset:
+            return dataset
+        pts = dataset['data']
+        now = datetime.today()
+        if interval == 'daily':
+            cutoff = now - timedelta(days=6*30)
+        elif interval in ('monthly', 'quarterly'):
+            cutoff = now.replace(year=now.year - 5)
+        elif interval == 'annual':
+            cutoff = now.replace(year=now.year - 10)
+        else:
+            return dataset
+        filtered = []
+        for p in pts:
+            try:
+                d = datetime.strptime(p['date'], "%Y-%m-%d")
+            except Exception:
+                continue
+            if d >= cutoff:
+                filtered.append(p)
+        return {**dataset, 'data': filtered}
 
