@@ -133,16 +133,16 @@ class Diligence(BaseModel):
             summary += f"Unemployment Rate: {latest_unemployment}%\n"
         
         # Interest Rates
-        if macro.federal_funds_rate_daily and 'data' in macro.federal_funds_rate_daily:
-            latest_fed_rate = macro.federal_funds_rate_daily['data'][0]['value']
+        if macro.federal_funds_rate_monthly and 'data' in macro.federal_funds_rate_monthly:
+            latest_fed_rate = macro.federal_funds_rate_monthly['data'][0]['value']
             summary += f"Federal Funds Rate: {latest_fed_rate}%\n"
         
         # Treasury Yields
         treasury_yields = [
-            ("3-Month", macro.treasury_yield_3month_daily),
-            ("2-Year", macro.treasury_yield_2year_daily),
-            ("10-Year", macro.treasury_yield_10year_daily),
-            ("30-Year", macro.treasury_yield_30year_daily)
+            ("3-Month", macro.treasury_yield_3month_monthly),
+            ("2-Year", macro.treasury_yield_2year_monthly),
+            ("10-Year", macro.treasury_yield_10year_monthly),
+            ("30-Year", macro.treasury_yield_30year_monthly)
         ]
         
         for name, yield_data in treasury_yields:
@@ -151,10 +151,10 @@ class Diligence(BaseModel):
                 summary += f"{name} Treasury: {latest_yield}%\n"
         
         # Yield curve analysis
-        if (macro.treasury_yield_2year_daily and 'data' in macro.treasury_yield_2year_daily and
-            macro.treasury_yield_10year_daily and 'data' in macro.treasury_yield_10year_daily):
-            two_year = float(macro.treasury_yield_2year_daily['data'][0]['value'])
-            ten_year = float(macro.treasury_yield_10year_daily['data'][0]['value'])
+        if (macro.treasury_yield_2year_monthly and 'data' in macro.treasury_yield_2year_monthly and
+            macro.treasury_yield_10year_monthly and 'data' in macro.treasury_yield_10year_monthly):
+            two_year = float(macro.treasury_yield_2year_monthly['data'][0]['value'])
+            ten_year = float(macro.treasury_yield_10year_monthly['data'][0]['value'])
             yield_spread = ten_year - two_year
             summary += f"2-10 Year Spread: {yield_spread:.2f}% "
             summary += f"({'Inverted' if yield_spread < 0 else 'Normal'})\n"

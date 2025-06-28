@@ -10,5 +10,6 @@ dependencies = [
     "numpy>=2.2.5",
     "openai-agents>=0.0.14",
     "pandas>=2.2.3",
+    "prefect>=3.4.7",
     "python-dotenv>=0.21.0",
 ]

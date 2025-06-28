@@ -108,53 +108,115 @@ class Macroeconomics(BaseModel):
         Returns current economic cycle phase and turning points.
         """
         if not self.real_gdp_quarterly or 'data' not in self.real_gdp_quarterly:
-            return {"error": "Insufficient GDP data for cycle analysis"}
+            return {"error": "No GDP data available for cycle analysis", "current_phase": "insufficient_data"}
         
-        data_points = self.real_gdp_quarterly['data']
+        data_points = self.real_gdp_quarterly.get('data', [])
+        
+        # Diagnostic info
+        data_count = len(data_points)
+        if data_count < 4:  # Reduced from 6 to 4 minimum points
+            return {
+                "error": f"Insufficient data points for cycle analysis (have {data_count}, need at least 4)",
+                "data_points": data_points,
+                "current_phase": "insufficient_data"
+            }
         
         # Sort data chronologically (oldest first for time series analysis)
-        sorted_data = sorted(data_points, key=lambda x: x['date'])
-        
-        if len(sorted_data) < 6:  # Need minimum data points for cycle analysis
-            return {"error": "Insufficient data points for cycle analysis"}
+        # First try to parse dates properly, with fallback for quarterly format
+        def parse_date_safe(date_str):
+            try:
+                if 'Q' in date_str:
+                    # Handle quarterly format like "2023-Q1"
+                    year, quarter = date_str.split('-Q')
+                    # Convert to a sortable string (YYYYQ)
+                    return f"{year}{quarter}"
+                return date_str  # For other formats, return as is
+            except:
+                return date_str
+            
+        sorted_data = sorted(data_points, key=lambda x: parse_date_safe(x.get('date', '')))
         
         # Extract values and dates
-        values = [float(point['value']) for point in sorted_data]
-        dates = [point['date'] for point in sorted_data]
+        values = []
+        dates = []
+        for point in sorted_data:
+            try:
+                values.append(float(point['value']))
+                dates.append(point['date'])
+            except (KeyError, ValueError):
+                # Skip points with missing or invalid data
+                continue
         
-        # Apply moving average smoothing (3-quarter)
-        smoothed_values = self._apply_moving_average(values, window=3)
+        if len(values) < 4:  # Check again after filtering invalid points
+            return {
+                "error": f"Insufficient valid data points after filtering (have {len(values)}, need at least 4)",
+                "valid_points": list(zip(dates, values)),
+                "current_phase": "insufficient_data"
+            }
         
-        # Identify preliminary peaks and troughs
+        # Apply moving average smoothing (reduced window size for smaller datasets)
+        window_size = min(3, len(values) // 2)  # Adaptive window size
+        if window_size < 1:
+            window_size = 1
+            
+        smoothed_values = self._apply_moving_average(values, window=window_size)
+        
+        # Identify preliminary peaks and troughs - less strict for smaller datasets
         peaks = []
         troughs = []
         
-        for i in range(2, len(smoothed_values) - 2):
-            # Peak: value higher than 2 quarters before and after
-            if (smoothed_values[i] > smoothed_values[i-1] and 
-                smoothed_values[i] > smoothed_values[i+1] and
-                smoothed_values[i] > smoothed_values[i-2] and 
-                smoothed_values[i] > smoothed_values[i+2]):
-                peaks.append((dates[i], smoothed_values[i], i))
+        # Adjust comparison range based on available data
+        look_range = min(2, len(smoothed_values) // 3)
+        if look_range < 1:
+            look_range = 1
             
-            # Trough: value lower than 2 quarters before and after
-            elif (smoothed_values[i] < smoothed_values[i-1] and 
-                  smoothed_values[i] < smoothed_values[i+1] and
-                  smoothed_values[i] < smoothed_values[i-2] and 
-                  smoothed_values[i] < smoothed_values[i+2]):
+        for i in range(look_range, len(smoothed_values) - look_range):
+            # Peak checks
+            is_peak = True
+            for j in range(1, look_range + 1):
+                if smoothed_values[i] <= smoothed_values[i-j] or smoothed_values[i] <= smoothed_values[i+j]:
+                    is_peak = False
+                    break
+                    
+            if is_peak:
+                peaks.append((dates[i], smoothed_values[i], i))
+                
+            # Trough checks
+            is_trough = True
+            for j in range(1, look_range + 1):
+                if smoothed_values[i] >= smoothed_values[i-j] or smoothed_values[i] >= smoothed_values[i+j]:
+                    is_trough = False
+                    break
+                    
+            if is_trough:
                 troughs.append((dates[i], smoothed_values[i], i))
         
-        # Apply Bry-Boschan rules
+        # Apply simplified Bry-Boschan rules for small datasets
         filtered_turning_points = self._apply_bry_boschan_rules(peaks, troughs)
         
-        # Determine current cycle phase
-        current_phase = self._determine_current_phase(filtered_turning_points, dates, smoothed_values)
+        # If no turning points found, try a simpler approach
+        if not filtered_turning_points and len(values) >= 3:
+            # Just identify simple trends
+            if values[-1] > values[-2] > values[-3]:
+                current_phase = "expansion"
+            elif values[-1] < values[-2] < values[-3]:
+                current_phase = "downturn"
+            elif values[-1] > values[-2] and values[-2] < values[-3]:
+                current_phase = "recovery"
+            elif values[-1] < values[-2] and values[-2] > values[-3]:
+                current_phase = "peak"
+            else:
+                current_phase = "uncertain"
+        else:
+            # Determine current cycle phase
+            current_phase = self._determine_current_phase(filtered_turning_points, dates, smoothed_values)
         
         return {
             "turning_points": filtered_turning_points,
             "current_phase": current_phase,
             "latest_date": dates[-1] if dates else None,
-            "analysis_period": f"{dates[0]} to {dates[-1]}" if dates else None
+            "analysis_period": f"{dates[0]} to {dates[-1]}" if dates else None,
+            "data_points_analyzed": len(values)
         }
     
     def _apply_moving_average(self, values: list, window: int) -> list:
@@ -187,8 +249,12 @@ class Macroeconomics(BaseModel):
         for trough in troughs:
             all_points.append((trough[0], trough[1], trough[2], 'trough'))
         
+        # Early return if no points
+        if not all_points:
+            return []
+            
         # Sort by date
-        all_points.sort(key=lambda x: x[0])
+        all_points.sort(key=lambda x: x[2])  # Sort by index
         
         # Rule 1: Alternating peaks and troughs
         filtered_points = []
@@ -198,8 +264,8 @@ class Macroeconomics(BaseModel):
             date, value, index, point_type = point
             
             if last_type != point_type:
-                # Rule 2: Minimum duration between turning points (2 quarters)
-                if not filtered_points or index - filtered_points[-1][2] >= 2:
+                # For small datasets, relax the minimum duration rule
+                if not filtered_points or index - filtered_points[-1][2] >= 1:
                     filtered_points.append(point)
                     last_type = point_type
                 elif point_type == 'peak' and value > filtered_points[-1][1]:
@@ -213,33 +279,60 @@ class Macroeconomics(BaseModel):
     
     def _determine_current_phase(self, turning_points: list, dates: list, values: list) -> str:
         """Determine the current economic cycle phase."""
-        if not turning_points or len(turning_points) < 2:
+        if not turning_points:
+            # If no turning points but we have some data, make a simple assessment
+            if len(values) >= 3:
+                # Look at last 3 points for trend
+                if values[-1] > values[-2] > values[-3]:
+                    return "expansion"
+                elif values[-1] < values[-2] < values[-3]:
+                    return "downturn"
+                elif values[-1] > values[-2]:
+                    return "recovery"
+                else:
+                    return "uncertain"
+            return "insufficient_data"
+        
+        if len(turning_points) < 1:
             return "insufficient_data"
         
         latest_turning_point = turning_points[-1]
-        latest_date = dates[-1]
-        latest_value = values[-1]
         
-        # Get the last turning point type and value
-        last_point_type = latest_turning_point[3]
-        last_point_value = latest_turning_point[1]
-        
-        # Determine phase based on last turning point and current trend
-        if last_point_type == 'trough':
-            # After a trough, check if we're recovering or expanding
-            if latest_value > last_point_value * 1.02:  # 2% above trough
-                return "expansion"
-            else:
-                return "recovery"
-        
-        elif last_point_type == 'peak':
-            # After a peak, check if we're declining or have reached bottom
-            if latest_value < last_point_value * 0.98:  # 2% below peak
-                return "downturn"
-            else:
-                return "peak"
-        
-        return "unknown"
+        # Check if we have data after the last turning point
+        if not dates or not values:
+            return "insufficient_data"
+            
+        try:
+            # Get the last turning point type and value
+            last_point_type = latest_turning_point[3]
+            last_point_value = latest_turning_point[1]
+            
+            # Get latest value
+            latest_value = values[-1]
+            
+            # Determine phase based on last turning point and current trend
+            if last_point_type == 'trough':
+                # After a trough, check if we're recovering or expanding
+                if latest_value > last_point_value * 1.01:  # 1% above trough
+                    return "expansion"
+                else:
+                    return "recovery"
+            
+            elif last_point_type == 'peak':
+                # After a peak, check if we're declining or have reached bottom
+                if latest_value < last_point_value * 0.99:  # 1% below peak
+                    return "downturn"
+                else:
+                    return "peak"
+        except:
+            # If any errors in calculation, return a more generic assessment
+            if len(values) >= 2:
+                if values[-1] > values[-2]:
+                    return "improving"
+                else:
+                    return "declining"
+            
+        return "uncertain"
     
     def _truncate_data(self, dataset: Dict[str, Any], interval: str) -> Dict[str, Any]:
         """Keep only the most recent N periods: 6 months for daily, 5 years for monthly/quarterly, 10 years for annual."""
@@ -258,10 +351,33 @@ class Macroeconomics(BaseModel):
         filtered = []
         for p in pts:
             try:
-                d = datetime.strptime(p['date'], "%Y-%m-%d")
+                date_str = p['date']
+                
+                # Handle different date formats based on the interval
+                if interval == 'quarterly' and 'Q' in date_str:
+                    # Handle quarterly format like "2023-Q1"
+                    year, quarter = date_str.split('-Q')
+                    # Convert to a date in the middle of the quarter
+                    month = (int(quarter) - 1) * 3 + 2  # Q1->2 (Feb), Q2->5 (May), etc.
+                    d = datetime(int(year), month, 15)
+                else:
+                    # Try standard format
+                    d = datetime.strptime(date_str, "%Y-%m-%d")
+                    
+                if d >= cutoff:
+                    filtered.append(p)
             except Exception:
-                continue
-            if d >= cutoff:
+                # Keep the point if we can't parse the date
+                # This ensures we don't lose data due to format issues
                 filtered.append(p)
+                continue
+        
+        # For business cycle analysis, ensure we have enough data points
+        if interval == 'quarterly' and len(filtered) < 6:
+            # Sort all points by date (best effort)
+            all_pts = sorted(pts, key=lambda x: x.get('date', ''), reverse=True)
+            # Take at least 6 most recent
+            filtered = all_pts[:6] if len(all_pts) >= 6 else all_pts
+            
         return {**dataset, 'data': filtered}
 

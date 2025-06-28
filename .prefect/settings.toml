@@ -1,0 +1,8 @@
+# Prefect settings for local development
+[profiles.dev]
+PREFECT_API_URL = "http://127.0.0.1:4200/api"
+PREFECT_UI_URL = "http://127.0.0.1:4200"
+
+[profiles.dev.settings]
+PREFECT_API_URL = "http://127.0.0.1:4200/api"
+PREFECT_UI_URL = "http://127.0.0.1:4200"
