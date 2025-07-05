@@ -1,8 +1,20 @@
-# Prefect settings for local development
+# ./prefect/settings.toml
 [profiles.dev]
 PREFECT_API_URL = "http://127.0.0.1:4200/api"
-PREFECT_UI_URL = "http://127.0.0.1:4200"
+PREFECT_UI_URL  = "http://127.0.0.1:4200"
 
 [profiles.dev.settings]
-PREFECT_API_URL = "http://127.0.0.1:4200/api"
-PREFECT_UI_URL = "http://127.0.0.1:4200"
+PREFECT_API_URL            = "http://127.0.0.1:4200/api"
+PREFECT_UI_URL             = "http://127.0.0.1:4200"
+
+# Prefect’s own logger level
+PREFECT_LOGGING_LEVEL      = "INFO"        # Prefect loggers (flows, tasks, etc.) :contentReference[oaicite:0]{index=0}
+
+# Capture print() calls in your flow/task logs
+PREFECT_LOGGING_LOG_PRINTS = "True"
+
+# And if you want the *Python root logger* (i.e. your tool's logging.info calls)
+# to show up at INFO, too:
+PREFECT_LOGGING_ROOT_LEVEL = "INFO"        # overrides the Python root logger :contentReference[oaicite:1]{index=1}
+
+PREFECT_LOGGING_LOG_PRINTS = "True"
