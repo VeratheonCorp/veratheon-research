@@ -472,9 +472,10 @@ def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -
         - Data is typically available 1-2 weeks before the earnings date
         - The estimate field represents the consensus EPS estimate from analysts
         - The report date is subject to change
+        - The API returns a CSV string, which is then converted to a JSON object
     """
     print(f"Calling Alpha Vantage API with URI: EARNINGS_CALENDAR&symbol={symbol}&horizon={horizon}")
-    csv_data = client.run_query(f"EARNINGS_CALENDAR&symbol={symbol}&horizon={horizon}&datatype=csv")
+    csv_data = client.run_query(f"EARNINGS_CALENDAR&symbol={symbol}&horizon={horizon}")
 
     # Convert the CSV to a JSON object
     json_data = []

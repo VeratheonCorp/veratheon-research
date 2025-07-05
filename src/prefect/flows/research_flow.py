@@ -36,26 +36,3 @@ async def market_research_flow(
     earnings_summary: EarningsSummary = await forward_pe_fetch_earnings_task(peer_group.original_symbol, peer_group.peer_group, horizon)
 
     return earnings_summary
-    
-    # Run the forward PE analysis
-    #analysis: ForwardPeValuation = await forward_pe_analysis_task(earnings_summary, horizon)
-
-    #return analysis
-
-# This allows the flow to be run directly with `python -m src.flows.research_flow`
-if __name__ == "__main__":
-    import asyncio
-    import logging as log
-
-    log.basicConfig(level=log.INFO)
-    log.info("Starting forward PE flow")
-
-    async def main():
-        result = await market_research_flow(
-            symbol="AAPL",
-            price_target=250,
-            horizon="12month"
-        )
-        log.warning(f"Forward PE flow completed.")
-
-    asyncio.run(main())

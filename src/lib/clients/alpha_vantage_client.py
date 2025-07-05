@@ -16,15 +16,25 @@ class AlphaVantageClient:
         self.session = requests.Session()
 
     def run_query(self, query: str) -> Dict[str, Any]:
-        """Execute an Alpha Vantage API query with automatic API key insertion."""
+        """Execute an Alpha Vantage API query with automatic API key insertion.
         
+        Returns:
+            Union[Dict[str, Any], str]: Parsed JSON response as dict if content is JSON, 
+                                      otherwise returns raw response text (e.g., for CSV)
+        """
         response = self.session.get(self.base_url + query + f"&apikey={self.api_key}")
         response.raise_for_status()
-        # log the request and response
+        
+        # Log the request and response
         log.info(f"Request URL: {response.url}")
         log.info(f"Response Status Code: {response.status_code}")
-        log.info(f"Response Content: {response.text}")
-        return response.json()
+        log.info(f"Response Content: {response.text[:500]}...")  # Log first 500 chars to avoid huge logs
+        
+        # Check if response is JSON
+        content_type = response.headers.get('Content-Type', '')
+        if 'application/json' in content_type:
+            return response.json()
+        return response.text
 
 
 
