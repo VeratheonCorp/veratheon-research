@@ -11,5 +11,20 @@ dependencies = [
     "openai-agents>=0.0.14",
     "pandas>=2.2.3",
     "prefect>=3.4.7",
+    "pytest>=8.4.1",
+    "pytest-mock>=3.14.1",
     "python-dotenv>=0.21.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src"
+]
+
+
+[dependency-groups]
+dev = [
+    "coverage>=7.9.2",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
 ]

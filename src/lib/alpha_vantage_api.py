@@ -10,7 +10,6 @@ Note:
 """
 
 from typing import Dict, Any
-from agents import function_tool
 from src.lib.clients.alpha_vantage_client import AlphaVantageClient
 
 
