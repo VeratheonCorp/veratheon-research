@@ -36,7 +36,6 @@ async def main():
         )
         
         print(f"\nMarket research completed successfully!")
-        print(f"Run ID: {result['run_id']}")
         print(f"Results have been saved and processed.")
         
         return 0

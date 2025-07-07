@@ -43,14 +43,11 @@ class ValuationBucket(Enum):
     FAIR_VALUE = auto()  # roughly in line with both averages
     EXPENSIVE = auto()  # above peer OR historical average
     VERY_EXPENSIVE = auto()  # well above both averages
-    ERROR_FETCHING_DATA = auto()  # if comparisons can't be made
-
 
 class ForwardPeValuation(BaseModel):
     valuation_bucket: ValuationBucket
     analysis: str
-    errors: List[str]
-
+    advice: str
 
 class PeerGroup(BaseModel):
     original_symbol: str

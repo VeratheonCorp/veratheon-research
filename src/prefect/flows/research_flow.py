@@ -6,7 +6,8 @@ load_dotenv()
 
 from src.prefect.tasks.forward_pe.forward_pe_peer_group_task import forward_pe_peer_group_task
 from src.prefect.tasks.forward_pe.forward_pe_fetch_earnings_task import forward_pe_fetch_earnings_task
-from src.research.forward_pe.forward_pe_models import PeerGroup, EarningsSummary
+from src.prefect.tasks.forward_pe.forward_pe_analysis_task import forward_pe_analysis_task
+from src.research.forward_pe.forward_pe_models import ForwardPeValuation, PeerGroup, EarningsSummary
 
 
 @flow(name="market-research-flow", log_prints=True)
@@ -35,4 +36,7 @@ async def market_research_flow(
     # Get the earnings data for the user's symbol and its peer group
     earnings_summary: EarningsSummary = await forward_pe_fetch_earnings_task(peer_group.original_symbol, peer_group.peer_group, horizon)
 
-    return earnings_summary
+    # Perform forward PE analysis
+    forward_pe_valuation: ForwardPeValuation = await forward_pe_analysis_task(peer_group.original_symbol, earnings_summary)
+
+    return forward_pe_valuation

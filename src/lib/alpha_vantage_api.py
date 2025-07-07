@@ -11,7 +11,7 @@ Note:
 
 from typing import Dict, Any
 from src.lib.clients.alpha_vantage_client import AlphaVantageClient
-
+import logging as log
 
 client = AlphaVantageClient()
 
@@ -480,14 +480,18 @@ def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -
     json_data = []
     for row in csv_data.splitlines()[1:]:
         columns = row.split(",")
-        json_data.append({
-            "symbol": columns[0],
-            "name": columns[1],
-            "reportDate": columns[2],
-            "fiscalDateEnding": columns[3],
-            "estimate": float(columns[4]),
-            "currency": columns[5]
-        })
+        try:
+            json_data.append({
+                "symbol": columns[0],
+                "name": columns[1],
+                "reportDate": columns[2],
+                "fiscalDateEnding": columns[3],
+                "estimate": float(columns[4]),
+                "currency": columns[5]
+            })
+        except ValueError as e:
+            log.warning(f"Skipping row due to value error in estimate: {row}")
+            log.warning(f"Error: {e}")
 
     return {"earnings_calendar": json_data}
 
