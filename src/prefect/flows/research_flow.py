@@ -36,7 +36,8 @@ async def market_research_flow(
     # Get the earnings data for the user's symbol and its peer group
     earnings_summary: EarningsSummary = await forward_pe_fetch_earnings_task(peer_group.original_symbol, peer_group.peer_group, horizon)
 
+    return earnings_summary
     # Perform forward PE analysis
-    forward_pe_valuation: ForwardPeValuation = await forward_pe_analysis_task(peer_group.original_symbol, earnings_summary)
+    # forward_pe_valuation: ForwardPeValuation = await forward_pe_analysis_task(peer_group.original_symbol, earnings_summary)
 
-    return forward_pe_valuation
+    #return forward_pe_valuation

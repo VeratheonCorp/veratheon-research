@@ -8,6 +8,7 @@ dependencies = [
     "alpha-vantage",
     "dotenv>=0.9.9",
     "numpy>=2.2.5",
+    "openai>=1.78.0",
     "openai-agents>=0.0.14",
     "pandas>=2.2.3",
     "prefect>=3.4.7",

@@ -27,7 +27,6 @@ class RawGlobalQuote(BaseModel):
 class EarningsSummary(BaseModel):
     symbol: str
     closing_price: str
-    annual_earnings: List
     quarterly_earnings: List
     next_quarter_consensus_eps: str
 

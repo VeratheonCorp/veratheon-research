@@ -1,5 +1,5 @@
 from typing import List
-from src.lib.alpha_vantage_api import call_alpha_vantage_earnings, call_alpha_vantage_earnings_calendar, call_alpha_vantage_global_quote
+from src.lib.alpha_vantage_api import call_alpha_vantage_earnings, call_alpha_vantage_earnings_calendar, call_alpha_vantage_global_quote, call_alpha_vantage_overview
 from src.research.forward_pe.forward_pe_models import EarningsSummary, RawEarnings, RawGlobalQuote
 import logging
 log = logging.getLogger(__name__)
@@ -19,14 +19,23 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str], horizon: int) -> List
     earnings_summaries = []
 
     for symbol in symbols:
+
+        # Get the overview data for the symbol
+        overview_json = call_alpha_vantage_overview(symbol)
+        # If the overview data is empty, skip this symbol
+        if not overview_json:
+            log.warning(f"Overview data is empty for symbol: {symbol}. Skipping.")
+            continue
+
+        # Get the earnings data for the symbol
         raw_earnings: RawEarnings = call_alpha_vantage_earnings(symbol)
 
+        # Get the earnings calendar for the symbol
         raw_earnings_calendar_json = call_alpha_vantage_earnings_calendar(symbol)
-        next_quarter_consensus_eps = raw_earnings_calendar_json['earnings_calendar'][0]['estimate']
+        next_quarter_consensus_eps = raw_earnings_calendar_json.get('earnings_calendar', [{}])[0].get('estimate', "Not enough consensus")
     
         raw_global_quote: RawGlobalQuote = call_alpha_vantage_global_quote(symbol)
         current_price = raw_global_quote['Global Quote']['05. price']
-        
         
         # Parse horizon in months
         if isinstance(horizon, str) and 'month' in horizon.lower():
@@ -45,21 +54,17 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str], horizon: int) -> List
         # Truncate quarterly earnings first
         if raw_earnings['quarterlyEarnings']:
             raw_earnings['quarterlyEarnings'] = raw_earnings['quarterlyEarnings'][:quarters]
-        
-        # Calculate years needed to cover the quarterly data (round up to nearest year)
-        years_needed = (quarters + 3) // 4
-        
-        # Truncate annual earnings to match the time window needed for quarterly data
-        if raw_earnings['annualEarnings']:
-            raw_earnings['annualEarnings'] = raw_earnings['annualEarnings'][:years_needed]
-        
-        earnings_summaries.append(EarningsSummary(
+
+        earnings_summary = EarningsSummary(
             symbol=symbol,
-            annual_earnings=raw_earnings['annualEarnings'],
             quarterly_earnings=raw_earnings['quarterlyEarnings'],
             next_quarter_consensus_eps=str(next_quarter_consensus_eps),
             closing_price=current_price
-        ))
+        )
+
+        print(earnings_summary)
+        
+        earnings_summaries.append(earnings_summary)
 
     return earnings_summaries
 

@@ -28,7 +28,7 @@ forward_pe_analysis_agent = Agent(
             Return a JSON object:
             {
                 "valuation_bucket": "MUST be one of: ['VERY_CHEAP', 'CHEAP', 'FAIR_VALUE', 'EXPENSIVE', 'VERY_EXPENSIVE'] - How the P/E compares to peers and history",
-                "analysis": "Your detailed analysis (3-5 sentences) explaining the rationale behind the abov)e values",
+                "analysis": "Your detailed analysis (3-5 sentences) explaining the rationale behind the above values",
                 "advice": "What advice would you give to an investor on this analysis. Focus on market entry and exit.",
             }
 

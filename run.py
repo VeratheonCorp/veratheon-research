@@ -22,7 +22,7 @@ async def main():
     """Run the market research flow with example parameters."""
     try:
         # Example parameters - you can modify these or make them command-line arguments
-        symbol = "AAPL"  # Example stock symbol
+        symbol = "F"  # Example stock symbol
         price_target = 200  # Example price target
         horizon = "3month"  # Can be "3month", "6month", or "12month"
         
