@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 from enum import Enum, auto
 from pydantic import BaseModel
 
@@ -26,7 +26,8 @@ class RawGlobalQuote(BaseModel):
 
 class EarningsSummary(BaseModel):
     symbol: str
-    closing_price: str
+    overview: Dict[str, Any]
+    current_price: str
     quarterly_earnings: List
     next_quarter_consensus_eps: str
 
