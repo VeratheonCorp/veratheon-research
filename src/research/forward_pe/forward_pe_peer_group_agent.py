@@ -50,8 +50,6 @@ async def peer_group_chatcompletion(symbol: str) -> PeerGroup:
         temperature=0.0,
     )
     content = response.choices[0].message.content
-    print(content)
     data = json.loads(content)
-    # Assuming PeerGroup can be constructed directly from the dict
     return PeerGroup(**data)
 

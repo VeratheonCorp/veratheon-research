@@ -13,31 +13,29 @@ from src.research.forward_pe.forward_pe_models import ForwardPeValuation, PeerGr
 @flow(name="market-research-flow", log_prints=True)
 async def market_research_flow(
     symbol: str,
-    price_target: int,
-    horizon: str,
+    #price_target: int,
 ) -> Dict[str, Any]:
     """
     Main flow for running forward PE analysis.
     
     Args:
         symbol: Stock symbol to research
-        price_target: Target price for the stock
-        horizon: Time horizon for the earnings calendar (default: "3month", or "6month" and "12month")
+        #price_target: Target price for the stock
     Returns:
         Dict containing the research results and metadata
     """
     logger = get_run_logger()
     
-    logger.info(f"Starting forward PE flow for {symbol} with target ${price_target} in {horizon}")
+    logger.info(f"Starting forward PE flow for {symbol}")
     
     # Get the peer group of the user's symbol
     peer_group: PeerGroup = await forward_pe_peer_group_task(symbol)        
 
     # Get the earnings data for the user's symbol and its peer group
-    earnings_summary: EarningsSummary = await forward_pe_fetch_earnings_task(peer_group.original_symbol, peer_group.peer_group, horizon)
+    earnings_summary: EarningsSummary = await forward_pe_fetch_earnings_task(peer_group.original_symbol, peer_group.peer_group)
 
-    return earnings_summary
+    #return earnings_summary
     # Perform forward PE analysis
-    # forward_pe_valuation: ForwardPeValuation = await forward_pe_analysis_task(peer_group.original_symbol, earnings_summary)
+    forward_pe_valuation: ForwardPeValuation = await forward_pe_analysis_task(peer_group.original_symbol, earnings_summary)
 
-    #return forward_pe_valuation
+    return forward_pe_valuation

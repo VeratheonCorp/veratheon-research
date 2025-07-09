@@ -22,17 +22,15 @@ async def main():
     """Run the market research flow with example parameters."""
     try:
         # Example parameters - you can modify these or make them command-line arguments
-        symbol = "F"  # Example stock symbol
-        price_target = 200  # Example price target
-        horizon = "3month"  # Can be "3month", "6month", or "12month"
+        symbol = "GOOGL"  # Example stock symbol
+        #price_target = 220  # Example price target
         
-        print(f"Starting market research for {symbol} with target ${price_target} in {horizon}")
+        print(f"Starting market research for {symbol}")
         
         # Run the flow directly
         result = await market_research_flow(
             symbol=symbol,
-            price_target=price_target,
-            horizon=horizon
+            #price_target=price_target,
         )
         
         print(f"\nMarket research completed successfully!")

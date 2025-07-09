@@ -19,7 +19,9 @@ async def forward_pe_analysis_task(symbol: str, earnings_summary: EarningsSummar
     logger = get_run_logger()
     logger.info(f"Performing forward PE analysis for {symbol}")
 
-    result: RunResult = await Runner.run(forward_pe_analysis_agent, input=f"original_symbol: {symbol}, earnings_summary: {earnings_summary}")
+    result: RunResult = await Runner.run(
+        forward_pe_analysis_agent,
+        input=f"original_symbol: {symbol}, earnings_summary: {earnings_summary}")
     forward_pe_analysis: ForwardPeValuation = result.final_output
 
     logger.info(f"Forward PE analysis for {symbol}: {forward_pe_analysis}")

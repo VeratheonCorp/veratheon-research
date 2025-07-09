@@ -4,13 +4,12 @@ from src.research.forward_pe.forward_pe_models import EarningsSummary, RawEarnin
 import logging
 log = logging.getLogger(__name__)
 
-def get_quarterly_eps_data_for_symbols(symbols: List[str], horizon: int) -> List[EarningsSummary]:
+def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[EarningsSummary]:
     """
     Calls Alpha Vantage APIs for the specified symbols and returns all necessary data for forward PE analysis.
     
     Args:
         symbols: List of stock symbols to get earnings for
-        horizon: Number of years of earnings data to return (minimum 1 year).
     
     Returns:
         A list of EarningsSummary objects containing annual and quarterly earnings data, 
@@ -56,7 +55,7 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str], horizon: int) -> List
         
         earnings_summaries.append(earnings_summary)
 
-    print(earnings_summaries)
+    # print(earnings_summaries)
     return earnings_summaries
 
 

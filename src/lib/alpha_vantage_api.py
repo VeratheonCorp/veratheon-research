@@ -436,7 +436,7 @@ def call_alpha_vantage_bbands(
         - The upper and lower bands are typically 2 standard deviations away from the middle band
         - Prices tend to stay within the bands; breakouts may indicate significant moves
     """
-    print(
+    log.info(
         f"Calling Alpha Vantage API with URI: BBANDS&symbol={symbol}&interval={interval}&time_period={time_period}&series_type={series_type}"
     )
     return client.run_query(
