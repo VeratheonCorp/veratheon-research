@@ -22,7 +22,7 @@ async def main():
     """Run the market research flow with example parameters."""
     try:
         # Example parameters - you can modify these or make them command-line arguments
-        symbol = "GOOGL"  # Example stock symbol
+        symbol = "TSLA"  # Example stock symbol
         #price_target = 220  # Example price target
         
         print(f"Starting market research for {symbol}")

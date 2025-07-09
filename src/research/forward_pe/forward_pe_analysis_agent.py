@@ -17,8 +17,10 @@ forward_pe_analysis_agent = Agent(
             - Perform an analysis of the forward P/E for the given original symbol. 
             - Use the Overview data to sanity check your analysis.
             - Use the peer group to ground your analysis.
-            - Provide a trade idea based on the analysis, or advise to wait and see, with explanation. Make sure this idea is grounded in the data available.
-            - If the trade idea is to wait and see, make sure you articulate the specific reasons why.
+            - Provide a trade idea based on the analysis, with explanation. Make sure this idea is grounded in the data available.
+            - For trade ideas, you can consider buying long, selling short, or using options, and option spreads.
+            - If the trade idea is to wait and see, instead consider something like an Iron Condor or Bear Call spread.
+            - Only tell the user to wait and see if the underlying analysis is not strong enough to justify any trade idea.
             - Provide a confidence score between 0 and 10 indicating the confidence in the trade idea.
             - The confidence score is not a reflection of the likelihood of the trade idea being profitable. It is a reflection of the confidence in the analysis.
 
