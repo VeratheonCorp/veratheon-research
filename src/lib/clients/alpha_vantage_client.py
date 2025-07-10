@@ -1,9 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
-import logging as log
 from typing import Dict, Any
-from urllib.parse import parse_qsl
 
 class AlphaVantageClient: 
     def __init__(self) -> None:

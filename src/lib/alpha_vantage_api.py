@@ -11,8 +11,7 @@ Note:
 
 from typing import Dict, Any
 from src.lib.clients.alpha_vantage_client import AlphaVantageClient
-import logging as log
-import os
+
 client = AlphaVantageClient()
 
 def call_alpha_vantage(alpha_vantage_uri: str) -> Dict[str, Any]:
@@ -474,8 +473,8 @@ def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -
                 "currency": columns[5]
             })
         except ValueError as e:
-            log.warning(f"Skipping row due to value error in estimate: {row}")
-            log.warning(f"Error: {e}")
+            print(f"Skipping row due to value error in estimate: {row}")
+            print(f"Error: {e}")
 
     return {"earnings_calendar": json_data}
 
