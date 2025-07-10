@@ -4,7 +4,7 @@ from src.research.forward_pe.forward_pe_models import EarningsSummary
 from src.research.forward_pe.forward_pe_fetch_earnings_util import get_quarterly_eps_data_for_symbols   
 
 
-@task(name="forward_pe_fetch_earnings_task")
+@task(name="forward_pe_fetch_earnings_task", log_prints=False)
 async def forward_pe_fetch_earnings_task(symbol: str, peer_group: List[str]) -> EarningsSummary:
     """
     Task to fetch the earnings data for the forward PE research for a given symbol.

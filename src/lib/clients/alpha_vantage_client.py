@@ -25,11 +25,6 @@ class AlphaVantageClient:
         response = self.session.get(self.base_url + query + f"&apikey={self.api_key}")
         response.raise_for_status()
         
-        # Log the request and response
-        log.info(f"Request URL: {response.url}")
-        log.info(f"Response Status Code: {response.status_code}")
-        log.info(f"Response Content: {response.text[:500]}...")  # Log first 500 chars to avoid huge logs
-        
         # Check if response is JSON
         content_type = response.headers.get('Content-Type', '')
         if 'application/json' in content_type:

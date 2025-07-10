@@ -55,7 +55,6 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[EarningsSumma
         
         earnings_summaries.append(earnings_summary)
 
-    # print(earnings_summaries)
     return earnings_summaries
 
 

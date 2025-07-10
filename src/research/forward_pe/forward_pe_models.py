@@ -1,5 +1,4 @@
 from typing import List, Dict, Any
-from enum import Enum, auto
 from pydantic import BaseModel
 
 class RawEarnings(BaseModel):
@@ -34,8 +33,6 @@ class EarningsSummary(BaseModel):
 class ForwardPeValuation(BaseModel):
     analysis: str
     analysis_confidence_score: int
-    trade_idea: str
-    trade_idea_confidence_score: int
 
 class PeerGroup(BaseModel):
     original_symbol: str

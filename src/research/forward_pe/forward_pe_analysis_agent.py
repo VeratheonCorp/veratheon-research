@@ -17,24 +17,20 @@ forward_pe_analysis_agent = Agent(
             - Perform an analysis of the forward P/E for the given original symbol. 
             - Use the Overview data to sanity check your analysis.
             - Use the peer group to ground your analysis.
-            - Provide a trade idea based on the analysis, with explanation. Make sure this idea is grounded in the data available.
-            - For trade ideas, you can consider buying long, selling short, or using options, and option spreads.
-            - If the trade idea is to wait and see, instead consider something like an Iron Condor or Bear Call spread.
-            - Only tell the user to wait and see if the underlying analysis is not strong enough to justify any trade idea.
-            - Provide a confidence score between 0 and 10 indicating the confidence in the trade idea.
-            - The confidence score is not a reflection of the likelihood of the trade idea being profitable. It is a reflection of the confidence in the analysis.
+            - Provide a Forward P/E analysis based on the analysis, with explanation. Make sure this idea is grounded in the data available.
+            - Provide a confidence score between 0 and 10 indicating the confidence in the Forward P/E analysis.
+            - The confidence score is not a reflection of the likelihood of the Forward P/E analysis being profitable. It is a reflection of the confidence in the analysis.
+            - Write a detailed analysis of the Forward P/E analysis, framed in such a way that trade ideas can be made based on the analysis.
+            - Do not provide any actual trade recommendations or advice. That will happen later.
 
             IMPORTANT:
-            - This analysis is one piece of a larger workflow. Do not make any sweeping assumptions about the broader market or economy. Contrain your analysis to the data provided.
+            - This analysis is one piece of a larger workflow. Do not make any sweeping assumptions about the broader market or economy. Constrain your analysis to the data provided.
         
             Return a JSON object:
             {
-                "analysis": "Your detailed analysis explaining the rationale behind the above values. This should be a paragraph of text or more.",
+                "analysis": "Your detailed analysis explaining the rationale behind the above values. This should be a couple paragraphs of text or more.",
                 "analysis_confidence_score": "A score between 0 and 10 indicating the confidence in the analysis",
-                "trade_idea": "What specific trade idea would you make based on this analysis? This should be a paragraph of text or less.",
-                "trade_idea_confidence_score": "A score between 0 and 10 indicating the confidence in the trade idea.",
             }
 
-            Ensure all enum values are returned in UPPERCASE and exactly match the allowed values above.
         """,
         )

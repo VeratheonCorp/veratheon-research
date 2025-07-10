@@ -12,9 +12,8 @@ Note:
 from typing import Dict, Any
 from src.lib.clients.alpha_vantage_client import AlphaVantageClient
 import logging as log
-
+import os
 client = AlphaVantageClient()
-
 
 def call_alpha_vantage(alpha_vantage_uri: str) -> Dict[str, Any]:
     """Make a direct call to any Alpha Vantage API endpoint.
@@ -38,7 +37,6 @@ def call_alpha_vantage(alpha_vantage_uri: str) -> Dict[str, Any]:
         You need to include all required parameters in the URI string.
         The API key is automatically added by the client.
     """
-    print(f"Calling Alpha Vantage API with URI: {alpha_vantage_uri}")
     return client.run_query(alpha_vantage_uri)
 
 
@@ -70,7 +68,6 @@ def call_alpha_vantage_overview(symbol: str) -> Dict[str, Any]:
     Example:
         >>> call_alpha_vantage_overview("MSFT")
     """
-    print(f"Calling Alpha Vantage API with URI: OVERVIEW&symbol={symbol}")
     return client.run_query(f"OVERVIEW&symbol={symbol}")
 
 
@@ -102,7 +99,6 @@ def call_alpha_vantage_income_statement(symbol: str) -> Dict[str, Any]:
     Example:
         >>> call_alpha_vantage_income_statement("GOOGL")
     """
-    print(f"Calling Alpha Vantage API with URI: INCOME_STATEMENT&symbol={symbol}")
     return client.run_query(f"INCOME_STATEMENT&symbol={symbol}")
 
 
@@ -136,7 +132,6 @@ def call_alpha_vantage_balance_sheet(symbol: str) -> Dict[str, Any]:
     Example:
         >>> call_alpha_vantage_balance_sheet("AMZN")
     """
-    print(f"Calling Alpha Vantage API with URI: BALANCE_SHEET&symbol={symbol}")
     return client.run_query(f"BALANCE_SHEET&symbol={symbol}")
 
 
@@ -168,7 +163,6 @@ def call_alpha_vantage_cash_flow(symbol: str) -> Dict[str, Any]:
     Example:
         >>> call_alpha_vantage_cash_flow("NFLX")
     """
-    print(f"Calling Alpha Vantage API with URI: CASH_FLOW&symbol={symbol}")
     return client.run_query(f"CASH_FLOW&symbol={symbol}")
 
 
@@ -197,7 +191,6 @@ def call_alpha_vantage_global_quote(symbol: str) -> Dict[str, Any]:
     Example:
         >>> call_alpha_vantage_global_quote("META")
     """
-    print(f"Calling Alpha Vantage API with URI: GLOBAL_QUOTE&symbol={symbol}")
     return client.run_query(f"GLOBAL_QUOTE&symbol={symbol}")
 
 def call_alpha_vantage_earnings(symbol: str) -> Dict[str, Any]:
@@ -225,7 +218,6 @@ def call_alpha_vantage_earnings(symbol: str) -> Dict[str, Any]:
     Example:
         >>> call_alpha_vantage_earnings("NVDA")
     """
-    print(f"Calling Alpha Vantage API with URI: EARNINGS&symbol={symbol}")
     return client.run_query(f"EARNINGS&symbol={symbol}")
 
 
@@ -258,7 +250,6 @@ def call_alpha_vantage_time_series_daily_adjusted(symbol: str) -> Dict[str, Any]
         - Data is returned in JSON format
         - Default outputsize is 'compact' (last 100 data points)
     """
-    print(f"Calling Alpha Vantage API with URI: TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}")
     return client.run_query(f"TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}")
 
 
@@ -298,7 +289,6 @@ def call_alpha_vantage_news_sentiment(tickers: str) -> Dict[str, Any]:
         - Free tier is limited to 1 request per minute
         - Each request returns up to 50 news items
     """
-    print(f"Calling Alpha Vantage API with URI: NEWS_SENTIMENT&tickers={tickers}")
     return client.run_query(f"NEWS_SENTIMENT&tickers={tickers}")
 
 
@@ -338,7 +328,6 @@ def call_alpha_vantage_rsi(
         - RSI values below 30 are typically considered oversold
         - The default 14-period RSI is the most common setting
     """
-    print(f"Calling Alpha Vantage API with URI: RSI&symbol={symbol}")
     return client.run_query(f"RSI&symbol={symbol}")
 
 
@@ -389,7 +378,6 @@ def call_alpha_vantage_macd(
         - A bearish signal occurs when the MACD line crosses below the signal line
         - The histogram represents the difference between the MACD and signal line
     """
-    print(f"Calling Alpha Vantage API with URI: MACD&symbol={symbol}")
     return client.run_query(f"MACD&symbol={symbol}")
 
 
@@ -436,9 +424,6 @@ def call_alpha_vantage_bbands(
         - The upper and lower bands are typically 2 standard deviations away from the middle band
         - Prices tend to stay within the bands; breakouts may indicate significant moves
     """
-    log.info(
-        f"Calling Alpha Vantage API with URI: BBANDS&symbol={symbol}&interval={interval}&time_period={time_period}&series_type={series_type}"
-    )
     return client.run_query(
         f"BBANDS&symbol={symbol}&interval={interval}&time_period={time_period}&series_type={series_type}&datatype=json"
     )
@@ -473,7 +458,6 @@ def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -
         - The report date is subject to change
         - The API returns a CSV string, which is then converted to a JSON object
     """
-    print(f"Calling Alpha Vantage API with URI: EARNINGS_CALENDAR&symbol={symbol}&horizon={horizon}")
     csv_data = client.run_query(f"EARNINGS_CALENDAR&symbol={symbol}&horizon={horizon}")
 
     # Convert the CSV to a JSON object
@@ -528,5 +512,4 @@ def call_alpha_vantage_earnings_call_transcripts(symbol: str, quarter: str) -> D
         - Some companies may not have transcripts available for all quarters
         - The quality and format of transcripts may vary by company
     """
-    print(f"Calling Alpha Vantage API with URI: EARNINGS_CALL_TRANSCRIPTS&symbol={symbol}&quarter={quarter}")
     return client.run_query(f"EARNINGS_CALL_TRANSCRIPTS&symbol={symbol}&quarter={quarter}")
