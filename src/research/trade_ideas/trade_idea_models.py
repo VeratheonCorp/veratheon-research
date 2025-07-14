@@ -15,3 +15,8 @@ class NoPositionTradeIdea(BaseModel):
     simple_equity_trade_specifics_confidence_score: int
     option_play_confidence_score: int
     risk_hedge: str
+
+class TradeIdeas(BaseModel):
+    no_position_trade_idea: NoPositionTradeIdea
+    has_position_trade_idea: HasPositionTradeIdea
+    

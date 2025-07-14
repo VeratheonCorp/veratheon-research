@@ -1,10 +1,12 @@
 from typing import List, Dict, Any
 from src.lib.alpha_vantage_api import call_alpha_vantage_earnings, call_alpha_vantage_earnings_calendar, call_alpha_vantage_global_quote, call_alpha_vantage_overview
-from src.research.forward_pe.forward_pe_models import EarningsSummary, RawEarnings, RawGlobalQuote
+from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
+from src.research.models.earnings import RawEarnings, RawGlobalQuote
+
 import logging
 log = logging.getLogger(__name__)
 
-def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[EarningsSummary]:
+def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[ForwardPEEarningsSummary]:
     """
     Calls Alpha Vantage APIs for the specified symbols and returns all necessary data for forward PE analysis.
     
@@ -12,7 +14,7 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[EarningsSumma
         symbols: List of stock symbols to get earnings for
     
     Returns:
-        A list of EarningsSummary objects containing annual and quarterly earnings data, 
+        A list of ForwardPEEarningsSummary objects containing annual and quarterly earnings data, 
         as well as the next quarter's consensus EPS estimate, and the latest closing price.
     """
     earnings_summaries = []
@@ -45,7 +47,7 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[EarningsSumma
         if raw_earnings['quarterlyEarnings']:
             raw_earnings['quarterlyEarnings'] = raw_earnings['quarterlyEarnings'][:quarters]
 
-        earnings_summary = EarningsSummary(
+        earnings_summary = ForwardPEEarningsSummary(
             symbol=symbol,
             overview=overview,
             quarterly_earnings=raw_earnings['quarterlyEarnings'],

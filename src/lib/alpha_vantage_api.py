@@ -251,8 +251,7 @@ def call_alpha_vantage_time_series_daily_adjusted(symbol: str) -> Dict[str, Any]
     """
     return client.run_query(f"TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}")
 
-
-def call_alpha_vantage_news_sentiment(tickers: str) -> Dict[str, Any]:
+def call_alpha_vantage_news_sentiment(tickers: str, topics: str = "", time_from: str = "", time_to: str = "") -> Dict[str, Any]:
     """Retrieve news sentiment data for specified ticker(s).
     
     This endpoint provides news sentiment and content analysis for stocks,
@@ -260,6 +259,30 @@ def call_alpha_vantage_news_sentiment(tickers: str) -> Dict[str, Any]:
 
     Args:
         tickers: Comma-separated list of stock symbols (e.g., 'AAPL,MSFT,GOOGL')
+        topics: The stock/crypto/forex symbols of your choice. 
+            The news topics of your choice. For example: topics=technology will filter for articles that write about the technology sector; topics=technology,ipo will filter for articles that simultaneously cover technology and IPO in their content. Below is the full list of supported topics:
+                Blockchain: blockchain
+                Earnings: earnings
+                IPO: ipo
+                Mergers & Acquisitions: mergers_and_acquisitions
+                Financial Markets: financial_markets
+                Economy - Fiscal Policy (e.g., tax reform, government spending): economy_fiscal
+                Economy - Monetary Policy (e.g., interest rates, inflation): economy_monetary
+                Economy - Macro/Overall: economy_macro
+                Energy & Transportation: energy_transportation
+                Finance: finance
+                Life Sciences: life_sciences
+                Manufacturing: manufacturing
+                Real Estate & Construction: real_estate
+                Retail & Wholesale: retail_wholesale
+                Technology: technology
+        time_from: The time from which to retrieve news. 
+            The time from which to retrieve news. 
+            Format: YYYYMMDDTHHMM. 
+            Example: time_from=20220101T0000
+        time_to: The time to which to retrieve news. 
+            Format: YYYYMMDDTHHMM. 
+            Example: time_to=20220101T0000
 
     Returns:
         Dict containing:
@@ -269,7 +292,7 @@ def call_alpha_vantage_news_sentiment(tickers: str) -> Dict[str, Any]:
             - feed: List of news articles with:
                 - title: Article headline
                 - url: Source URL
-                - time_published: Publication timestamp (YYYYMMDDTHHMMSS)
+                - time_published: Publication timestamp (YYYYMMDDTHHMM)
                 - authors: List of authors
                 - summary: Article summary
                 - banner_image: URL of the banner image (if available)
@@ -282,13 +305,19 @@ def call_alpha_vantage_news_sentiment(tickers: str) -> Dict[str, Any]:
                 - ticker_sentiment: Sentiment analysis per ticker
 
     Example:
-        >>> call_alpha_vantage_news_sentiment("AAPL,MSFT,GOOGL")
+        >>> call_alpha_vantage_news_sentiment("AAPL,MSFT,GOOGL", topics="technology", time_from="20220101T0000", time_to="20220101T0000")
         
     Note:
-        - Free tier is limited to 1 request per minute
         - Each request returns up to 50 news items
     """
-    return client.run_query(f"NEWS_SENTIMENT&tickers={tickers}")
+    query = f"NEWS_SENTIMENT&tickers={tickers}"
+    if topics:
+        query = f"{query}&topics={topics}"
+    if time_from:
+        query = f"{query}&time_from={time_from}"
+    if time_to:
+        query = f"{query}&time_to={time_to}"
+    return client.run_query(query)
 
 
 def call_alpha_vantage_rsi(
@@ -327,7 +356,14 @@ def call_alpha_vantage_rsi(
         - RSI values below 30 are typically considered oversold
         - The default 14-period RSI is the most common setting
     """
-    return client.run_query(f"RSI&symbol={symbol}")
+    query = f"RSI&symbol={symbol}"
+    if interval:
+        query = f"{query}&interval={interval}"
+    if time_period:
+        query = f"{query}&time_period={time_period}"
+    if series_type:
+        query = f"{query}&series_type={series_type}"
+    return client.run_query(query)
 
 
 def call_alpha_vantage_macd(
@@ -377,7 +413,16 @@ def call_alpha_vantage_macd(
         - A bearish signal occurs when the MACD line crosses below the signal line
         - The histogram represents the difference between the MACD and signal line
     """
-    return client.run_query(f"MACD&symbol={symbol}")
+    query = f"MACD&symbol={symbol}"
+    if interval:
+        query = f"{query}&interval={interval}"
+    if fastperiod:
+        query = f"{query}&fastperiod={fastperiod}"
+    if slowperiod:
+        query = f"{query}&slowperiod={slowperiod}"
+    if signalperiod:
+        query = f"{query}&signalperiod={signalperiod}"
+    return client.run_query(query)
 
 
 def call_alpha_vantage_bbands(
@@ -423,9 +468,14 @@ def call_alpha_vantage_bbands(
         - The upper and lower bands are typically 2 standard deviations away from the middle band
         - Prices tend to stay within the bands; breakouts may indicate significant moves
     """
-    return client.run_query(
-        f"BBANDS&symbol={symbol}&interval={interval}&time_period={time_period}&series_type={series_type}&datatype=json"
-    )
+    query = f"BBANDS&symbol={symbol}"
+    if interval:
+        query = f"{query}&interval={interval}"
+    if time_period:
+        query = f"{query}&time_period={time_period}"
+    if series_type:
+        query = f"{query}&series_type={series_type}"
+    return client.run_query(query)
 
 
 def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -> Dict[str, Any]:
@@ -457,7 +507,10 @@ def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -
         - The report date is subject to change
         - The API returns a CSV string, which is then converted to a JSON object
     """
-    csv_data = client.run_query(f"EARNINGS_CALENDAR&symbol={symbol}&horizon={horizon}")
+    query = f"EARNINGS_CALENDAR&symbol={symbol}"
+    if horizon:
+        query = f"{query}&horizon={horizon}"
+    csv_data = client.run_query(query)
 
     # Convert the CSV to a JSON object
     json_data = []
@@ -511,4 +564,5 @@ def call_alpha_vantage_earnings_call_transcripts(symbol: str, quarter: str) -> D
         - Some companies may not have transcripts available for all quarters
         - The quality and format of transcripts may vary by company
     """
-    return client.run_query(f"EARNINGS_CALL_TRANSCRIPTS&symbol={symbol}&quarter={quarter}")
+    query = f"EARNINGS_CALL_TRANSCRIPTS&symbol={symbol}&quarter={quarter}"
+    return client.run_query(query)

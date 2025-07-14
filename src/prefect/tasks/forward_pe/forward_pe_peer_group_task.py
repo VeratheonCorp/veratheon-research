@@ -1,5 +1,5 @@
 from prefect import task, get_run_logger
-from src.research.forward_pe.forward_pe_models import PeerGroup
+from src.research.models.peer_group import PeerGroup
 from src.research.forward_pe.forward_pe_peer_group_agent import peer_group_chatcompletion
 
 @task(name="forward_pe_peer_group_task", persist_result=True, log_prints=False)

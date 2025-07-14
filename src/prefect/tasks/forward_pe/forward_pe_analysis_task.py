@@ -2,11 +2,11 @@ from prefect import task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.forward_pe.forward_pe_analysis_agent import forward_pe_analysis_agent
 from agents import Runner, RunResult
-from src.research.forward_pe.forward_pe_models import EarningsSummary
+from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
 from prefect import get_run_logger
 
 @task(name="forward_pe_analysis_task", persist_result=True)
-async def forward_pe_analysis_task(symbol: str, earnings_summary: EarningsSummary) -> ForwardPeValuation:
+async def forward_pe_analysis_task(symbol: str, earnings_summary: ForwardPEEarningsSummary) -> ForwardPeValuation:
     """
     Task to perform forward PE analysis for the forward PE research for a given symbol.
     

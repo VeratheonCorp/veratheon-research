@@ -1,5 +1,5 @@
 from agents import Agent, Runner, RunResult
-from src.research.forward_pe.forward_pe_models import PeerGroup
+from src.research.models.peer_group import PeerGroup
 import openai
 import json
 
@@ -21,7 +21,6 @@ You must return a valid JSON object with the following fields. Do not include co
 {
     "original_symbol": "Ticker0",
     "peer_group": [ "Ticker1", "Ticker2", … ],
-    "errors": [ "" ]
 }
 
 """
@@ -42,12 +41,12 @@ async def peer_group_agent(symbol: str) -> PeerGroup:
 
 async def peer_group_chatcompletion(symbol: str) -> PeerGroup:
     response = openai.chat.completions.create(
-        model="gpt-4.1-mini",
+        model="o4-mini",
         messages=[
             {"role": "system", "content": SYSTEM_INSTRUCTIONS},
             {"role": "user",   "content": f"original_symbol: {symbol}"}
         ],
-        temperature=0.0,
+        #temperature=0.0,
     )
     content = response.choices[0].message.content
     data = json.loads(content)

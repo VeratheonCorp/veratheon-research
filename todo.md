@@ -1,9 +1,14 @@
 TODO: 
 
 * Done - Add chat completions alongside agent calls
-* Move trade ideas to a separate agent
+* Done - Move trade ideas to a separate agent
 * Implement OpenAI Web search tool
 * Implement AlphaVantage news sentiment analysis tool
+* Implement MACD/RSI/BBands technical analysis tools 
+* Implement Trend Following Agent
+* Implement Breakout Agent
+* Implement Mean Reversion Agent
+
 
 
 
