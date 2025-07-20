@@ -1,5 +1,5 @@
 from agents import Agent, Runner, RunResult
-from src.research.models.peer_group import PeerGroup
+from src.research.common.models.peer_group import PeerGroup
 import openai
 import json
 

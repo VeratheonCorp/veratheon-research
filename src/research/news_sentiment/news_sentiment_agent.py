@@ -5,25 +5,13 @@ SYSTEM_INSTRUCTIONS = """
 You are a financial analyst performing a news sentiment analysis for a given stock.
 
 INSTRUCTIONS:
-- Given an original stock symbol, identify what market segment it belongs to.
-- Identify 2 to 4 public companies whose business models, scale and growth profiles most closely resemble it.  
-- Focus on similarities in core products/services, market-cap range, revenue/growth trajectory and investor expectations.  
-- Exclude companies that, despite superficial overlaps, differ dramatically in size, profitability or market positioning (e.g. Fitbit vs. Apple)
-
-IMPORTANT: 
-- Companies must belong to the same market segment, not simply sharing broadly similar business models.
-- Only the NYSE and NASDAQ exchanges are supported. For example, SSNFL trades on the OTC market and would not be included in the peer group.
-- Only public companies are supported.
-
-You must return a valid JSON object with the following fields. Do not include comments, commentary, or any other text. Your response will be parsed as valid JSON.
-{
-    "original_symbol": "Ticker0",
-    
-}
-
+- Perform a news sentiment analysis for the given symbol.
+- Provide a confidence score between 0 and 10 indicating the confidence in the news sentiment analysis.
+- Write a detailed analysis of the news sentiment analysis, framed in such a way that trade ideas can be made based on the analysis.
+- Determine if the news is on balance, positive, negative, or neutral, and provide that judgement as a label.
 """
 
-_news_sentiment_agent = Agent(
+news_sentiment_agent = Agent(
             name="News Sentiment Analyst",      
             model="o4-mini",
             output_type=NewsSentimentSummary,

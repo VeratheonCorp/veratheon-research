@@ -11,6 +11,7 @@ has_position_trade_idea_agent = Agent(
             - You will be given the following information:
                 - a detailed analysis of the earnings and forward P/E for the given symbol
                 - an alpha vantage overview of the given symbol
+                - a news sentiment summary for the given symbol
                 
             INSTRUCTIONS:
             - Assume the user has some idea of what they are doing, but is not an expert.
@@ -18,6 +19,7 @@ has_position_trade_idea_agent = Agent(
             - You do not know what the user's position is, so do not make any assumptions about it. 
             - Use the Overview data and the Forward P/E analysis to sanity check your analysis.
             - Make sure this idea is grounded in the data available.
+            - Use the news sentiment summary to support your analysis.
             - For trade ideas, you can consider:
                 - adopting a wait and see approach
                 - adding to the position
@@ -42,6 +44,7 @@ has_position_trade_idea_agent = Agent(
                 "simple_equity_trade_specifics_confidence_score": "A score between 0 and 10 indicating the confidence in the simple equity trade specifics.",
                 "option_play_confidence_score": "A score between 0 and 10 indicating the confidence in the option play.",
                 "risk_hedge": "How would you hedge risk for this position? This should be a paragraph of text or less.",
+                "reasoning": "What is the reasoning behind this trade idea? What specific value is this this trade trying to capture? This should be a sentence or two.",
             }
         """,
         )

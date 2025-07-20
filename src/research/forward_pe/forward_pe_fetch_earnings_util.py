@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from src.lib.alpha_vantage_api import call_alpha_vantage_earnings, call_alpha_vantage_earnings_calendar, call_alpha_vantage_global_quote, call_alpha_vantage_overview
 from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
-from src.research.models.earnings import RawEarnings, RawGlobalQuote
+from src.research.common.models.earnings import RawEarnings, RawGlobalQuote
 
 import logging
 log = logging.getLogger(__name__)
