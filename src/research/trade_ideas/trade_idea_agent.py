@@ -1,9 +1,10 @@
 from agents import Agent
 from src.research.trade_ideas.trade_idea_models import TradeIdea
+from src.lib.llm_model import get_model
 
 trade_idea_agent = Agent(
             name="Trade Idea Analyst",      
-            model="o4-mini",
+            model=get_model(),
             output_type=TradeIdea,
             instructions="""
             You are a financial analyst providing a trade idea for a user.
@@ -15,6 +16,10 @@ trade_idea_agent = Agent(
 
             IMPORTANT:
             - This analysis is one piece of a larger workflow. Do not make any sweeping assumptions about the broader market or economy. Constrain your analysis to the data provided.
+
+            CRITICALLY IMPORTANT:
+            - KEEP YOUR TRADE IDEAS TO THE GIVEN SYMBOL.
+            - DO NOT PROVIDE TRADE IDEAS FOR OTHER SYMBOLS.
 
             INSTRUCTIONS:
             - Assume the user has some idea of what they are doing, but is not an expert.
@@ -31,16 +36,5 @@ trade_idea_agent = Agent(
             - If your trade idea would be a 6 or lower in confidence score, do not provide a trade idea, and instead provide a wait and see recommendation.
             - Provide a risk hedge for the position based on the analysis.
             - Do not include specific quantities of stocks or options regarding the trade idea. Position sizing happens later in the workflow.  
-
-            Return a JSON object:
-            {
-                "high_level_trade_idea": "What high level trade idea would you make based on this analysis? This should be a paragraph of text or less.",
-                "reasoning": "What is the reasoning behind this trade idea? What specific value is this this trade trying to capture? This should be a sentence or two.",
-                "simple_equity_trade": "What simple equity trade would you make based on this analysis? This should be a paragraph of text or less.",
-                "option_play": "What specific option play would you make based on this analysis? This should be a paragraph of text or less.",
-                "simple_equity_trade_confidence_score": "A score between 0 and 10 indicating the confidence in the simple equity trade.",
-                "option_play_confidence_score": "A score between 0 and 10 indicating the confidence in the option play.",
-                "risk_hedge": "How would you hedge risk for this position? This should be a paragraph of text or less.",
-            }
         """,
         )

@@ -1,9 +1,10 @@
 from agents import Agent
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
+from src.lib.llm_model import get_model
 
 forward_pe_analysis_agent = Agent(
             name="Forward P/E Analyst",      
-            model="o4-mini",
+            model=get_model(),
             output_type=ForwardPeValuation,
             instructions="""
             You are a financial analyst performing a forward P/E analysis for the given symbol and its peers.
@@ -25,12 +26,5 @@ forward_pe_analysis_agent = Agent(
 
             IMPORTANT:
             - This analysis is one piece of a larger workflow. Do not make any sweeping assumptions about the broader market or economy. Constrain your analysis to the data provided.
-        
-            Return a JSON object:
-            {
-                "analysis": "Your detailed analysis explaining the rationale behind the above values. This should be a couple paragraphs of text or more.",
-                "analysis_confidence_score": "A score between 0 and 10 indicating the confidence in the analysis",
-            }
-
         """,
         )

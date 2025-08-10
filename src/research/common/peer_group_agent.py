@@ -2,6 +2,7 @@ from agents import Agent, Runner, RunResult
 from src.research.common.models.peer_group import PeerGroup
 import openai
 import json
+from src.lib.llm_model import get_model
 
 SYSTEM_INSTRUCTIONS = """
 You are a financial analyst performing a comparable-company (“comps”) analysis for forward P/E comparison.
@@ -17,17 +18,13 @@ IMPORTANT:
 - Only the NYSE and NASDAQ exchanges are supported. For example, SSNFL trades on the OTC market and would not be included in the peer group.
 - Only public companies are supported.
 
-You must return a valid JSON object with the following fields. Do not include comments, commentary, or any other text. Your response will be parsed as valid JSON.
-{
-    "original_symbol": "Ticker0",
-    "peer_group": [ "Ticker1", "Ticker2", … ],
-}
-
+CRITICALLY IMPORTANT:
+- EACH COMPANY MUST BE IN THE FORM OF A STOCK SYMBOL.
 """
 
 _peer_group_agent = Agent(
             name="Peer Group Analyst",      
-            model="o4-mini",
+            model=get_model(),
             output_type=PeerGroup,
             # TODO: Allow Web Search Tool
             instructions=SYSTEM_INSTRUCTIONS
@@ -41,7 +38,7 @@ async def peer_group_agent(symbol: str) -> PeerGroup:
 
 async def peer_group_chatcompletion(symbol: str) -> PeerGroup:
     response = openai.chat.completions.create(
-        model="o4-mini",
+        model=get_model(),
         messages=[
             {"role": "system", "content": SYSTEM_INSTRUCTIONS},
             {"role": "user",   "content": f"original_symbol: {symbol}"}

@@ -7,9 +7,11 @@ requires-python = ">=3.12"
 dependencies = [
     "alpha-vantage",
     "dotenv>=0.9.9",
+    "litellm>=1.75.4",
     "numpy>=2.2.5",
     "openai>=1.78.0",
     "openai-agents>=0.0.14",
+    "openai-agents[litellm]>=0.2.5",
     "pandas>=2.2.3",
     "prefect>=3.4.7",
     "pytest>=8.4.1",

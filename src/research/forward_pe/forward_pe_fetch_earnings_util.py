@@ -33,7 +33,11 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[ForwardPEEarn
 
         # Get the earnings calendar for the symbol
         raw_earnings_calendar_json = call_alpha_vantage_earnings_calendar(symbol)
-        next_quarter_consensus_eps = raw_earnings_calendar_json.get('earnings_calendar', [{}])[0].get('estimate', "Not enough consensus")
+        try: 
+            next_quarter_consensus_eps = raw_earnings_calendar_json.get('earnings_calendar', [{}])[0].get('estimate', "Not enough consensus")
+        except Exception as e:
+            log.warning(f"Earnings calendar data is empty for symbol: {symbol}. Skipping.")
+            continue
     
         raw_global_quote: RawGlobalQuote = call_alpha_vantage_global_quote(symbol)
         current_price = raw_global_quote['Global Quote']['05. price']

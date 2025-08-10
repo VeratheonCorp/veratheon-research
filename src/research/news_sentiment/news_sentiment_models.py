@@ -26,5 +26,4 @@ class RawNewsSentimentSummary(BaseModel):
 class NewsSentimentSummary(BaseModel):
     symbol: Optional[str]
     news_sentiment_analysis: str
-    confidence_score: int
     overall_sentiment_label: str
