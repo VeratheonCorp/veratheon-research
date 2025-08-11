@@ -3,6 +3,7 @@ from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.forward_pe.forward_pe_analysis_agent import forward_pe_analysis_agent
 from agents import Runner, RunResult
 from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
+import json
 from prefect import get_run_logger
 
 @task(name="forward_pe_analysis_task", persist_result=True)
@@ -24,6 +25,6 @@ async def forward_pe_analysis_task(symbol: str, earnings_summary: ForwardPEEarni
         input=f"original_symbol: {symbol}, earnings_summary: {earnings_summary}")
     forward_pe_analysis: ForwardPeValuation = result.final_output
 
-    logger.info(f"Forward PE analysis for {symbol}: {forward_pe_analysis}")
+    logger.info(f"Forward PE analysis for {symbol}: {json.dumps(forward_pe_analysis.model_dump(), indent=2)}")
 
     return forward_pe_analysis

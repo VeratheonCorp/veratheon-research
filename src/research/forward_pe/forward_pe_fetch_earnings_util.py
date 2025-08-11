@@ -6,6 +6,41 @@ from src.research.common.models.earnings import RawEarnings, RawGlobalQuote
 import logging
 log = logging.getLogger(__name__)
 
+def get_quarterly_eps_data_for_symbol(symbol: str) -> ForwardPEEarningsSummary:
+    """
+    Calls Alpha Vantage APIs for the specified symbol and returns all necessary data for forward PE analysis.
+    
+    Args:
+        symbol: Stock symbol to research
+    Returns:
+        ForwardPEEarningsSummary containing the earnings data
+    """
+    raw_earnings: RawEarnings = call_alpha_vantage_earnings(symbol)
+    raw_earnings_calendar_json = call_alpha_vantage_earnings_calendar(symbol)
+    raw_global_quote: RawGlobalQuote = call_alpha_vantage_global_quote(symbol)
+    current_price = raw_global_quote['Global Quote']['05. price']
+    overview = call_alpha_vantage_overview(symbol)
+    clean_overview_of_useless_data(overview)
+    
+    # Truncate quarterly earnings first
+    # Always return 9 quarters of data
+    quarters = 9
+    if raw_earnings['quarterlyEarnings']:
+        raw_earnings['quarterlyEarnings'] = raw_earnings['quarterlyEarnings'][:quarters]
+
+    next_quarter_consensus_eps = raw_earnings_calendar_json.get('earnings_calendar', [{}])[0].get('estimate', "Not enough consensus")
+    
+    earnings_summary = ForwardPEEarningsSummary(
+        symbol=symbol,
+        overview=overview,
+        quarterly_earnings=raw_earnings['quarterlyEarnings'],
+        next_quarter_consensus_eps=str(next_quarter_consensus_eps),
+        current_price=current_price
+    )
+    
+    return earnings_summary
+
+
 def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[ForwardPEEarningsSummary]:
     """
     Calls Alpha Vantage APIs for the specified symbols and returns all necessary data for forward PE analysis.

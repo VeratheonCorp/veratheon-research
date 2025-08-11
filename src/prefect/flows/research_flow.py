@@ -1,10 +1,11 @@
 from prefect import flow, get_run_logger
 from dotenv import load_dotenv
-from src.prefect.flows.forward_pe_flow import forward_pe_flow
-from src.prefect.flows.trade_ideas_flow import trade_ideas_flow
-from src.research.forward_pe.forward_pe_models import ForwardPeValuation
+from src.prefect.flows.subflows.forward_pe_flow import forward_pe_flow
+from src.prefect.flows.subflows.trade_ideas_flow import trade_ideas_flow
+from src.prefect.flows.subflows.news_sentiment_flow import news_sentiment_flow
+from src.prefect.flows.subflows.forward_pe_flow import forward_pe_sanity_check_flow
+from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
 from src.research.trade_ideas.trade_idea_models import TradeIdea
-from src.prefect.flows.news_sentiment_flow import news_sentiment_flow
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
 from src.research.common.peer_group_agent import peer_group_agent
 from src.research.common.models.peer_group import PeerGroup
@@ -19,6 +20,8 @@ async def main_research_flow(
     logger.info(f"Starting main research for {symbol}")
 
     peer_group: PeerGroup = await peer_group_agent(symbol)
+
+    forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol)
 
     forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(symbol, peer_group)
 

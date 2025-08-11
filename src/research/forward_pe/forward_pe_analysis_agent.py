@@ -26,5 +26,10 @@ forward_pe_analysis_agent = Agent(
 
             IMPORTANT:
             - This analysis is one piece of a larger workflow. Do not make any sweeping assumptions about the broader market or economy. Constrain your analysis to the data provided.
+            - Do not use any markdown or other formatting in your response.
+
+            CRITICALLY IMPORTANT: 
+            - YOUR ANALYSIS MUST BE FOR THE ORIGINAL SYMBOL.
+            - ONLY USE THE PEER GROUP TO GROUND YOUR ANALYSIS.
         """,
         )

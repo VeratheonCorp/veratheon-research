@@ -17,6 +17,5 @@ async def news_sentiment_flow(
 
     news_sentiment_analysis_task_result: NewsSentimentSummary = await news_sentiment_analysis_task(symbol, peer_group_summaries)
 
-    logger.info(f"News sentiment analysis for {symbol}: {news_sentiment_analysis_task_result}")
     return news_sentiment_analysis_task_result
 

@@ -15,6 +15,8 @@ def clean_news_sentiment_of_useless_data(news_sentiment_dict: Dict[str, Any]) ->
     news_sentiment_dict.pop("items", None)
     news_sentiment_dict.pop("sentiment_score_definition", None)
     news_sentiment_dict.pop("relevance_score_definition", None)
+    if "feed" not in news_sentiment_dict:
+        return news_sentiment_dict
     for news_item in news_sentiment_dict["feed"]:
             news_item.pop("title", None)
             news_item.pop("url", None)
