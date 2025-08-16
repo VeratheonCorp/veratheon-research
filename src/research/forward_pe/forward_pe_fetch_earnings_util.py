@@ -1,14 +1,19 @@
+import os
 from typing import List, Dict, Any
-from src.lib.alpha_vantage_api import call_alpha_vantage_earnings, call_alpha_vantage_earnings_calendar, call_alpha_vantage_global_quote, call_alpha_vantage_overview
+from src.lib.alpha_vantage_api import call_alpha_vantage_earnings, call_alpha_vantage_earnings_calendar, call_alpha_vantage_earnings_estimates, call_alpha_vantage_global_quote, call_alpha_vantage_overview
 from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
 from src.research.common.models.earnings import RawEarnings, RawGlobalQuote
 
 import logging
 log = logging.getLogger(__name__)
 
+# Check environment variable for API preference - now defaults to Earnings Estimates
+USE_EARNINGS_ESTIMATES_API = os.getenv("USE_EARNINGS_ESTIMATES_API", "true").lower() == "true"
+
 def get_quarterly_eps_data_for_symbol(symbol: str) -> ForwardPEEarningsSummary:
     """
     Calls Alpha Vantage APIs for the specified symbol and returns all necessary data for forward PE analysis.
+    Now uses Earnings Estimates API by default.
     
     Args:
         symbol: Stock symbol to research
@@ -16,7 +21,6 @@ def get_quarterly_eps_data_for_symbol(symbol: str) -> ForwardPEEarningsSummary:
         ForwardPEEarningsSummary containing the earnings data
     """
     raw_earnings: RawEarnings = call_alpha_vantage_earnings(symbol)
-    raw_earnings_calendar_json = call_alpha_vantage_earnings_calendar(symbol)
     raw_global_quote: RawGlobalQuote = call_alpha_vantage_global_quote(symbol)
     current_price = raw_global_quote['Global Quote']['05. price']
     overview = call_alpha_vantage_overview(symbol)
@@ -28,7 +32,14 @@ def get_quarterly_eps_data_for_symbol(symbol: str) -> ForwardPEEarningsSummary:
     if raw_earnings['quarterlyEarnings']:
         raw_earnings['quarterlyEarnings'] = raw_earnings['quarterlyEarnings'][:quarters]
 
-    next_quarter_consensus_eps = raw_earnings_calendar_json.get('earnings_calendar', [{}])[0].get('estimate', "Not enough consensus")
+    # Get consensus EPS estimate using the Earnings Estimates API (new default)
+    if USE_EARNINGS_ESTIMATES_API:
+        estimates_json = call_alpha_vantage_earnings_estimates(symbol)
+        next_quarter_consensus_eps = extract_next_quarter_eps_from_estimates(estimates_json)
+    else:
+        # Fallback to Earnings Calendar (legacy)
+        calendar_json = call_alpha_vantage_earnings_calendar(symbol)
+        next_quarter_consensus_eps = extract_next_quarter_eps_from_calendar(calendar_json)
     
     earnings_summary = ForwardPEEarningsSummary(
         symbol=symbol,
@@ -41,9 +52,54 @@ def get_quarterly_eps_data_for_symbol(symbol: str) -> ForwardPEEarningsSummary:
     return earnings_summary
 
 
+def extract_next_quarter_eps_from_estimates(estimates_json: Dict[str, Any]) -> str:
+    """
+    Extract the next quarter's consensus EPS estimate from the Earnings Estimates API response.
+    
+    Args:
+        estimates_json: Response from call_alpha_vantage_earnings_estimates
+    Returns:
+        Next quarter's consensus EPS estimate as string, or fallback message
+    """
+    try:
+        estimates = estimates_json.get('estimates', [])
+        if estimates:
+            # Look for the next fiscal quarter estimate
+            for estimate in estimates:
+                if estimate.get('horizon') == 'next fiscal quarter':
+                    return str(estimate.get('eps_estimate_average', "Not enough consensus"))
+            # Fallback to first estimate if no specific next quarter found
+            return str(estimates[0].get('eps_estimate_average', "Not enough consensus"))
+        return "Not enough consensus"
+    except Exception as e:
+        log.warning(f"Error extracting EPS from estimates: {e}")
+        return "Not enough consensus"
+
+
+def extract_next_quarter_eps_from_calendar(calendar_json: Dict[str, Any]) -> str:
+    """
+    Extract the next quarter's consensus EPS estimate from the Earnings Calendar API response.
+    This is the legacy method kept for backward compatibility.
+    
+    Args:
+        calendar_json: Response from call_alpha_vantage_earnings_calendar
+    Returns:
+        Next quarter's consensus EPS estimate as string, or fallback message
+    """
+    try:
+        earnings_calendar = calendar_json.get('earnings_calendar', [])
+        if earnings_calendar:
+            return str(earnings_calendar[0].get('estimate', "Not enough consensus"))
+        return "Not enough consensus"
+    except Exception as e:
+        log.warning(f"Error extracting EPS from calendar: {e}")
+        return "Not enough consensus"
+
+
 def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[ForwardPEEarningsSummary]:
     """
     Calls Alpha Vantage APIs for the specified symbols and returns all necessary data for forward PE analysis.
+    Now uses Earnings Estimates API by default for all symbols.
     
     Args:
         symbols: List of stock symbols to get earnings for
@@ -55,46 +111,51 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[ForwardPEEarn
     earnings_summaries = []
 
     for symbol in symbols:
+        try:
+            # Get the overview data for the symbol
+            overview_json = call_alpha_vantage_overview(symbol)
+            # If the overview data is empty, skip this symbol
+            if not overview_json:
+                log.warning(f"Overview data is empty for symbol: {symbol}. Skipping.")
+                continue
 
-        # Get the overview data for the symbol
-        overview_json = call_alpha_vantage_overview(symbol)
-        # If the overview data is empty, skip this symbol
-        if not overview_json:
-            log.warning(f"Overview data is empty for symbol: {symbol}. Skipping.")
-            continue
+            # Get the earnings data for the symbol
+            raw_earnings: RawEarnings = call_alpha_vantage_earnings(symbol)
 
-        # Get the earnings data for the symbol
-        raw_earnings: RawEarnings = call_alpha_vantage_earnings(symbol)
+            # Get consensus EPS estimate using the configured API
+            if USE_EARNINGS_ESTIMATES_API:
+                estimates_json = call_alpha_vantage_earnings_estimates(symbol)
+                next_quarter_consensus_eps = extract_next_quarter_eps_from_estimates(estimates_json)
+            else:
+                # Fallback to Earnings Calendar (legacy)
+                calendar_json = call_alpha_vantage_earnings_calendar(symbol)
+                next_quarter_consensus_eps = extract_next_quarter_eps_from_calendar(calendar_json)
+        
+            raw_global_quote: RawGlobalQuote = call_alpha_vantage_global_quote(symbol)
+            current_price = raw_global_quote['Global Quote']['05. price']
 
-        # Get the earnings calendar for the symbol
-        raw_earnings_calendar_json = call_alpha_vantage_earnings_calendar(symbol)
-        try: 
-            next_quarter_consensus_eps = raw_earnings_calendar_json.get('earnings_calendar', [{}])[0].get('estimate', "Not enough consensus")
+            overview = call_alpha_vantage_overview(symbol)
+            clean_overview_of_useless_data(overview)
+            
+            # Truncate quarterly earnings first
+            # Always return 9 quarters of data
+            quarters = 9
+            if raw_earnings['quarterlyEarnings']:
+                raw_earnings['quarterlyEarnings'] = raw_earnings['quarterlyEarnings'][:quarters]
+
+            earnings_summary = ForwardPEEarningsSummary(
+                symbol=symbol,
+                overview=overview,
+                quarterly_earnings=raw_earnings['quarterlyEarnings'],
+                next_quarter_consensus_eps=str(next_quarter_consensus_eps),
+                current_price=current_price
+            )
+            
+            earnings_summaries.append(earnings_summary)
+            
         except Exception as e:
-            log.warning(f"Earnings calendar data is empty for symbol: {symbol}. Skipping.")
+            log.warning(f"Failed to get earnings data for symbol: {symbol}. Error: {e}. Skipping.")
             continue
-    
-        raw_global_quote: RawGlobalQuote = call_alpha_vantage_global_quote(symbol)
-        current_price = raw_global_quote['Global Quote']['05. price']
-
-        overview = call_alpha_vantage_overview(symbol)
-        clean_overview_of_useless_data(overview)
-        
-        # Truncate quarterly earnings first
-        # Always return 9 quarters of data
-        quarters = 9
-        if raw_earnings['quarterlyEarnings']:
-            raw_earnings['quarterlyEarnings'] = raw_earnings['quarterlyEarnings'][:quarters]
-
-        earnings_summary = ForwardPEEarningsSummary(
-            symbol=symbol,
-            overview=overview,
-            quarterly_earnings=raw_earnings['quarterlyEarnings'],
-            next_quarter_consensus_eps=str(next_quarter_consensus_eps),
-            current_price=current_price
-        )
-        
-        earnings_summaries.append(earnings_summary)
 
     return earnings_summaries
 

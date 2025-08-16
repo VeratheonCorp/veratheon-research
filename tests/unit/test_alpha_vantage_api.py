@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from lib.alpha_vantage_api import (
+from src.lib.alpha_vantage_api import (
     call_alpha_vantage,
     call_alpha_vantage_overview,
     call_alpha_vantage_income_statement,
@@ -16,7 +16,7 @@ from lib.alpha_vantage_api import (
 
 @pytest.fixture
 def mock_alpha_vantage_client():
-    with patch('lib.alpha_vantage_api.client', new_callable=MagicMock) as mock_client:
+    with patch('src.lib.alpha_vantage_api.client', new_callable=MagicMock) as mock_client:
         yield mock_client
 
 def test_call_alpha_vantage(mock_alpha_vantage_client):
@@ -64,8 +64,8 @@ def test_call_alpha_vantage_news_sentiment(mock_alpha_vantage_client):
 
 def test_call_alpha_vantage_rsi(mock_alpha_vantage_client):
     call_alpha_vantage_rsi("AMD")
-    mock_alpha_vantage_client.run_query.assert_called_once_with("RSI&symbol=AMD")
+    mock_alpha_vantage_client.run_query.assert_called_once_with("RSI&symbol=AMD&interval=daily&time_period=14&series_type=close")
 
 def test_call_alpha_vantage_macd(mock_alpha_vantage_client):
     call_alpha_vantage_macd("INTC")
-    mock_alpha_vantage_client.run_query.assert_called_once_with("MACD&symbol=INTC")
+    mock_alpha_vantage_client.run_query.assert_called_once_with("MACD&symbol=INTC&interval=daily&fastperiod=12&slowperiod=26&signalperiod=9")

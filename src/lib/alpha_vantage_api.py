@@ -532,6 +532,37 @@ def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -
     return {"earnings_calendar": json_data}
 
 
+def call_alpha_vantage_earnings_estimates(symbol: str) -> Dict[str, Any]:
+    """Retrieve earnings estimates for a specific company.
+    
+    This endpoint provides consensus earnings estimates from analysts, including
+    forward-looking EPS estimates for upcoming quarters and fiscal years.
+
+    Args:
+        symbol: The stock symbol (e.g., 'AAPL' for Apple Inc.)
+
+    Returns:
+        Dict containing:
+            - symbol: The stock symbol
+            - estimates: List of earnings estimates containing:
+                - fiscalDateEnding: End date of the fiscal period (YYYY-MM-DD)
+                - reportedDate: Expected reporting date (YYYY-MM-DD)
+                - estimatedEPS: Consensus EPS estimate
+                - numberAnalysts: Number of analysts providing estimates
+                - revisionTrend: Recent revision trend direction
+
+    Example:
+        >>> call_alpha_vantage_earnings_estimates("AAPL")
+        
+    Note:
+        - Provides more comprehensive forward-looking estimates than earnings calendar
+        - Includes multiple quarters/years of estimates
+        - May include revision trends and analyst count data
+    """
+    query = f"EARNINGS_ESTIMATES&symbol={symbol}"
+    return client.run_query(query)
+
+
 def call_alpha_vantage_earnings_call_transcripts(symbol: str, quarter: str) -> Dict[str, Any]:
     """Retrieve the earnings call transcript for a specific company and quarter.
     
