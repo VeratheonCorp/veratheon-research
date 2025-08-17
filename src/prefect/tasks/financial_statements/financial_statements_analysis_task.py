@@ -35,10 +35,6 @@ async def financial_statements_analysis_task(
     
     financial_analysis: FinancialStatementsAnalysis = result.final_output
 
-    logger.info(f"Financial statements analysis completed for {symbol}: "
-               f"Revenue trend: {financial_analysis.revenue_driver_trend}, "
-               f"Cost trend: {financial_analysis.cost_structure_trend}, "
-               f"Working capital trend: {financial_analysis.working_capital_trend}, "
-               f"Confidence: {financial_analysis.analysis_confidence_score}/10")
+    logger.info(f"Financial statements analysis for {symbol}: {json.dumps(financial_analysis.model_dump(), indent=2)}")
 
     return financial_analysis

@@ -35,10 +35,6 @@ async def historical_earnings_analysis_task(
     
     historical_analysis: HistoricalEarningsAnalysis = result.final_output
 
-    logger.info(f"Historical earnings analysis completed for {symbol}: "
-               f"Earnings pattern: {historical_analysis.earnings_pattern}, "
-               f"Revenue trend: {historical_analysis.revenue_growth_trend}, "
-               f"Margin trend: {historical_analysis.margin_trend}, "
-               f"Confidence: {historical_analysis.analysis_confidence_score}/10")
+    logger.info(f"Historical earnings analysis for {symbol}: {json.dumps(historical_analysis.model_dump(), indent=2)}")
 
     return historical_analysis
