@@ -6,11 +6,13 @@ from src.prefect.flows.subflows.news_sentiment_flow import news_sentiment_flow
 from src.prefect.flows.subflows.forward_pe_flow import forward_pe_sanity_check_flow
 from src.prefect.flows.subflows.historical_earnings_flow import historical_earnings_flow
 from src.prefect.flows.subflows.financial_statements_flow import financial_statements_flow
+from src.prefect.flows.subflows.earnings_projections_flow import earnings_projections_flow
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
 from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
+from src.research.earnings_projections.earnings_projections_models import EarningsProjectionAnalysis
 from src.research.common.peer_group_agent import peer_group_agent
 from src.research.common.models.peer_group import PeerGroup
 
@@ -29,19 +31,26 @@ async def main_research_flow(
     # Step 2: Financial statements analysis (CRITICAL - recent changes for projection accuracy)
     financial_statements_analysis: FinancialStatementsAnalysis = await financial_statements_flow(symbol)
 
-    # Step 3: Peer group identification
+    # Step 3: Independent earnings projections (CRITICAL - foundational baseline for consensus validation)
+    earnings_projections_analysis: EarningsProjectionAnalysis = await earnings_projections_flow(
+        symbol, 
+        historical_earnings_analysis.model_dump(), 
+        financial_statements_analysis.model_dump()
+    )
+
+    # Step 4: Peer group identification
     peer_group: PeerGroup = await peer_group_agent(symbol)
 
-    # Step 4: Forward PE sanity check
+    # Step 5: Forward PE sanity check
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol)
 
-    # Step 5: Forward PE analysis
+    # Step 6: Forward PE analysis
     forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(symbol, peer_group)
 
-    # Step 6: News sentiment analysis
+    # Step 7: News sentiment analysis
     news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(symbol, peer_group)
 
-    # Step 7: Generate trade ideas
+    # Step 8: Generate trade ideas
     trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(symbol, forward_pe_flow_result, news_sentiment_flow_result)
 
     logger.info(f"Main research for {symbol} completed successfully!")
@@ -51,5 +60,7 @@ async def main_research_flow(
     logger.info(f"Revenue driver trend: {financial_statements_analysis.revenue_driver_trend}")
     logger.info(f"Cost structure trend: {financial_statements_analysis.cost_structure_trend}")
     logger.info(f"Working capital trend: {financial_statements_analysis.working_capital_trend}")
+    logger.info(f"Independent EPS projection: ${earnings_projections_analysis.next_quarter_projection.projected_eps:.2f}")
+    logger.info(f"Projection confidence: {earnings_projections_analysis.overall_confidence}")
     
     return trade_ideas_flow_result
