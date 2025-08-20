@@ -1,7 +1,7 @@
 """AI agent for analyzing management guidance from earnings calls."""
 
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from agents import Agent, Runner, RunResult
 from src.lib.llm_model import get_model
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
@@ -14,11 +14,29 @@ management_guidance_analysis_agent = Agent(
     output_type=ManagementGuidanceAnalysis,
     instructions="""
     Analyze management guidance from earnings call transcripts to validate consensus estimates.
+    Use historical earnings patterns and recent financial trends to interpret management guidance in context.
 
     Key Tasks:
     - Extract forward-looking statements on revenue, margins, expenses, EPS
     - Identify risks, opportunities, and management tone
     - Validate against consensus earnings estimates
+    - Interpret guidance using historical patterns and financial context
+
+    CRITICAL: Contextualize Guidance with Historical & Financial Data:
+    
+    When historical_earnings_analysis is provided:
+    - Compare management guidance against historical earnings patterns (beats/misses)
+    - If company has pattern of conservative guidance → aggressive guidance signals confidence
+    - If company has pattern of missing estimates → treat optimistic guidance with skepticism
+    - Use revenue growth trends and margin trends to validate revenue/margin guidance
+    - Consider earnings volatility when assessing guidance reliability
+    
+    When financial_statements_analysis is provided:
+    - Cross-check guidance against recent financial trends (revenue drivers, cost structure, working capital)
+    - If management guides for growth but recent financials show deteriorating trends → flag mismatch
+    - If guidance aligns with improving financial fundamentals → increase confidence
+    - Use cost structure trends to validate margin guidance
+    - Consider working capital trends when evaluating cash flow/operations guidance
 
     Language Analysis:
     DON'T trust sentiment scores - look for evasive language patterns:
@@ -29,6 +47,11 @@ management_guidance_analysis_agent = Agent(
     
     Trust direct language over positive sentiment scores. Flag evasive responses.
 
+    Consensus Validation Logic:
+    - BULLISH: Guidance suggests upside to consensus + historical/financial context supports
+    - BEARISH: Guidance suggests downside to consensus + context confirms concerns
+    - NEUTRAL: Mixed signals or guidance aligns with consensus expectations
+    
     Focus on actionable guidance for next 1-2 quarters vs consensus expectations.
     """
 )
@@ -36,7 +59,9 @@ management_guidance_analysis_agent = Agent(
 
 async def management_guidance_agent(
     symbol: str,
-    guidance_data: ManagementGuidanceData
+    guidance_data: ManagementGuidanceData,
+    historical_earnings_analysis: Optional[Any] = None,
+    financial_statements_analysis: Optional[Any] = None
 ) -> ManagementGuidanceAnalysis:
     """
     Analyzes management guidance from earnings calls for qualitative risks and opportunities.
@@ -48,6 +73,8 @@ async def management_guidance_agent(
     Args:
         symbol: Stock symbol being analyzed
         guidance_data: Management guidance data including transcript and estimates
+        historical_earnings_analysis: Optional historical earnings patterns for context
+        financial_statements_analysis: Optional recent financial trends for context
         
     Returns:
         ManagementGuidanceAnalysis with extracted guidance indicators and assessment
@@ -66,10 +93,17 @@ async def management_guidance_agent(
         return _create_no_transcript_analysis(symbol)
     
     try:
+        # Build input with optional context
+        input_data = f"symbol: {symbol}, guidance_data: {guidance_data}"
+        if historical_earnings_analysis:
+            input_data += f", historical_earnings_analysis: {historical_earnings_analysis}"
+        if financial_statements_analysis:
+            input_data += f", financial_statements_analysis: {financial_statements_analysis}"
+        
         # Use the Agent SDK to analyze guidance
         result: RunResult = await Runner.run(
             management_guidance_analysis_agent,
-            input=f"symbol: {symbol}, guidance_data: {guidance_data}"
+            input=input_data
         )
         analysis_result: ManagementGuidanceAnalysis = result.final_output
         

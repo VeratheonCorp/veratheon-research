@@ -41,22 +41,45 @@ async def main_research_flow(
     )
 
     # Step 4: Management guidance analysis (CRITICAL - cross-check against management guidance from earnings calls)
-    management_guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_flow(symbol)
+    management_guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_flow(
+        symbol, 
+        historical_earnings_analysis, 
+        financial_statements_analysis
+    )
 
-    # Step 5: Peer group identification
-    peer_group: PeerGroup = await peer_group_agent(symbol)
+    # Step 5: Peer group identification (enhanced with financial context)
+    peer_group: PeerGroup = await peer_group_agent(symbol, financial_statements_analysis)
 
     # Step 6: Forward PE sanity check
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol)
 
-    # Step 7: Forward PE analysis
-    forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(symbol, peer_group)
+    # Step 7: Forward PE analysis (enhanced with projections, management guidance and sanity check)
+    forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(
+        symbol, 
+        peer_group, 
+        earnings_projections_analysis,
+        management_guidance_analysis, 
+        forward_pe_sanity_check
+    )
 
-    # Step 8: News sentiment analysis
-    news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(symbol, peer_group)
+    # Step 8: News sentiment analysis (enhanced with earnings projections and management guidance)
+    news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(
+        symbol, 
+        peer_group, 
+        earnings_projections_analysis, 
+        management_guidance_analysis
+    )
 
-    # Step 9: Generate trade ideas
-    trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(symbol, forward_pe_flow_result, news_sentiment_flow_result)
+    # Step 9: Generate trade ideas (enhanced with all previous analyses)
+    trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(
+        symbol, 
+        forward_pe_flow_result, 
+        news_sentiment_flow_result,
+        historical_earnings_analysis,
+        financial_statements_analysis,
+        earnings_projections_analysis,
+        management_guidance_analysis
+    )
 
     logger.info(f"Main research for {symbol} completed successfully!")
     logger.info(f"Historical earnings pattern: {historical_earnings_analysis.earnings_pattern}")

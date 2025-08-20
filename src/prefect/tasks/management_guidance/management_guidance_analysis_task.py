@@ -3,12 +3,15 @@
 from prefect import task, get_run_logger
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
 from src.research.management_guidance.management_guidance_agent import management_guidance_agent
+from typing import Optional, Any
 
 
 @task(name="management_guidance_analysis_task", persist_result=True)
 async def management_guidance_analysis_task(
     symbol: str,
-    guidance_data: ManagementGuidanceData
+    guidance_data: ManagementGuidanceData,
+    historical_earnings_analysis: Optional[Any] = None,
+    financial_statements_analysis: Optional[Any] = None
 ) -> ManagementGuidanceAnalysis:
     """
     Task to analyze management guidance for qualitative risks and opportunities.
@@ -16,6 +19,8 @@ async def management_guidance_analysis_task(
     Args:
         symbol: Stock symbol being analyzed
         guidance_data: Management guidance data including transcripts and estimates
+        historical_earnings_analysis: Optional historical earnings patterns for context
+        financial_statements_analysis: Optional recent financial trends for context
         
     Returns:
         ManagementGuidanceAnalysis with extracted guidance indicators
@@ -23,7 +28,9 @@ async def management_guidance_analysis_task(
     logger = get_run_logger()
     logger.info(f"Analyzing management guidance for {symbol}")
 
-    guidance_analysis = await management_guidance_agent(symbol, guidance_data)
+    guidance_analysis = await management_guidance_agent(
+        symbol, guidance_data, historical_earnings_analysis, financial_statements_analysis
+    )
     
     if guidance_analysis.transcript_available:
         logger.info(f"Management guidance analysis completed for {symbol}: "

@@ -5,11 +5,15 @@ from src.prefect.tasks.forward_pe.forward_pe_analysis_task import forward_pe_ana
 from src.prefect.tasks.forward_pe.forward_pe_sanity_check_task import forward_pe_sanity_check_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPEEarningsSummary, ForwardPeSanityCheck
 from src.research.common.models.peer_group import PeerGroup
+from typing import Optional, Any
 
 @flow(name="forward-pe-flow", log_prints=True)
 async def forward_pe_flow(
     symbol: str,
     peer_group: PeerGroup,
+    earnings_projections_analysis: Optional[Any] = None,
+    management_guidance_analysis: Optional[Any] = None,
+    forward_pe_sanity_check: Optional[ForwardPeSanityCheck] = None,
 ) -> ForwardPeValuation:
     """
     Main flow for running forward PE analysis.
@@ -17,6 +21,9 @@ async def forward_pe_flow(
     Args:
         symbol: Stock symbol to research
         peer_group: Peer group of the symbol
+        earnings_projections_analysis: Optional independent earnings projections for validation
+        management_guidance_analysis: Optional management guidance analysis for context
+        forward_pe_sanity_check: Optional sanity check results for validation
     Returns:
         ForwardPeValuation containing the research results and metadata
     """
@@ -28,7 +35,13 @@ async def forward_pe_flow(
     earnings_summary: ForwardPEEarningsSummary = await forward_pe_fetch_earnings_for_symbols_task(peer_group.original_symbol, peer_group.peer_group)
 
     # Perform forward PE analysis
-    forward_pe_valuation: ForwardPeValuation = await forward_pe_analysis_task(peer_group.original_symbol, earnings_summary)
+    forward_pe_valuation: ForwardPeValuation = await forward_pe_analysis_task(
+        peer_group.original_symbol, 
+        earnings_summary, 
+        earnings_projections_analysis,
+        management_guidance_analysis, 
+        forward_pe_sanity_check
+    )
 
     return forward_pe_valuation
 

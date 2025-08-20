@@ -4,10 +4,15 @@ from prefect import flow, get_run_logger
 from src.prefect.tasks.management_guidance.management_guidance_fetch_task import management_guidance_fetch_task
 from src.prefect.tasks.management_guidance.management_guidance_analysis_task import management_guidance_analysis_task
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
+from typing import Optional, Any
 
 
 @flow(name="management-guidance-flow", log_prints=True)
-async def management_guidance_flow(symbol: str) -> ManagementGuidanceAnalysis:
+async def management_guidance_flow(
+    symbol: str,
+    historical_earnings_analysis: Optional[Any] = None,
+    financial_statements_analysis: Optional[Any] = None
+) -> ManagementGuidanceAnalysis:
     """
     Main flow for analyzing management guidance from earnings calls.
     
@@ -17,6 +22,8 @@ async def management_guidance_flow(symbol: str) -> ManagementGuidanceAnalysis:
     
     Args:
         symbol: Stock symbol to research
+        historical_earnings_analysis: Optional historical earnings patterns for context
+        financial_statements_analysis: Optional recent financial trends for context
         
     Returns:
         ManagementGuidanceAnalysis containing guidance indicators and validation signals
@@ -30,7 +37,7 @@ async def management_guidance_flow(symbol: str) -> ManagementGuidanceAnalysis:
 
     # Analyze management guidance for risks, opportunities, and signals
     guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_analysis_task(
-        symbol, guidance_data
+        symbol, guidance_data, historical_earnings_analysis, financial_statements_analysis
     )
 
     # Log key guidance results
