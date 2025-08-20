@@ -22,19 +22,6 @@ financial_statements_analysis_agent = Agent(
             - Look for seasonal patterns or cyclical business factors
             - Assess the sustainability of current trends and their impact on near-term forecasting accuracy
 
-            OUTPUT REQUIREMENTS:
-            - revenue_driver_trend: Overall trend in revenue drivers (STRENGTHENING, WEAKENING, STABLE, VOLATILE, INSUFFICIENT_DATA)
-            - revenue_driver_details: Detailed analysis of what's driving revenue changes with specific metrics and percentages
-            - cost_structure_trend: Overall cost efficiency trend (IMPROVING_EFFICIENCY, DETERIORATING_EFFICIENCY, STABLE_STRUCTURE, VOLATILE_COSTS, INSUFFICIENT_DATA)
-            - cost_structure_details: Detailed analysis of cost structure changes with specific ratios and trends
-            - working_capital_trend: Working capital management trend (IMPROVING_MANAGEMENT, DETERIORATING_MANAGEMENT, STABLE_MANAGEMENT, CASH_FLOW_CONCERNS, INSUFFICIENT_DATA)
-            - working_capital_details: Detailed analysis of working capital changes and cash flow impact
-            - key_financial_changes: List of 3-5 most significant financial statement changes that could impact projections
-            - near_term_projection_risks: List of risks to near-term forecasting accuracy based on recent changes
-            - analysis_confidence_score: Confidence score 0-10 based on data consistency and clarity of trends
-            - data_quality_score: Score 0-10 indicating quality and completeness of financial data
-            - full_analysis: Comprehensive analysis focusing on how recent changes inform near-term projection accuracy
-
             IMPORTANT:
             - This analysis directly informs near-term projection accuracy - focus on changes that matter for quarterly/annual forecasts
             - Be specific with numbers, percentages, and time periods

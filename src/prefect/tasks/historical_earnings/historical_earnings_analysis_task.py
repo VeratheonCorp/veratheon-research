@@ -28,6 +28,8 @@ async def historical_earnings_analysis_task(
     historical_earnings_data: {historical_data.model_dump_json()}
     """
 
+    logger.info(f"Input data for historical earnings analysis for {symbol}: {input_data}")
+
     result: RunResult = await Runner.run(
         historical_earnings_analysis_agent,
         input=input_data

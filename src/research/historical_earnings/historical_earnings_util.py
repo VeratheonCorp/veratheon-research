@@ -30,15 +30,15 @@ def get_historical_earnings_data_for_symbol(symbol: str) -> HistoricalEarningsDa
         
         # For historical analysis, we want more data - take up to 20 quarters
         if quarterly_earnings:
-            quarterly_earnings = quarterly_earnings[:20]
+            quarterly_earnings = quarterly_earnings[:10]
             
         # Take up to 10 years of annual data
         if annual_earnings:
-            annual_earnings = annual_earnings[:10]
+            annual_earnings = annual_earnings[:5]
             
         # Take up to 10 years of income statement data
         if income_statement_data:
-            income_statement_data = income_statement_data[:10]
+            income_statement_data = income_statement_data[:5]
         
         historical_data = HistoricalEarningsData(
             symbol=symbol,
