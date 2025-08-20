@@ -574,8 +574,7 @@ def call_alpha_vantage_earnings_call_transcripts(symbol: str, quarter: str) -> D
         quarter: Fiscal quarter in format YYYYQM where:
                 - YYYY: 4-digit year
                 - Q: Quarter (1-4)
-                - M: Month (1-3 for Q1, 4-6 for Q2, etc.)
-                Example: '2023Q1' for Q1 2023
+                Example: '2024Q1' for Q1 2024
 
     Returns:
         Dict containing:
@@ -588,12 +587,12 @@ def call_alpha_vantage_earnings_call_transcripts(symbol: str, quarter: str) -> D
             - qa: Q&A session transcript (if available)
 
     Example:
-        >>> call_alpha_vantage_earnings_call_transcripts("MSFT", "2023Q1")
+        >>> call_alpha_vantage_earnings_call_transcripts("MSFT", "2024Q1")
         
     Note:
         - Transcripts are typically available 24-48 hours after the earnings call
         - Some companies may not have transcripts available for all quarters
         - The quality and format of transcripts may vary by company
     """
-    query = f"EARNINGS_CALL_TRANSCRIPTS&symbol={symbol}&quarter={quarter}"
+    query = f"EARNINGS_CALL_TRANSCRIPT&symbol={symbol}&quarter={quarter}"
     return client.run_query(query)
