@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Research Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .stage { 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 5px; 
+            border-left: 4px solid #ccc;
+        }
+        .stage.pending { border-left-color: #ffa500; background-color: #fff3cd; }
+        .stage.complete { border-left-color: #28a745; background-color: #d4edda; }
+        .stage.error { border-left-color: #dc3545; background-color: #f8d7da; }
+        .input-group { margin: 20px 0; }
+        input, button { padding: 10px; margin: 5px; }
+        #messages { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
+        .message { margin: 5px 0; padding: 5px; background-color: #f8f9fa; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Market Research Agent WebSocket Test</h1>
+        
+        <div class="input-group">
+            <input type="text" id="symbolInput" placeholder="Enter stock symbol (e.g., AAPL)" value="AAPL">
+            <button onclick="connectWebSocket()">Start Research</button>
+            <button onclick="disconnectWebSocket()">Disconnect</button>
+        </div>
+
+        <div id="status">Not connected</div>
+
+        <div id="stages">
+            <div class="stage pending" id="stage-historical_earnings">📊 Historical Earnings Analysis</div>
+            <div class="stage pending" id="stage-financial_statements">📈 Financial Statements Analysis</div>
+            <div class="stage pending" id="stage-earnings_projections">🔮 Earnings Projections</div>
+            <div class="stage pending" id="stage-management_guidance">🎙️ Management Guidance Analysis</div>
+            <div class="stage pending" id="stage-peer_group">👥 Peer Group Identification</div>
+            <div class="stage pending" id="stage-forward_pe_sanity">✅ Forward PE Sanity Check</div>
+            <div class="stage pending" id="stage-forward_pe">💰 Forward PE Analysis</div>
+            <div class="stage pending" id="stage-news_sentiment">📰 News Sentiment Analysis</div>
+            <div class="stage pending" id="stage-trade_ideas">💡 Trade Ideas Generation</div>
+        </div>
+
+        <h3>Messages</h3>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        
+        async function connectWebSocket() {
+            const symbol = document.getElementById('symbolInput').value.toUpperCase();
+            if (!symbol) {
+                alert('Please enter a stock symbol');
+                return;
+            }
+
+            // Reset all stages to pending
+            document.querySelectorAll('.stage').forEach(stage => {
+                stage.className = 'stage pending';
+            });
+            
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('status').textContent = 'Connecting...';
+            
+            // First, trigger the research via REST API
+            try {
+                const response = await fetch(`http://localhost:8000/research/${symbol}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                addMessage(`Research triggered: ${result.message}`);
+            } catch (error) {
+                addMessage(`Failed to trigger research: ${error}`);
+                return;
+            }
+            
+            // Then connect to WebSocket for updates
+            socket = new WebSocket(`ws://localhost:8000/ws/updates/${symbol}`);
+            
+            socket.onopen = function(event) {
+                document.getElementById('status').textContent = `Connected - researching ${symbol}`;
+                addMessage('Connected to WebSocket');
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                addMessage(`[${data.type}] ${data.message || ''}`);
+                
+                if (data.type === 'stage_start' && data.stage) {
+                    const stageElement = document.getElementById(`stage-${data.stage}`);
+                    if (stageElement) {
+                        stageElement.className = 'stage pending';
+                        stageElement.style.backgroundColor = '#fff3cd';
+                    }
+                } else if (data.type === 'stage_complete' && data.stage) {
+                    const stageElement = document.getElementById(`stage-${data.stage}`);
+                    if (stageElement) {
+                        stageElement.className = 'stage complete';
+                        if (data.data) {
+                            stageElement.innerHTML += `<br><small>${JSON.stringify(data.data)}</small>`;
+                        }
+                    }
+                } else if (data.type === 'research_complete') {
+                    addMessage('🎉 Research completed successfully!');
+                    if (data.data) {
+                        addMessage(`Trade Idea: ${JSON.stringify(data.data, null, 2)}`);
+                    }
+                } else if (data.type === 'research_error') {
+                    addMessage(`❌ Error: ${data.message}`);
+                }
+            };
+            
+            socket.onclose = function(event) {
+                document.getElementById('status').textContent = 'Disconnected';
+                addMessage('WebSocket connection closed');
+            };
+            
+            socket.onerror = function(error) {
+                document.getElementById('status').textContent = 'Error';
+                addMessage(`WebSocket error: ${error}`);
+            };
+        }
+        
+        function disconnectWebSocket() {
+            if (socket) {
+                socket.close();
+                socket = null;
+            }
+        }
+        
+        function addMessage(message) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>

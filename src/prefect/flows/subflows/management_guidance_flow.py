@@ -3,6 +3,7 @@
 from prefect import flow, get_run_logger
 from src.prefect.tasks.management_guidance.management_guidance_fetch_task import management_guidance_fetch_task
 from src.prefect.tasks.management_guidance.management_guidance_analysis_task import management_guidance_analysis_task
+from src.prefect.tasks.events.event_emission_task import emit_event_task
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
 from typing import Optional, Any
 
@@ -30,6 +31,10 @@ async def management_guidance_flow(
     """
     logger = get_run_logger()
     
+    # Emit stage start event
+    emit_event_task(symbol, "stage_start", stage="management_guidance",
+                   message="Analyzing management guidance from earnings calls...")
+    
     logger.info(f"Starting management guidance flow for {symbol}")
     
     # Fetch management guidance data (earnings estimates + transcripts)
@@ -56,5 +61,15 @@ async def management_guidance_flow(
             logger.warning(f"BEARISH guidance signal: Management outlook suggests downside to consensus")
     else:
         logger.warning(f"Management guidance flow completed for {symbol}: No transcript available for analysis")
+
+    # Emit stage complete event
+    emit_event_task(symbol, "stage_complete", stage="management_guidance",
+                   message="Management guidance analysis completed",
+                   data={
+                       "guidance_tone": guidance_analysis.overall_guidance_tone,
+                       "consensus_validation": guidance_analysis.consensus_validation_signal,
+                       "guidance_confidence": guidance_analysis.guidance_confidence,
+                       "transcript_available": guidance_analysis.transcript_available
+                   })
 
     return guidance_analysis

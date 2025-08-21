@@ -1,5 +1,6 @@
 from prefect import flow, get_run_logger
 from dotenv import load_dotenv
+from src.prefect.tasks.events.event_emission_task import emit_event_task
 from src.prefect.flows.subflows.forward_pe_flow import forward_pe_flow
 from src.prefect.flows.subflows.trade_ideas_flow import trade_ideas_flow
 from src.prefect.flows.subflows.news_sentiment_flow import news_sentiment_flow
@@ -26,6 +27,9 @@ async def main_research_flow(
 ) -> TradeIdea:
     logger = get_run_logger()
     logger.info(f"Starting main research for {symbol}")
+
+    # Emit research started event
+    emit_event_task(symbol, "research_started", message=f"Starting comprehensive research for {symbol}")
 
     # Step 1: Historical earnings analysis (CRITICAL - foundational baseline)
     historical_earnings_analysis: HistoricalEarningsAnalysis = await historical_earnings_flow(symbol)
