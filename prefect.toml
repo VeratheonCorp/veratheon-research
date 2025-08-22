@@ -1,4 +1,6 @@
 # prefect.toml
+# For local development, use localhost
+# For Docker, this will be overridden by PREFECT_API_URL environment variable
 api.url                      = "http://127.0.0.1:4200/api"
 ui.url                       = "http://127.0.0.1:4200"
 
