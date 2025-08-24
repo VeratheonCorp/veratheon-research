@@ -2,7 +2,6 @@ from prefect import flow, get_run_logger
 from typing import Optional, Dict, Any
 from src.prefect.tasks.earnings_projections.earnings_projections_fetch_task import earnings_projections_fetch_task
 from src.prefect.tasks.earnings_projections.earnings_projections_analysis_task import earnings_projections_analysis_task
-from src.prefect.tasks.events.event_emission_task import emit_event_task
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData, EarningsProjectionAnalysis
 
 
@@ -27,10 +26,6 @@ async def earnings_projections_flow(
     """
     logger = get_run_logger()
     
-    # Emit stage start event
-    emit_event_task(symbol, "stage_start", stage="earnings_projections",
-                   message="Generating independent earnings projections...")
-    
     logger.info(f"Starting independent earnings projections flow for {symbol}")
     
     # Fetch comprehensive data for earnings projections
@@ -54,15 +49,5 @@ async def earnings_projections_flow(
             logger.warning(f"SIGNIFICANT DIVERGENCE: Our estimate differs from consensus by {diff_percent:.1f}%")
         else:
             logger.info(f"Estimate aligns with consensus (difference: {diff_percent:.1f}%)")
-
-    # Emit stage complete event
-    emit_event_task(symbol, "stage_complete", stage="earnings_projections",
-                   message="Independent earnings projections completed",
-                   data={
-                       "projected_eps": next_quarter.projected_eps,
-                       "confidence": projections_analysis.overall_confidence,
-                       "consensus_eps_estimate": next_quarter.consensus_eps_estimate,
-                       "eps_vs_consensus_percent": next_quarter.eps_vs_consensus_percent
-                   })
 
     return projections_analysis

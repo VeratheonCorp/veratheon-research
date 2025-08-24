@@ -1,6 +1,5 @@
 from agents import Agent, Runner, RunResult
 from src.research.common.models.peer_group import PeerGroup
-from src.prefect.tasks.events.event_emission_task import emit_event_task
 import openai
 import json
 from src.lib.llm_model import get_model
@@ -51,10 +50,6 @@ _peer_group_agent = Agent(
         )
 
 async def peer_group_agent(symbol: str, financial_statements_analysis: Optional[Any] = None) -> PeerGroup:
-    # Emit stage start event
-    emit_event_task(symbol, "stage_start", stage="peer_group",
-                   message="Identifying peer group companies...")
-    
     # Build input with optional financial context
     input_data = f"original_symbol: {symbol}"
     if financial_statements_analysis:
@@ -62,13 +57,6 @@ async def peer_group_agent(symbol: str, financial_statements_analysis: Optional[
     
     result: RunResult = await Runner.run(_peer_group_agent, input=input_data)
     peer_group: PeerGroup = result.final_output
-    
-    # Emit stage complete event
-    emit_event_task(symbol, "stage_complete", stage="peer_group",
-                   message="Peer group identification completed",
-                   data={
-                       "peer_companies": [peer.symbol for peer in peer_group.peers]
-                   })
     
     return peer_group
 

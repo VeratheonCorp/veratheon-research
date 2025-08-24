@@ -1,9 +1,8 @@
-
 from prefect import flow, get_run_logger
 from src.prefect.tasks.forward_pe.forward_pe_fetch_earnings_task import forward_pe_fetch_single_earnings_task, forward_pe_fetch_earnings_for_symbols_task
 from src.prefect.tasks.forward_pe.forward_pe_analysis_task import forward_pe_analysis_task
 from src.prefect.tasks.forward_pe.forward_pe_sanity_check_task import forward_pe_sanity_check_task
-from src.prefect.tasks.events.event_emission_task import emit_event_task
+
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPEEarningsSummary, ForwardPeSanityCheck
 from src.research.common.models.peer_group import PeerGroup
 from typing import Optional, Any
@@ -30,10 +29,6 @@ async def forward_pe_flow(
     """
     logger = get_run_logger()
     
-    # Emit stage start event
-    emit_event_task(symbol, "stage_start", stage="forward_pe",
-                   message="Calculating forward PE valuation...")
-    
     logger.info(f"Starting forward PE flow for {symbol}")
     
     # Get the earnings data for the user's symbol and its peer group
@@ -47,15 +42,6 @@ async def forward_pe_flow(
         management_guidance_analysis, 
         forward_pe_sanity_check
     )
-
-    # Emit stage complete event
-    emit_event_task(symbol, "stage_complete", stage="forward_pe",
-                   message="Forward PE analysis completed",
-                   data={
-                       "current_forward_pe": forward_pe_valuation.current_forward_pe,
-                       "peer_average_pe": forward_pe_valuation.peer_average_forward_pe,
-                       "relative_valuation": forward_pe_valuation.relative_valuation_signal
-                   })
 
     return forward_pe_valuation
 
@@ -75,10 +61,6 @@ async def forward_pe_sanity_check_flow(
     """
     logger = get_run_logger()
     
-    # Emit stage start event
-    emit_event_task(symbol, "stage_start", stage="forward_pe_sanity",
-                   message="Running forward PE sanity check...")
-    
     logger.info(f"Starting forward PE sanity check flow for {symbol}")
     
     # Get the earnings data for the user's symbol and its peer group
@@ -86,13 +68,5 @@ async def forward_pe_sanity_check_flow(
 
     # Perform forward PE sanity check
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_task(earnings_summary)
-
-    # Emit stage complete event
-    emit_event_task(symbol, "stage_complete", stage="forward_pe_sanity",
-                   message="Forward PE sanity check completed",
-                   data={
-                       "data_quality": forward_pe_sanity_check.data_quality_assessment,
-                       "sanity_check_passed": forward_pe_sanity_check.sanity_check_passed
-                   })
 
     return forward_pe_sanity_check

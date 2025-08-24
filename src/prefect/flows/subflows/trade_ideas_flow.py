@@ -1,6 +1,5 @@
 from prefect import flow, get_run_logger
 from src.prefect.tasks.trade_ideas.trade_ideas_task import trade_ideas_task
-from src.prefect.tasks.events.event_emission_task import emit_event_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
@@ -18,10 +17,6 @@ async def trade_ideas_flow(
 ) -> TradeIdea:
     logger = get_run_logger()
     
-    # Emit stage start event
-    emit_event_task(symbol, "stage_start", stage="trade_ideas",
-                   message="Generating trade ideas and recommendations...")
-    
     logger.info(f"Starting trade ideas flow for {symbol}")
     
     trade_idea = await trade_ideas_task(
@@ -33,19 +28,5 @@ async def trade_ideas_flow(
         earnings_projections_analysis,
         management_guidance_analysis
     )
-    
-    # Emit stage complete event
-    emit_event_task(symbol, "stage_complete", stage="trade_ideas",
-                   message="Trade ideas generation completed",
-                   data={
-                       "recommendation": trade_idea.recommendation,
-                       "target_price": trade_idea.target_price,
-                       "confidence_level": trade_idea.confidence_level
-                   })
-    
-    # Emit final research complete event
-    emit_event_task(symbol, "research_complete",
-                   message=f"Complete research analysis for {symbol} finished successfully!",
-                   data=trade_idea.model_dump())
     
     return trade_idea
