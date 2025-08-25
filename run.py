@@ -7,6 +7,11 @@ import asyncio
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.getLogger('LiteLLM').setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
+
 
 # Add the project root to the Python path
 project_root = Path(__file__).parent.absolute()
@@ -16,26 +21,25 @@ sys.path.append(str(project_root))
 load_dotenv()
 
 # Import the flow after setting up the path
-from src.prefect.flows.research_flow import main_research_flow
+from src.flows.research_flow import main_research_flow
 
 async def main():
     """Run the market research flow with example parameters."""
     try:
         # Example parameters - you can modify these or make them command-line arguments
-        symbol = "NKE"  # Example stock symbol
+        symbol = "PG"  # Example stock symbol
         
-        print(f"Starting market research for {symbol}")
+        logger.info(f"Starting market research for {symbol}")
         
         # Run the flow directly
         await main_research_flow(symbol=symbol)
         
-        print("\nMarket research completed successfully!")
-        print("Results have been saved and processed.")
+        logger.info("Market research completed successfully!")
         
         return 0
         
     except Exception as e:
-        print(f"Error running market research: {e}", file=sys.stderr)
+        logger.error(f"Error running market research: {e}")
         import traceback
         traceback.print_exc()
         return 1
