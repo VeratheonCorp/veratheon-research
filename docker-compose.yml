@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: market-research-api
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8085
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    ports:
+      - "8085:8085"
+    command: ["python", "-u", "server.py"]
+
+  agent-ui:
+    build: ./agent-ui
+    container_name: market-research-ui
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./agent-ui:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+  redis:
+    image: redis:7-alpine
+    container_name: market-research-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+volumes:
+  redis_data:
