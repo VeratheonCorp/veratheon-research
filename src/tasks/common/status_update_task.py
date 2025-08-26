@@ -2,6 +2,7 @@ import redis
 import json
 import logging
 import os
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ async def publish_status_update_task(status: str, details: Optional[Dict[str, An
         
         message = {
             "status": status,
-            "timestamp": None,  # Will be set by Redis or consuming application
+            "timestamp": datetime.now().isoformat(),
             "details": details or {}
         }
         
