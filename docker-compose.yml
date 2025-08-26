@@ -4,23 +4,21 @@ services:
   api:
     build: .
     container_name: market-research-api
+    network_mode: host
     env_file:
       - .env
     environment:
       - HOST=0.0.0.0
       - PORT=8085
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://localhost:6379/0
     depends_on:
       - redis
-    ports:
-      - "8085:8085"
     command: ["python", "-u", "server.py"]
 
   agent-ui:
     build: ./agent-ui
     container_name: market-research-ui
-    ports:
-      - "5173:5173"
+    network_mode: host
     volumes:
       - ./agent-ui:/app
       - /app/node_modules
