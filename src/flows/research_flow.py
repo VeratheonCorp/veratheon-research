@@ -7,6 +7,7 @@ from src.flows.subflows.historical_earnings_flow import historical_earnings_flow
 from src.flows.subflows.financial_statements_flow import financial_statements_flow
 from src.flows.subflows.earnings_projections_flow import earnings_projections_flow
 from src.flows.subflows.management_guidance_flow import management_guidance_flow
+from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
@@ -29,6 +30,8 @@ async def main_research_flow(
 
     start_time = time.time()
     logger.info(f"Main research flow started for {symbol}")
+    
+    await publish_status_update_task("starting", {"flow": "main_research_flow", "symbol": symbol})
 
     # Step 1: Historical earnings analysis (CRITICAL - foundational baseline)
     historical_earnings_analysis: HistoricalEarningsAnalysis = await historical_earnings_flow(symbol)
@@ -99,5 +102,7 @@ async def main_research_flow(
 
     logger.info(f"Main research for {symbol} completed successfully!")
     logger.info(f"Main research for {symbol} completed successfully! in {int(time.time() - start_time)} seconds")
+    
+    await publish_status_update_task("completed", {"flow": "main_research_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
     
     return trade_ideas_flow_result

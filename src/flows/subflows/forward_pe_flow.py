@@ -1,7 +1,7 @@
 from src.tasks.forward_pe.forward_pe_fetch_earnings_task import forward_pe_fetch_single_earnings_task, forward_pe_fetch_earnings_for_symbols_task
 from src.tasks.forward_pe.forward_pe_analysis_task import forward_pe_analysis_task
 from src.tasks.forward_pe.forward_pe_sanity_check_task import forward_pe_sanity_check_task
-
+from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPEEarningsSummary, ForwardPeSanityCheck
 from src.research.common.models.peer_group import PeerGroup
 from typing import Optional, Any
@@ -33,6 +33,8 @@ async def forward_pe_flow(
     start_time = time.time()
     logger.info(f"Forward PE flow started for {symbol}")
     
+    await publish_status_update_task("starting", {"flow": "forward_pe_flow", "symbol": symbol})
+    
     # Get the earnings data for the user's symbol and its peer group
     earnings_summary: ForwardPEEarningsSummary = await forward_pe_fetch_earnings_for_symbols_task(peer_group.original_symbol, peer_group.peer_group)
 
@@ -47,6 +49,8 @@ async def forward_pe_flow(
 
     logger.info(f"Forward PE flow completed for {symbol}")
     logger.info(f"Forward PE flow completed for {symbol} in {int(time.time() - start_time)} seconds")
+    
+    await publish_status_update_task("completed", {"flow": "forward_pe_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return forward_pe_valuation
 
@@ -66,6 +70,8 @@ async def forward_pe_sanity_check_flow(
     start_time = time.time()
     logger.info(f"Forward PE sanity check flow started for {symbol}")
     
+    await publish_status_update_task("starting", {"flow": "forward_pe_sanity_check_flow", "symbol": symbol})
+    
     # Get the earnings data for the user's symbol and its peer group
     earnings_summary: ForwardPEEarningsSummary = await forward_pe_fetch_single_earnings_task(symbol)
 
@@ -74,5 +80,7 @@ async def forward_pe_sanity_check_flow(
 
     logger.info(f"Forward PE sanity check flow completed for {symbol}")
     logger.info(f"Forward PE sanity check flow completed for {symbol} in {int(time.time() - start_time)} seconds")
+    
+    await publish_status_update_task("completed", {"flow": "forward_pe_sanity_check_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return forward_pe_sanity_check

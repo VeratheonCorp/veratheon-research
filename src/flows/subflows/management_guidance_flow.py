@@ -1,6 +1,6 @@
 from src.tasks.management_guidance.management_guidance_fetch_task import management_guidance_fetch_task
 from src.tasks.management_guidance.management_guidance_analysis_task import management_guidance_analysis_task
-
+from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
 from typing import Optional, Any
 import logging
@@ -32,6 +32,8 @@ async def management_guidance_flow(
     start_time = time.time()
     logger.info(f"Management Guidance flow started for {symbol}")
     
+    await publish_status_update_task("starting", {"flow": "management_guidance_flow", "symbol": symbol})
+    
     # Fetch management guidance data (earnings estimates + transcripts)
     guidance_data: ManagementGuidanceData = await management_guidance_fetch_task(symbol)
 
@@ -42,5 +44,7 @@ async def management_guidance_flow(
 
     logger.info(f"Management Guidance flow completed for {symbol}")
     logger.info(f"Management Guidance flow completed for {symbol} in {int(time.time() - start_time)} seconds")
+    
+    await publish_status_update_task("completed", {"flow": "management_guidance_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return guidance_analysis
