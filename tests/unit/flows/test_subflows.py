@@ -104,28 +104,62 @@ class TestEarningsProjectionsFlow:
             symbol="AAPL",
             quarterly_income_statements=[{"fiscalDateEnding": "2023-12-31", "totalRevenue": "50000000"}],
             annual_income_statements=[{"fiscalDateEnding": "2023-12-31", "totalRevenue": "200000000"}],
-            consensus_estimates={"next_quarter_eps": "2.50", "next_quarter_revenue": "55000000"},
-            historical_earnings_context=None,
-            financial_statements_context=None
+            overview_data={"MarketCapitalization": "3000000000000", "PERatio": "25.0"},
+            historical_earnings_analysis=None,
+            financial_statements_analysis=None
         )
         mock_fetch_task.return_value = mock_data
         
         # Mock analysis task result
         next_quarter = NextQuarterProjection(
-            projected_eps=2.65,
+            # Revenue Projection
             projected_revenue=56000000.0,
+            revenue_projection_method="HISTORICAL_TREND",
+            revenue_confidence="HIGH",
+            revenue_reasoning="Strong historical growth pattern",
+            
+            # Cost Projections  
+            projected_cogs=30000000.0,
+            cogs_projection_method="PERCENTAGE_OF_REVENUE",
+            cogs_confidence="HIGH", 
+            cogs_reasoning="Stable cost structure",
+            projected_gross_profit=26000000.0,
+            projected_gross_margin=0.464,
+            
+            # Operating Expense Projections
+            projected_sga=15000000.0,
+            sga_confidence="MEDIUM",
+            sga_reasoning="Based on historical trends",
+            projected_rd=5000000.0,
+            rd_confidence="HIGH",
+            rd_reasoning="Consistent R&D investment",
+            projected_total_opex=20000000.0,
+            
+            # Bottom Line Projections
+            projected_operating_income=6000000.0,
+            projected_operating_margin=0.107,
+            projected_interest_expense=200000.0,
+            projected_tax_expense=1400000.0,
+            projected_tax_rate=0.25,
+            projected_net_income=4400000.0,
+            projected_eps=2.65,
+            
+            # Comparison with Consensus
             consensus_eps_estimate=2.50,
-            consensus_revenue_estimate=55000000.0,
-            eps_vs_consensus_percent=6.0,
-            revenue_vs_consensus_percent=1.8,
-            confidence_level="HIGH"
+            eps_vs_consensus_diff=0.15,
+            eps_vs_consensus_percent=6.0
         )
         mock_analysis = EarningsProjectionAnalysis(
             symbol="AAPL",
             next_quarter_projection=next_quarter,
-            methodology_summary="Analysis based on revenue growth trends",
-            key_assumptions=["Revenue growth continues", "Margins stable"],
-            overall_confidence="HIGH"
+            projection_methodology="Analysis based on revenue growth trends and historical patterns",
+            key_assumptions=["Revenue growth continues at 8-10%", "Margins remain stable", "No major one-time items"],
+            upside_risks=["Better than expected product sales", "Cost efficiencies"],
+            downside_risks=["Economic slowdown", "Supply chain disruptions"],
+            overall_confidence="HIGH",
+            data_quality_score=85,
+            consensus_validation_summary="Our projection is 6% above consensus, driven by stronger revenue outlook",
+            full_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -172,28 +206,62 @@ class TestEarningsProjectionsFlow:
             symbol="AAPL",
             quarterly_income_statements=[],
             annual_income_statements=[],
-            consensus_estimates={},
-            historical_earnings_context=None,
-            financial_statements_context=None
+            overview_data={},
+            historical_earnings_analysis=None,
+            financial_statements_analysis=None
         )
         mock_fetch_task.return_value = mock_data
         
         # Mock minimal analysis task result
         next_quarter = NextQuarterProjection(
-            projected_eps=2.50,
+            # Revenue Projection
             projected_revenue=55000000.0,
-            consensus_eps_estimate=None,
-            consensus_revenue_estimate=None,
-            eps_vs_consensus_percent=None,
-            revenue_vs_consensus_percent=None,
-            confidence_level="MEDIUM"
+            revenue_projection_method="HISTORICAL_TREND",
+            revenue_confidence="MEDIUM",
+            revenue_reasoning="Limited historical data available",
+            
+            # Cost Projections  
+            projected_cogs=30000000.0,
+            cogs_projection_method="PERCENTAGE_OF_REVENUE",
+            cogs_confidence="MEDIUM", 
+            cogs_reasoning="Basic cost assumptions",
+            projected_gross_profit=25000000.0,
+            projected_gross_margin=0.45,
+            
+            # Operating Expense Projections
+            projected_sga=15000000.0,
+            sga_confidence="MEDIUM",
+            sga_reasoning="Based on basic assumptions",
+            projected_rd=5000000.0,
+            rd_confidence="MEDIUM",
+            rd_reasoning="Basic R&D assumptions",
+            projected_total_opex=20000000.0,
+            
+            # Bottom Line Projections
+            projected_operating_income=5000000.0,
+            projected_operating_margin=0.091,
+            projected_interest_expense=100000.0,
+            projected_tax_expense=1200000.0,
+            projected_tax_rate=0.25,
+            projected_net_income=3700000.0,
+            projected_eps=2.50,
+            
+            # Comparison with Consensus
+            consensus_eps_estimate=2.40,
+            eps_vs_consensus_diff=0.10,
+            eps_vs_consensus_percent=4.2
         )
         mock_analysis = EarningsProjectionAnalysis(
             symbol="AAPL",
             next_quarter_projection=next_quarter,
-            methodology_summary="Limited data analysis",
-            key_assumptions=["Basic financial trends"],
-            overall_confidence="MEDIUM"
+            projection_methodology="Limited data analysis with basic assumptions",
+            key_assumptions=["Basic financial trends", "Simple extrapolation method"],
+            upside_risks=["Potential upside surprises"],
+            downside_risks=["Limited visibility"],
+            overall_confidence="MEDIUM",
+            data_quality_score=60,
+            consensus_validation_summary="Limited consensus comparison available",
+            full_analysis="Analysis based on limited historical data"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -261,7 +329,7 @@ class TestFinancialStatementsFlow:
         # Verify the result
         assert isinstance(result, FinancialStatementsAnalysis)
         assert result.symbol == "AAPL"
-        assert result.revenue_driver_trend == "IMPROVING"
+        assert result.revenue_driver_trend == "STRENGTHENING"
         
         # Verify tasks were called correctly
         mock_fetch_task.assert_called_once_with("AAPL")
@@ -288,19 +356,28 @@ class TestManagementGuidanceFlow:
         # Mock fetch task result
         mock_data = ManagementGuidanceData(
             symbol="AAPL",
-            quarter="Q4",
-            year="2023",
-            earnings_transcript="Management provided positive guidance...",
-            consensus_estimates={"next_quarter_eps": "2.50"}
+            earnings_estimates={"quarterlyEstimates": [{"fiscalDateEnding": "2024-06-30", "estimatedEPS": "2.50"}]},
+            earnings_transcript={"transcript": "Management provided positive guidance for the next quarter with strong revenue outlook and continued margin expansion..."},
+            quarter="2024Q1"
         )
         mock_fetch_task.return_value = mock_data
         
         # Mock analysis task result
         mock_analysis = ManagementGuidanceAnalysis(
             symbol="AAPL",
-            overall_guidance_tone="POSITIVE",
-            consensus_validation_signal="CONFIRMS",
-            guidance_summary="Strong forward guidance provided"
+            quarter_analyzed="2024Q1",
+            transcript_available=True,
+            guidance_indicators=[],
+            overall_guidance_tone="optimistic",
+            risk_factors_mentioned=["Supply chain constraints"],
+            opportunities_mentioned=["New product launches", "Market expansion"],
+            revenue_guidance_direction="positive",
+            margin_guidance_direction="neutral",
+            eps_guidance_direction="positive",
+            guidance_confidence="high",
+            consensus_validation_signal="bullish",
+            key_guidance_summary="Strong forward guidance provided for next quarter",
+            analysis_notes="Management provided positive outlook with specific growth drivers"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -311,18 +388,29 @@ class TestManagementGuidanceFlow:
         historical_context = HistoricalEarningsAnalysis(
             symbol="AAPL",
             earnings_pattern="CONSISTENT_BEATS",
+            earnings_pattern_details="Company consistently beats estimates by 5-10%",
             revenue_growth_trend="STABLE",
+            revenue_growth_details="Revenue growth averaging 8-12% annually",
             margin_trend="IMPROVING",
-            analysis_summary="Strong performance"
+            margin_trend_details="Operating margins expanding from 25% to 30%",
+            key_insights=["Strong pricing power", "Operational efficiency gains"],
+            analysis_confidence_score=85,
+            predictability_score=90,
+            full_analysis="Strong historical performance with consistent beats"
         )
         financial_context = FinancialStatementsAnalysis(
             symbol="AAPL",
-            revenue_driver_trend="IMPROVING",
-            cost_structure_trend="STABLE",
-            working_capital_trend="EFFICIENT",
-            profitability_trends="IMPROVING",
-            liquidity_assessment="STRONG",
-            analysis_summary="Strong financials"
+            revenue_driver_trend="STRENGTHENING",
+            revenue_driver_details="Strong product sales growth driving revenue",
+            cost_structure_trend="STABLE_STRUCTURE",
+            cost_structure_details="Consistent cost management and operating leverage",
+            working_capital_trend="IMPROVING_MANAGEMENT",
+            working_capital_details="Efficient working capital management",
+            key_financial_changes=["Revenue acceleration", "Margin stability"],
+            near_term_projection_risks=["Market competition risk"],
+            analysis_confidence_score=85,
+            data_quality_score=90,
+            full_analysis="Strong financial performance with improving trends"
         )
         
         # Execute the flow
@@ -335,7 +423,7 @@ class TestManagementGuidanceFlow:
         # Verify the result
         assert isinstance(result, ManagementGuidanceAnalysis)
         assert result.symbol == "AAPL"
-        assert result.overall_guidance_tone == "POSITIVE"
+        assert result.overall_guidance_tone == "optimistic"
         
         # Verify tasks were called correctly
         mock_fetch_task.assert_called_once_with("AAPL")

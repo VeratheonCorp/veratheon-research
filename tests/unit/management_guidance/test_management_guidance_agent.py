@@ -10,7 +10,8 @@ from src.research.management_guidance.management_guidance_agent import (
 )
 from src.research.management_guidance.management_guidance_models import (
     ManagementGuidanceData,
-    ManagementGuidanceAnalysis
+    ManagementGuidanceAnalysis,
+    GuidanceIndicator
 )
 
 
@@ -19,32 +20,41 @@ class TestManagementGuidanceAgent:
     def test_extract_transcript_content_direct_key(self):
         """Test transcript content extraction with direct key."""
         transcript_data = {
-            "transcript": "This is the earnings call transcript content..."
+            "transcript": "This is the earnings call transcript content that is long enough to meet the minimum character requirement for the function to process it properly and return the content."
         }
         
         result = _extract_transcript_content(transcript_data)
-        assert result == "This is the earnings call transcript content..."
+        assert "This is the earnings call transcript content" in result
     
     def test_extract_transcript_content_alternative_keys(self):
         """Test transcript content extraction with alternative keys."""
         transcript_data = {
-            "content": "This is the content..."
+            "content": "This is the content that is long enough to meet the minimum character requirement for the function to process it properly and return the content."
         }
         
         result = _extract_transcript_content(transcript_data)
-        assert result == "This is the content..."
+        assert "This is the content" in result
     
     def test_extract_transcript_content_nested_structure(self):
-        """Test transcript content extraction from nested structure."""
+        """Test transcript content extraction with structured format."""
         transcript_data = {
-            "metadata": {"source": "earnings_call"},
-            "data": {
-                "text": "This is nested transcript content that is long enough to be considered valid content..."
-            }
+            "transcript": [
+                {
+                    "speaker": "CEO",
+                    "title": "Chief Executive Officer",
+                    "content": "Thank you for joining us today. Our Q4 results demonstrate strong operational performance."
+                },
+                {
+                    "speaker": "CFO", 
+                    "title": "Chief Financial Officer",
+                    "content": "Revenue grew 15% year-over-year, and we maintained strong margins."
+                }
+            ]
         }
         
         result = _extract_transcript_content(transcript_data)
-        assert "This is nested transcript content" in result
+        assert "CEO (Chief Executive Officer): Thank you for joining us today" in result
+        assert "CFO (Chief Financial Officer): Revenue grew 15%" in result
     
     def test_extract_transcript_content_empty(self):
         """Test transcript content extraction with empty data."""
@@ -77,7 +87,7 @@ class TestManagementGuidanceAgent:
         assert error_msg in result.key_guidance_summary
         assert error_msg in result.analysis_notes
     
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_management_guidance_agent_no_transcript(self):
         """Test agent when no transcript is available."""
         guidance_data = ManagementGuidanceData(
@@ -94,37 +104,39 @@ class TestManagementGuidanceAgent:
         assert result.transcript_available == False
         assert result.consensus_validation_signal == "neutral"
     
-    @pytest.mark.asyncio
-    @patch('src.research.management_guidance.management_guidance_agent.call_llm_model')
-    async def test_management_guidance_agent_with_transcript(self, mock_llm):
+    @pytest.mark.anyio
+    @patch('src.research.management_guidance.management_guidance_agent.Runner.run')
+    async def test_management_guidance_agent_with_transcript(self, mock_runner):
         """Test agent with valid transcript data."""
-        # Mock AI response
-        mock_llm.return_value = '''
-        {
-            "symbol": "AAPL",
-            "quarter_analyzed": "2024Q1",
-            "transcript_available": true,
-            "guidance_indicators": [
-                {
-                    "type": "revenue",
-                    "direction": "positive",
-                    "confidence": "high",
-                    "context": "Management expects strong iPhone sales next quarter",
-                    "impact_assessment": "Positive impact on Q2 revenue growth"
-                }
+        # Mock ManagementGuidanceAnalysis response
+        mock_analysis = ManagementGuidanceAnalysis(
+            symbol="AAPL",
+            quarter_analyzed="2024Q1",
+            transcript_available=True,
+            guidance_indicators=[
+                GuidanceIndicator(
+                    type="revenue",
+                    direction="positive",
+                    confidence="high",
+                    context="Management expects strong iPhone sales next quarter",
+                    impact_assessment="Positive impact on Q2 revenue growth"
+                )
             ],
-            "overall_guidance_tone": "optimistic",
-            "risk_factors_mentioned": ["Supply chain constraints"],
-            "opportunities_mentioned": ["New product launches", "Market expansion"],
-            "revenue_guidance_direction": "positive",
-            "margin_guidance_direction": "neutral",
-            "eps_guidance_direction": "positive",
-            "guidance_confidence": "high",
-            "consensus_validation_signal": "bullish",
-            "key_guidance_summary": "Management provided bullish guidance for next quarter with strong revenue outlook",
-            "analysis_notes": "Overall positive tone with specific revenue growth drivers mentioned"
-        }
-        '''
+            overall_guidance_tone="optimistic",
+            risk_factors_mentioned=["Supply chain constraints"],
+            opportunities_mentioned=["New product launches", "Market expansion"],
+            revenue_guidance_direction="positive",
+            margin_guidance_direction="neutral",
+            eps_guidance_direction="positive",
+            guidance_confidence="high",
+            consensus_validation_signal="bullish",
+            key_guidance_summary="Management provided bullish guidance for next quarter with strong revenue outlook",
+            analysis_notes="Overall positive tone with specific revenue growth drivers mentioned"
+        )
+        
+        # Mock the runner result
+        mock_result = type('MockResult', (), {'final_output': mock_analysis})()
+        mock_runner.return_value = mock_result
         
         guidance_data = ManagementGuidanceData(
             symbol="AAPL",
@@ -133,7 +145,7 @@ class TestManagementGuidanceAgent:
                     {"fiscalDateEnding": "2024-06-30", "estimatedEPS": 2.50}
                 ]
             },
-            earnings_transcript={"transcript": "This is a sample earnings call transcript with management guidance..."},
+            earnings_transcript={"transcript": "This is a sample earnings call transcript with management guidance that is long enough to be processed correctly by the extraction function..."},
             quarter="2024Q1"
         )
         
@@ -151,17 +163,18 @@ class TestManagementGuidanceAgent:
         assert result.guidance_indicators[0].direction == "positive"
         assert "Supply chain constraints" in result.risk_factors_mentioned
         assert "New product launches" in result.opportunities_mentioned
+        mock_runner.assert_called_once()
     
-    @pytest.mark.asyncio
-    @patch('src.research.management_guidance.management_guidance_agent.call_llm_model')
-    async def test_management_guidance_agent_json_parse_error(self, mock_llm):
-        """Test agent when AI returns invalid JSON."""
-        mock_llm.return_value = "This is not valid JSON response from the AI model"
+    @pytest.mark.anyio
+    @patch('src.research.management_guidance.management_guidance_agent.Runner.run')
+    async def test_management_guidance_agent_json_parse_error(self, mock_runner):
+        """Test agent when Runner.run fails with exception."""
+        mock_runner.side_effect = Exception("AI processing error")
         
         guidance_data = ManagementGuidanceData(
             symbol="AAPL",
             earnings_estimates={"quarterlyEstimates": []},
-            earnings_transcript={"transcript": "Sample transcript"},
+            earnings_transcript={"transcript": "Sample transcript that is long enough to be processed correctly by the extraction function for testing purposes..."},
             quarter="2024Q1"
         )
         
@@ -169,20 +182,20 @@ class TestManagementGuidanceAgent:
         
         assert isinstance(result, ManagementGuidanceAnalysis)
         assert result.symbol == "AAPL"
-        assert result.transcript_available == True
+        assert result.transcript_available == False
         assert result.guidance_confidence == "low"
-        assert "Analysis completed but could not parse" in result.key_guidance_summary
+        assert "AI processing error" in result.key_guidance_summary
     
-    @pytest.mark.asyncio
-    @patch('src.research.management_guidance.management_guidance_agent.call_llm_model')
-    async def test_management_guidance_agent_llm_error(self, mock_llm):
-        """Test agent when LLM call fails."""
-        mock_llm.side_effect = Exception("LLM API error")
+    @pytest.mark.anyio
+    @patch('src.research.management_guidance.management_guidance_agent.Runner.run')
+    async def test_management_guidance_agent_llm_error(self, mock_runner):
+        """Test agent when Runner.run fails."""
+        mock_runner.side_effect = Exception("LLM API error")
         
         guidance_data = ManagementGuidanceData(
             symbol="AAPL",
             earnings_estimates={"quarterlyEstimates": []},
-            earnings_transcript={"transcript": "Sample transcript"},
+            earnings_transcript={"transcript": "Sample transcript that is long enough to be processed correctly by the extraction function for testing purposes..."},
             quarter="2024Q1"
         )
         

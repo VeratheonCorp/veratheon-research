@@ -116,14 +116,22 @@ class TestFinancialStatementsUtil:
                 "currentAccountsReceivable": "90000000",
                 "inventory": "120000000",
                 "currentAccountsPayable": "70000000"
+            },
+            {  # Two years ago
+                "totalAssets": "800000000",
+                "totalCurrentAssets": "280000000",
+                "totalCurrentLiabilities": "180000000",  # WC = 100M (12.5% of assets)
+                "currentAccountsReceivable": "80000000",
+                "inventory": "110000000",
+                "currentAccountsPayable": "60000000"
             }
         ]
         
         result = calculate_working_capital_metrics(balance_sheets, [])
         
-        assert result["years_analyzed"] == 2
-        assert len(result["working_capital_ratios"]) == 2
-        # Working capital should be improving (20% > 11%)
+        assert result["years_analyzed"] == 3
+        assert len(result["working_capital_ratios"]) == 3
+        # Working capital should be improving (20% > avg of 11% and 12.5%)
         assert result["working_capital_trend"] == "IMPROVING_MANAGEMENT"
     
     @patch('src.research.financial_statements.financial_statements_util.call_alpha_vantage_income_statement')
