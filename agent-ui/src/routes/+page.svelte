@@ -59,58 +59,67 @@
   });
 </script>
 
-<div class="container mx-auto p-8">
-  <h1 class="text-3xl font-bold mb-6">Market Research Agent - Status Updates</h1>
-  
+<div class="container mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-6">Market Research Agent</h1>
+
   <div class="mb-6">
-    <h2 class="text-xl font-semibold mb-4">Research Controls</h2>
-    
-    <div class="flex gap-4 items-end mb-4">
-      <div class="form-control">
-        <label class="label" for="stock-symbol">
-          <span class="label-text">Stock Symbol</span>
-        </label>
-        <input 
-          id="stock-symbol"
-          type="text" 
-          placeholder="e.g., AAPL, MSFT, PG" 
-          class="input input-bordered w-40" 
-          bind:value={stockSymbol}
-          disabled={isRunningResearch}
-        />
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title">Research Controls</h2>
+        <div class="flex flex-wrap gap-4 items-end">
+          <div class="form-control">
+            <label class="label" for="stock-symbol">
+              <span class="label-text">Stock Symbol</span>
+            </label>
+            <input
+              id="stock-symbol"
+              type="text"
+              placeholder="e.g., AAPL, MSFT, PG"
+              class="input input-bordered w-40"
+              bind:value={stockSymbol}
+              disabled={isRunningResearch}
+            />
+          </div>
+
+          <button
+            class="btn btn-primary"
+            class:loading={isRunningResearch}
+            on:click={runResearch}
+            disabled={isRunningResearch || !stockSymbol.trim()}
+          >
+            {isRunningResearch ? 'Running Research...' : 'Run Research'}
+          </button>
+        </div>
       </div>
-      
-      <button 
-        class="btn btn-primary" 
-        on:click={runResearch}
-        disabled={isRunningResearch || !stockSymbol.trim()}
-      >
-        {isRunningResearch ? 'Running Research...' : 'Run Research'}
-      </button>
     </div>
   </div>
 
   <div class="mb-4">
     <h2 class="text-xl font-semibold">Redis Pub/Sub Status Updates</h2>
-    <p class="text-gray-600">Raw status messages from research flows:</p>
+    <p class="text-base-content/60">Raw status messages from research flows:</p>
   </div>
 
-  <div class="bg-black text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
-    {#if redisConnectionError}
-      <div class="text-red-400">❌ Redis is not reachable - status updates unavailable</div>
-    {:else if statusUpdates.length === 0}
-      <div class="text-gray-500">Listening for status updates...</div>
-    {/if}
-    
-    {#each statusUpdates as update, index}
-      <div class="mb-2">
-        <span class="text-gray-400">[{index + 1}]</span> 
-        {JSON.stringify(update)}
+  <div class="card bg-base-100 shadow">
+    <div class="card-body gap-3">
+      {#if redisConnectionError}
+        <div role="alert" class="alert alert-error">
+          <span>Redis is not reachable - status updates unavailable</span>
+        </div>
+      {:else if statusUpdates.length === 0}
+        <div role="alert" class="alert alert-info">
+          <span>Listening for status updates...</span>
+        </div>
+      {/if}
+
+      <div class="mockup-code max-h-96 overflow-y-auto text-sm">
+        {#each statusUpdates as update, index}
+          <pre data-prefix={index + 1}><code>{JSON.stringify(update)}</code></pre>
+        {/each}
       </div>
-    {/each}
+    </div>
   </div>
-  
-  <div class="mt-4 text-sm text-gray-500">
-    Total messages received: {statusUpdates.length}
+
+  <div class="mt-4 text-sm">
+    Total messages received: <span class="badge badge-outline">{statusUpdates.length}</span>
   </div>
 </div>
