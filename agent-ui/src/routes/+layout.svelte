@@ -9,7 +9,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-dvh bg-base-200 text-base-content" data-theme="corporate">
+<div class="min-h-dvh bg-base-200 text-base-content flex flex-col" data-theme="corporate">
   <header class="navbar bg-base-100 shadow">
     <div class="container mx-auto px-4">
       <div class="flex-1">
@@ -18,7 +18,7 @@
     </div>
   </header>
 
-  <main class="container mx-auto px-4 py-6">
+  <main class="container mx-auto px-4 py-6 flex-grow">
     {@render children?.()}
   </main>
 

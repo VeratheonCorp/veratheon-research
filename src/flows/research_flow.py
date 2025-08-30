@@ -26,7 +26,7 @@ load_dotenv()
 
 async def main_research_flow(
     symbol: str,
-) -> TradeIdea:
+) -> dict:
 
     start_time = time.time()
     logger.info(f"Main research flow started for {symbol}")
@@ -105,4 +105,15 @@ async def main_research_flow(
     
     await publish_status_update_task("completed", {"flow": "main_research_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
     
-    return trade_ideas_flow_result
+    return {
+        "symbol": symbol,
+        "historical_earnings_analysis": historical_earnings_analysis.model_dump(),
+        "financial_statements_analysis": financial_statements_analysis.model_dump(),
+        "earnings_projections_analysis": earnings_projections_analysis.model_dump(),
+        "management_guidance_analysis": management_guidance_analysis.model_dump(),
+        "peer_group": peer_group.model_dump(),
+        "forward_pe_sanity_check": forward_pe_sanity_check.model_dump(),
+        "forward_pe_valuation": forward_pe_flow_result.model_dump(),
+        "news_sentiment_summary": news_sentiment_flow_result.model_dump(),
+        "trade_idea": trade_ideas_flow_result.model_dump()
+    }

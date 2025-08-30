@@ -40,11 +40,8 @@ async def run_research(req: ResearchRequest):
     try:
         logger.info(f"Starting market research via API for symbol={req.symbol}")
         result = await main_research_flow(symbol=req.symbol)
-        # Returning a plain dict to avoid model version serialization differences
-        return {
-            "symbol": req.symbol,
-            "result": result.model_dump(),
-        }
+        # result is now already a dict with all analysis models
+        return result
     except Exception as e:
         logger.exception("Error running market research")
         raise HTTPException(status_code=500, detail=str(e))
