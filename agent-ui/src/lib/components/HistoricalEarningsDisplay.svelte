@@ -67,7 +67,7 @@
             {formatEnumValue(analysis.earnings_pattern)}
           </div>
         </div>
-        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none">{@html renderMarkdown(analysis.earnings_pattern_details || '')}</div>
+        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none whitespace-normal break-words">{@html renderMarkdown(analysis.earnings_pattern_details || '')}</div>
       </div>
 
       <!-- Revenue Growth Trend -->
@@ -78,7 +78,7 @@
             {formatEnumValue(analysis.revenue_growth_trend)}
           </div>
         </div>
-        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none">{@html renderMarkdown(analysis.revenue_growth_details || '')}</div>
+        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none whitespace-normal break-words">{@html renderMarkdown(analysis.revenue_growth_details || '')}</div>
       </div>
 
       <!-- Margin Trend -->
@@ -89,7 +89,7 @@
             {formatEnumValue(analysis.margin_trend)}
           </div>
         </div>
-        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none">{@html renderMarkdown(analysis.margin_trend_details || '')}</div>
+        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none whitespace-normal break-words">{@html renderMarkdown(analysis.margin_trend_details || '')}</div>
       </div>
     </div>
 
