@@ -44,6 +44,7 @@
 		"vitest-browser-svelte": "^0.1.0"
 	},
 	"dependencies": {
+		"marked": "^16.2.1",
 		"redis": "^5.8.2"
 	}
 }

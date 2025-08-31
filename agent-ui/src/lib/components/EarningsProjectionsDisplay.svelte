@@ -1,5 +1,11 @@
 <script lang="ts">
+  import { marked } from 'marked';
+  
   export let analysis: any;
+  
+  function renderMarkdown(text: string) {
+    return marked(text);
+  }
 </script>
 
 <div class="collapse collapse-arrow bg-base-100 shadow mb-4">
@@ -27,7 +33,7 @@
     </div>
     {#if analysis.detailed_analysis}
       <div class="mt-4 p-4 bg-base-200 rounded-lg">
-        <p class="text-sm whitespace-pre-wrap">{analysis.detailed_analysis}</p>
+        <p class="text-sm prose prose-sm max-w-none">{@html renderMarkdown(analysis.detailed_analysis)}</p>
       </div>
     {/if}
   </div>

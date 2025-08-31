@@ -1,5 +1,11 @@
 <script lang="ts">
+  import { marked } from 'marked';
+  
   export let analysis: any;
+  
+  function renderMarkdown(text: string) {
+    return marked(text);
+  }
 </script>
 
 <div class="collapse collapse-arrow bg-base-100 shadow mb-4">
@@ -8,29 +14,24 @@
     News Sentiment Analysis
   </div>
   <div class="collapse-content">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {#if analysis.overall_sentiment}
-        <div class="stat bg-base-200 rounded-lg">
-          <div class="stat-title">Overall Sentiment</div>
-          <div class="stat-value text-sm">
-            <div class="badge badge-info badge-lg">
-              {analysis.overall_sentiment?.replace(/_/g, ' ') || 'N/A'}
-            </div>
-          </div>
+    {#if analysis.overall_sentiment_label}
+      <div class="mb-4 p-4 bg-base-200 rounded-lg">
+        <h4 class="font-medium mb-2">Overall Sentiment</h4>
+        <div class="badge badge-info badge-lg">
+          {analysis.overall_sentiment_label?.replace(/_/g, ' ') || 'N/A'}
         </div>
-      {/if}
-      {#if analysis.sentiment_score}
-        <div class="stat bg-base-200 rounded-lg">
-          <div class="stat-title">Sentiment Score</div>
-          <div class="stat-value text-lg">
-            {analysis.sentiment_score?.toFixed(2) || 'N/A'}
-          </div>
-        </div>
-      {/if}
-    </div>
-    {#if analysis.sentiment_summary}
-      <div class="mt-4 p-4 bg-base-200 rounded-lg">
-        <p class="text-sm whitespace-pre-wrap">{analysis.sentiment_summary}</p>
+      </div>
+    {/if}
+    {#if analysis.symbol}
+      <div class="mb-4 p-4 bg-base-200 rounded-lg">
+        <h4 class="font-medium mb-2">Symbol</h4>
+        <p class="text-sm">{analysis.symbol}</p>
+      </div>
+    {/if}
+    {#if analysis.news_sentiment_analysis}
+      <div class="mb-4 p-4 bg-base-200 rounded-lg">
+        <h4 class="font-medium mb-2">News Sentiment Analysis</h4>
+        <p class="text-sm prose prose-sm max-w-none">{@html renderMarkdown(analysis.news_sentiment_analysis)}</p>
       </div>
     {/if}
   </div>

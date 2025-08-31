@@ -1,7 +1,12 @@
 <script lang="ts">
   import type { HistoricalEarningsAnalysis, EarningsPattern, RevenueGrowthTrend, MarginTrend } from '$lib/research-types';
+  import { marked } from 'marked';
 
   export let analysis: HistoricalEarningsAnalysis;
+
+  function renderMarkdown(text: string) {
+    return marked(text);
+  }
 
   function getPatternBadgeClass(pattern: EarningsPattern): string {
     switch (pattern) {
@@ -62,7 +67,7 @@
             {formatEnumValue(analysis.earnings_pattern)}
           </div>
         </div>
-        <div class="stat-desc text-sm mt-2">{analysis.earnings_pattern_details}</div>
+        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none">{@html renderMarkdown(analysis.earnings_pattern_details || '')}</div>
       </div>
 
       <!-- Revenue Growth Trend -->
@@ -73,7 +78,7 @@
             {formatEnumValue(analysis.revenue_growth_trend)}
           </div>
         </div>
-        <div class="stat-desc text-sm mt-2">{analysis.revenue_growth_details}</div>
+        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none">{@html renderMarkdown(analysis.revenue_growth_details || '')}</div>
       </div>
 
       <!-- Margin Trend -->
@@ -84,7 +89,7 @@
             {formatEnumValue(analysis.margin_trend)}
           </div>
         </div>
-        <div class="stat-desc text-sm mt-2">{analysis.margin_trend_details}</div>
+        <div class="stat-desc text-sm mt-2 prose prose-sm max-w-none">{@html renderMarkdown(analysis.margin_trend_details || '')}</div>
       </div>
     </div>
 
@@ -114,7 +119,7 @@
         <div class="space-y-2">
           {#each analysis.key_insights as insight, index}
             <div class="alert alert-info">
-              <span class="text-sm">{insight}</span>
+              <span class="text-sm prose prose-sm max-w-none">{@html renderMarkdown(insight)}</span>
             </div>
           {/each}
         </div>
@@ -129,7 +134,7 @@
       </div>
       <div class="collapse-content">
         <div class="prose prose-sm max-w-none">
-          <p class="whitespace-pre-wrap">{analysis.full_analysis}</p>
+          <p>{@html renderMarkdown(analysis.full_analysis || '')}</p>
         </div>
       </div>
     </div>
