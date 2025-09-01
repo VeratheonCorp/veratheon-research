@@ -7,39 +7,20 @@ financial_statements_analysis_agent = Agent(
             model=get_model(),
             output_type=FinancialStatementsAnalysis,
             instructions="""
-            You are a financial analyst specializing in analyzing recent financial statements for changes in revenue drivers, cost structures, and working capital.
+            Analyze recent financial statements for changes affecting near-term projection accuracy.
 
-            - You will be given the following information:
-                - symbol: The stock symbol to research
-                - financial_statements_data: FinancialStatementsData containing income statements, balance sheets, and cash flow statements
-                
-            OUTPUT REQUIREMENTS - Use Specific Enum Values:
-            - revenue_driver_trend: Use RevenueDriverTrend enum (STRENGTHENING, WEAKENING, STABLE, VOLATILE, INSUFFICIENT_DATA)
-            - cost_structure_trend: Use CostStructureTrend enum (IMPROVING_EFFICIENCY, DETERIORATING_EFFICIENCY, STABLE_STRUCTURE, VOLATILE_COSTS, INSUFFICIENT_DATA)
-            - working_capital_trend: Use WorkingCapitalTrend enum (IMPROVING_MANAGEMENT, DETERIORATING_MANAGEMENT, STABLE_MANAGEMENT, CASH_FLOW_CONCERNS, INSUFFICIENT_DATA)
+            ENUM REQUIREMENTS:
+            - revenue_driver_trend: RevenueDriverTrend (STRENGTHENING, WEAKENING, STABLE, VOLATILE, INSUFFICIENT_DATA)
+            - cost_structure_trend: CostStructureTrend (IMPROVING_EFFICIENCY, DETERIORATING_EFFICIENCY, STABLE_STRUCTURE, VOLATILE_COSTS, INSUFFICIENT_DATA)
+            - working_capital_trend: WorkingCapitalTrend (IMPROVING_MANAGEMENT, DETERIORATING_MANAGEMENT, STABLE_MANAGEMENT, CASH_FLOW_CONCERNS, INSUFFICIENT_DATA)
 
-            INSTRUCTIONS:
-            - Analyze recent financial statements (typically last 2-3 years/quarters) for significant changes
-            - Focus on revenue drivers: What's driving revenue growth or decline? Product mix changes, pricing power, volume changes, new markets, etc.
-            - Examine cost structures: Changes in COGS, SG&A, R&D as % of revenue. Are costs being managed efficiently? Scale benefits or competitive pressures?
-            - Analyze working capital management: Changes in receivables, inventory, payables. Cash conversion cycle improvements or deteriorations
-            - Identify any one-time items or accounting changes that could affect near-term projections
-            - Look for seasonal patterns or cyclical business factors
-            - Assess the sustainability of current trends and their impact on near-term forecasting accuracy
+            ANALYSIS FOCUS (last 2-3 periods):
+            - Revenue drivers: Growth sources, pricing power, mix changes, new markets
+            - Cost structure: COGS, SG&A, R&D as % revenue, efficiency trends, scale benefits
+            - Working capital: Receivables, inventory, payables, cash conversion cycle
+            - One-time items and seasonal factors affecting projections
 
-            IMPORTANT:
-            - This analysis directly informs near-term projection accuracy - focus on changes that matter for quarterly/annual forecasts
-            - Be specific with numbers, percentages, and time periods
-            - Highlight any red flags or concerning trends that could affect earnings quality
-            - Ground all analysis in actual financial statement data provided
-            - Focus on recent changes (last 2-3 reporting periods) rather than long-term historical trends
-            - Do not use any markdown or other formatting in your response
-
-            CRITICAL: Include critical_insights field with 2-3 key financial changes that will be used for cross-model calibration and accuracy assessment. Focus on the most important operational changes that other models should consider.
-
-            CRITICALLY IMPORTANT: 
-            - This analysis is core for grounding consensus estimates in actual financial data
-            - Identify changes that could make current analyst estimates too optimistic or pessimistic
-            - Focus on operational changes that affect the business fundamentals driving earnings
+            Identify changes that could make consensus estimates too optimistic/pessimistic.
+            Include critical_insights field with 2-3 key financial changes for cross-model calibration.
         """,
         )

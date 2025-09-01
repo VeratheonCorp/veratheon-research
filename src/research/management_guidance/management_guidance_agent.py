@@ -13,56 +13,27 @@ management_guidance_analysis_agent = Agent(
     model=get_model(),
     output_type=ManagementGuidanceAnalysis,
     instructions="""
-    Analyze management guidance from earnings call transcripts to validate consensus estimates.
-    Use historical earnings patterns and recent financial trends to interpret management guidance in context.
+    Extract and validate management guidance from earnings transcripts against consensus estimates.
 
-    Key Tasks:
+    ENUM REQUIREMENTS:
+    - overall_guidance_tone: GuidanceTone (OPTIMISTIC, CAUTIOUS, NEUTRAL, PESSIMISTIC, MIXED_SIGNALS)
+    - guidance_direction fields: GuidanceDirection (POSITIVE, NEGATIVE, NEUTRAL, UNCLEAR)
+    - guidance_confidence: GuidanceConfidence (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA) 
+    - consensus_validation_signal: ConsensusValidationSignal (BULLISH, BEARISH, NEUTRAL, MIXED)
+
+    ANALYSIS APPROACH:
     - Extract forward-looking statements on revenue, margins, expenses, EPS
-    - Identify risks, opportunities, and management tone
-    - Validate against consensus earnings estimates
-    - Interpret guidance using historical patterns and financial context
+    - Flag evasive language: vague terms, buzzwords without metrics, blame deflection
+    - Cross-check against historical patterns (conservative vs aggressive guidance history)
+    - Validate against recent financial trends from other analyses
+    
+    CONSENSUS VALIDATION:
+    - BULLISH: Guidance suggests upside + context supports
+    - BEARISH: Guidance suggests downside + context confirms
+    - NEUTRAL: Mixed signals or aligns with consensus
+    - MIXED: Conflicting signals needing analysis
 
-    CRITICAL: Contextualize Guidance with Historical & Financial Data:
-    
-    When historical_earnings_analysis is provided:
-    - Compare management guidance against historical earnings patterns (beats/misses)
-    - If company has pattern of conservative guidance → aggressive guidance signals confidence
-    - If company has pattern of missing estimates → treat optimistic guidance with skepticism
-    - Use revenue growth trends and margin trends to validate revenue/margin guidance
-    - Consider earnings volatility when assessing guidance reliability
-    
-    When financial_statements_analysis is provided:
-    - Cross-check guidance against recent financial trends (revenue drivers, cost structure, working capital)
-    - If management guides for growth but recent financials show deteriorating trends → flag mismatch
-    - If guidance aligns with improving financial fundamentals → increase confidence
-    - Use cost structure trends to validate margin guidance
-    - Consider working capital trends when evaluating cash flow/operations guidance
-
-    Language Analysis:
-    DON'T trust sentiment scores - look for evasive language patterns:
-    - Vague terms: "challenging environment," "headwinds," "working through"
-    - Buzzwords without metrics: "transformation," "optimization," "strategic initiatives"
-    - Deflecting blame to external factors
-    - Emphasizing "long-term vision" when asked about near-term performance
-    
-    Trust direct language over positive sentiment scores. Flag evasive responses.
-
-    OUTPUT REQUIREMENTS - Use Specific Enum Values:
-    - overall_guidance_tone: Use GuidanceTone enum (OPTIMISTIC, CAUTIOUS, NEUTRAL, PESSIMISTIC, MIXED_SIGNALS)
-    - revenue/margin/eps_guidance_direction: Use GuidanceDirection enum (POSITIVE, NEGATIVE, NEUTRAL, UNCLEAR)
-    - guidance_confidence: Use GuidanceConfidence enum (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
-    - consensus_validation_signal: Use ConsensusValidationSignal enum (BULLISH, BEARISH, NEUTRAL, MIXED)
-    - direction/confidence in guidance_indicators: Use GuidanceDirection/GuidanceConfidence enums
-
-    Consensus Validation Logic:
-    - BULLISH: Guidance suggests upside to consensus + historical/financial context supports
-    - BEARISH: Guidance suggests downside to consensus + context confirms concerns
-    - NEUTRAL: Mixed signals or guidance aligns with consensus expectations
-    - MIXED: Conflicting signals requiring further analysis
-    
-    CRITICAL: Include critical_insights field with 2-3 key insights that will be used for cross-model calibration and accuracy assessment. Focus on the most important analytical discoveries that other models should consider.
-    
-    Focus on actionable guidance for next 1-2 quarters vs consensus expectations.
+    Include critical_insights field with 2-3 key guidance insights for cross-model calibration.
     """
 )
 

@@ -7,38 +7,19 @@ historical_earnings_analysis_agent = Agent(
             model=get_model(),
             output_type=HistoricalEarningsAnalysis,
             instructions="""
-            You are a financial analyst specializing in historical earnings analysis to identify patterns and trends.
+            Analyze historical earnings patterns to establish baseline performance for future validation.
 
-            - You will be given the following information:
-                - symbol: The stock symbol to research
-                - historical_earnings_data: HistoricalEarningsData containing quarterly earnings, annual earnings, and income statement data
-                
-            INSTRUCTIONS:
-            - Analyze historical earnings data for patterns in beats/misses against consensus estimates
-            - Examine revenue growth rates over time to identify trends
-            - Analyze margin trends including gross margins, operating margins, and net margins
-            - Look for consistency and predictability in earnings performance
-            - Identify seasonal patterns or cyclical behaviors
-            - Assess the quality and reliability of earnings (recurring vs one-time items)
-            - Calculate beat/miss percentages and frequency patterns
-            - Analyze revenue growth quarter-over-quarter and year-over-year
-            - Examine margin expansion or compression trends
+            ENUM REQUIREMENTS:
+            - earnings_pattern: EarningsPattern (CONSISTENT_BEATS, CONSISTENT_MISSES, MIXED_PATTERN, VOLATILE, INSUFFICIENT_DATA)
+            - revenue_growth_trend: RevenueGrowthTrend (ACCELERATING, DECELERATING, STABLE, DECLINING, VOLATILE, INSUFFICIENT_DATA) 
+            - margin_trend: MarginTrend (IMPROVING, DETERIORATING, STABLE, VOLATILE, INSUFFICIENT_DATA)
 
-            OUTPUT REQUIREMENTS - Use Specific Enum Values:
-            - earnings_pattern: Use EarningsPattern enum (CONSISTENT_BEATS, CONSISTENT_MISSES, MIXED_PATTERN, VOLATILE, INSUFFICIENT_DATA)
-            - revenue_growth_trend: Use RevenueGrowthTrend enum (ACCELERATING, DECELERATING, STABLE, DECLINING, VOLATILE, INSUFFICIENT_DATA)
-            - margin_trend: Use MarginTrend enum (IMPROVING, DETERIORATING, STABLE, VOLATILE, INSUFFICIENT_DATA)
-
-            IMPORTANT:
-            - Focus on establishing baseline performance patterns that provide context for future earnings validation
-            - Be specific with numbers, percentages, and timeframes
-            - Do not use any markdown or other formatting in your response
-            - Ground all analysis in the actual data provided
-
-            CRITICAL: Include critical_insights field with 2-3 key historical patterns that will be used for cross-model calibration and accuracy assessment. Focus on the most predictive historical behaviors that other models should consider.
-
-            CRITICALLY IMPORTANT: 
-            - Focus on patterns that indicate predictability and reliability of earnings
-            - Highlight any concerning trends that might affect future earnings quality
+            ANALYSIS FOCUS:
+            - Beat/miss patterns vs consensus estimates with percentages and frequencies
+            - Revenue growth trends (QoQ, YoY) and seasonal patterns
+            - Margin trends (gross, operating, net) and sustainability
+            - Earnings quality and predictability indicators
+            
+            Include critical_insights field with 2-3 key patterns for cross-model calibration.
         """,
         )
