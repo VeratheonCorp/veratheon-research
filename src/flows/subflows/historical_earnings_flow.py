@@ -1,5 +1,6 @@
 from src.tasks.historical_earnings.historical_earnings_fetch_task import historical_earnings_fetch_task
 from src.tasks.historical_earnings.historical_earnings_analysis_task import historical_earnings_analysis_task
+from src.tasks.historical_earnings.historical_earnings_reporting_task import historical_earnings_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsData, HistoricalEarningsAnalysis
 import logging
@@ -32,6 +33,9 @@ async def historical_earnings_flow(symbol: str) -> HistoricalEarningsAnalysis:
     historical_analysis: HistoricalEarningsAnalysis = await historical_earnings_analysis_task(
         symbol, historical_data
     )
+
+    # Generate reporting output
+    await historical_earnings_reporting_task(symbol, historical_analysis)
 
     logger.info(f"Historical Earnings flow completed for {symbol}")
     logger.info(f"Historical Earnings flow completed for {symbol} in {int(time.time() - start_time)} seconds")

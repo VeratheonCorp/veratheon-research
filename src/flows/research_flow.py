@@ -8,6 +8,8 @@ from src.flows.subflows.financial_statements_flow import financial_statements_fl
 from src.flows.subflows.earnings_projections_flow import earnings_projections_flow
 from src.flows.subflows.management_guidance_flow import management_guidance_flow
 from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.common.peer_group_reporting_task import peer_group_reporting_task
+from src.tasks.common.reporting_directory_setup_task import ensure_reporting_directory_exists
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
@@ -30,6 +32,9 @@ async def main_research_flow(
 
     start_time = time.time()
     logger.info(f"Main research flow started for {symbol}")
+    
+    # Ensure reporting directory exists
+    await ensure_reporting_directory_exists()
     
     await publish_status_update_task("starting", {"flow": "main_research_flow", "symbol": symbol})
 
@@ -55,6 +60,9 @@ async def main_research_flow(
 
     # Step 5: Peer group identification (enhanced with financial context)
     peer_group: PeerGroup = await peer_group_agent(symbol, financial_statements_analysis)
+    
+    # Generate peer group reporting output
+    await peer_group_reporting_task(symbol, peer_group)
 
     # Step 6: Forward PE sanity check
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol)

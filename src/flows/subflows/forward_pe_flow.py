@@ -1,6 +1,7 @@
 from src.tasks.forward_pe.forward_pe_fetch_earnings_task import forward_pe_fetch_single_earnings_task, forward_pe_fetch_earnings_for_symbols_task
 from src.tasks.forward_pe.forward_pe_analysis_task import forward_pe_analysis_task
 from src.tasks.forward_pe.forward_pe_sanity_check_task import forward_pe_sanity_check_task
+from src.tasks.forward_pe.forward_pe_reporting_task import forward_pe_valuation_reporting_task, forward_pe_sanity_check_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPEEarningsSummary, ForwardPeSanityCheck
 from src.research.common.models.peer_group import PeerGroup
@@ -47,6 +48,9 @@ async def forward_pe_flow(
         forward_pe_sanity_check
     )
 
+    # Generate reporting output
+    await forward_pe_valuation_reporting_task(symbol, forward_pe_valuation)
+
     logger.info(f"Forward PE flow completed for {symbol}")
     logger.info(f"Forward PE flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
@@ -77,6 +81,9 @@ async def forward_pe_sanity_check_flow(
 
     # Perform forward PE sanity check
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_task(earnings_summary)
+
+    # Generate reporting output
+    await forward_pe_sanity_check_reporting_task(symbol, forward_pe_sanity_check)
 
     logger.info(f"Forward PE sanity check flow completed for {symbol}")
     logger.info(f"Forward PE sanity check flow completed for {symbol} in {int(time.time() - start_time)} seconds")

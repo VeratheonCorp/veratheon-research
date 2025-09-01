@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any
 from src.tasks.earnings_projections.earnings_projections_fetch_task import earnings_projections_fetch_task
 from src.tasks.earnings_projections.earnings_projections_analysis_task import earnings_projections_analysis_task
+from src.tasks.earnings_projections.earnings_projections_reporting_task import earnings_projections_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData, EarningsProjectionAnalysis
 import logging
@@ -41,6 +42,9 @@ async def earnings_projections_flow(
     projections_analysis: EarningsProjectionAnalysis = await earnings_projections_analysis_task(
         symbol, projection_data
     )
+
+    # Generate reporting output
+    await earnings_projections_reporting_task(symbol, projections_analysis)
 
     logger.info(f"Independent Earnings Projections flow completed for {symbol}")
     logger.info(f"Independent Earnings Projections flow completed for {symbol} in {int(time.time() - start_time)} seconds")

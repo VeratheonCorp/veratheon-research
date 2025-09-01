@@ -1,5 +1,6 @@
 from src.tasks.management_guidance.management_guidance_fetch_task import management_guidance_fetch_task
 from src.tasks.management_guidance.management_guidance_analysis_task import management_guidance_analysis_task
+from src.tasks.management_guidance.management_guidance_reporting_task import management_guidance_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
 from typing import Optional, Any
@@ -41,6 +42,9 @@ async def management_guidance_flow(
     guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_analysis_task(
         symbol, guidance_data, historical_earnings_analysis, financial_statements_analysis
     )
+
+    # Generate reporting output
+    await management_guidance_reporting_task(symbol, guidance_analysis)
 
     logger.info(f"Management Guidance flow completed for {symbol}")
     logger.info(f"Management Guidance flow completed for {symbol} in {int(time.time() - start_time)} seconds")

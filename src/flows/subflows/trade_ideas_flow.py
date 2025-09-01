@@ -1,4 +1,5 @@
 from src.tasks.trade_ideas.trade_ideas_task import trade_ideas_task
+from src.tasks.trade_ideas.trade_ideas_reporting_task import trade_ideas_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.trade_ideas.trade_idea_models import TradeIdea
@@ -33,6 +34,9 @@ async def trade_ideas_flow(
         earnings_projections_analysis,
         management_guidance_analysis
     )
+    
+    # Generate reporting output
+    await trade_ideas_reporting_task(symbol, trade_idea)
     
     logger.info(f"Trade Ideas flow completed for {symbol}") 
     logger.info(f"Trade Ideas flow completed for {symbol} in {int(time.time() - start_time)} seconds")

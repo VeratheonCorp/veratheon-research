@@ -1,5 +1,6 @@
 from src.tasks.financial_statements.financial_statements_fetch_task import financial_statements_fetch_task
 from src.tasks.financial_statements.financial_statements_analysis_task import financial_statements_analysis_task
+from src.tasks.financial_statements.financial_statements_reporting_task import financial_statements_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.research.financial_statements.financial_statements_models import FinancialStatementsData, FinancialStatementsAnalysis
 import logging
@@ -31,6 +32,9 @@ async def financial_statements_flow(symbol: str) -> FinancialStatementsAnalysis:
     financial_analysis: FinancialStatementsAnalysis = await financial_statements_analysis_task(
         symbol, financial_data
     )
+
+    # Generate reporting output
+    await financial_statements_reporting_task(symbol, financial_analysis)
 
     logger.info(f"Financial statements flow completed for {symbol}")
     logger.info(f"Financial statements flow completed for {symbol} in {int(time.time() - start_time)} seconds")
