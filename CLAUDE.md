@@ -44,11 +44,31 @@ uv sync
 **UI Development** (SvelteKit frontend in `agent-ui/`):
 ```bash
 cd agent-ui
-npm run dev        # Development server
+npm install        # Install dependencies
+npm run dev        # Development server (runs on http://localhost:5173)
 npm run build      # Production build  
-npm run test       # Run tests
-npm run lint       # Linting
+npm run preview    # Preview production build
+npm run test       # Run Vitest tests
+npm run test:unit  # Run unit tests
+npm run lint       # ESLint + Prettier linting
+npm run format     # Format code with Prettier
+npm run check      # Svelte type checking
 ```
+
+**UI Tech Stack**:
+- **Svelte 5.x + SvelteKit 2.x**: Full-stack framework with TypeScript support
+- **Tailwind CSS 4.x**: Utility-first CSS framework with Vite plugin
+- **DaisyUI 5.x**: Tailwind CSS component library for UI components
+- **Vitest**: Testing framework with browser testing via Playwright
+- **ESLint + Prettier**: Code linting and formatting with Svelte support
+- **Marked**: Markdown parsing for analysis content rendering
+- **Redis**: Client library for state management integration
+
+**UI Structure**:
+- `src/routes/+page.svelte`: Main research interface
+- `src/routes/+layout.svelte`: App layout and navigation
+- `src/routes/api/research/+server.ts`: SvelteKit API endpoint for research requests
+- `src/routes/api/status-updates/+server.ts`: Real-time status updates endpoint
 
 ## Architecture
 
