@@ -47,3 +47,4 @@ class FinancialStatementsAnalysis(BaseModel):
     analysis_confidence_score: int
     data_quality_score: int
     full_analysis: str
+    critical_insights: str

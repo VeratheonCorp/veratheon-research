@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Optional
 from agents import Agent, Runner, RunResult
 from src.lib.llm_model import get_model
-from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
+from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis, GuidanceTone, GuidanceConfidence, ConsensusValidationSignal
 
 log = logging.getLogger(__name__)
 
@@ -47,10 +47,20 @@ management_guidance_analysis_agent = Agent(
     
     Trust direct language over positive sentiment scores. Flag evasive responses.
 
+    OUTPUT REQUIREMENTS - Use Specific Enum Values:
+    - overall_guidance_tone: Use GuidanceTone enum (OPTIMISTIC, CAUTIOUS, NEUTRAL, PESSIMISTIC, MIXED_SIGNALS)
+    - revenue/margin/eps_guidance_direction: Use GuidanceDirection enum (POSITIVE, NEGATIVE, NEUTRAL, UNCLEAR)
+    - guidance_confidence: Use GuidanceConfidence enum (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
+    - consensus_validation_signal: Use ConsensusValidationSignal enum (BULLISH, BEARISH, NEUTRAL, MIXED)
+    - direction/confidence in guidance_indicators: Use GuidanceDirection/GuidanceConfidence enums
+
     Consensus Validation Logic:
     - BULLISH: Guidance suggests upside to consensus + historical/financial context supports
     - BEARISH: Guidance suggests downside to consensus + context confirms concerns
     - NEUTRAL: Mixed signals or guidance aligns with consensus expectations
+    - MIXED: Conflicting signals requiring further analysis
+    
+    CRITICAL: Include critical_insights field with 2-3 key insights that will be used for cross-model calibration and accuracy assessment. Focus on the most important analytical discoveries that other models should consider.
     
     Focus on actionable guidance for next 1-2 quarters vs consensus expectations.
     """
@@ -171,16 +181,17 @@ def _create_no_transcript_analysis(symbol: str) -> ManagementGuidanceAnalysis:
         quarter_analyzed=None,
         transcript_available=False,
         guidance_indicators=[],
-        overall_guidance_tone="neutral",
+        overall_guidance_tone=GuidanceTone.NEUTRAL,
         risk_factors_mentioned=[],
         opportunities_mentioned=[],
         revenue_guidance_direction=None,
         margin_guidance_direction=None,
         eps_guidance_direction=None,
-        guidance_confidence="low",
-        consensus_validation_signal="neutral",
+        guidance_confidence=GuidanceConfidence.LOW,
+        consensus_validation_signal=ConsensusValidationSignal.NEUTRAL,
         key_guidance_summary="No earnings call transcript available for analysis",
-        analysis_notes="Management guidance analysis could not be performed due to lack of available earnings call transcript"
+        analysis_notes="Management guidance analysis could not be performed due to lack of available earnings call transcript",
+        critical_insights="No transcript available - unable to extract guidance signals for model calibration"
     )
 
 
@@ -191,16 +202,17 @@ def _create_error_analysis(symbol: str, error_msg: str) -> ManagementGuidanceAna
         quarter_analyzed=None,
         transcript_available=False,
         guidance_indicators=[],
-        overall_guidance_tone="neutral",
+        overall_guidance_tone=GuidanceTone.NEUTRAL,
         risk_factors_mentioned=[],
         opportunities_mentioned=[],
         revenue_guidance_direction=None,
         margin_guidance_direction=None,
         eps_guidance_direction=None,
-        guidance_confidence="low",
-        consensus_validation_signal="neutral",
+        guidance_confidence=GuidanceConfidence.LOW,
+        consensus_validation_signal=ConsensusValidationSignal.NEUTRAL,
         key_guidance_summary=f"Analysis failed due to error: {error_msg}",
-        analysis_notes=f"Management guidance analysis encountered an error: {error_msg}"
+        analysis_notes=f"Management guidance analysis encountered an error: {error_msg}",
+        critical_insights=f"Analysis failed - unable to extract insights due to error: {error_msg}"
     )
 
 

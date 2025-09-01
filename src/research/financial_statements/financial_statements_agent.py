@@ -13,6 +13,11 @@ financial_statements_analysis_agent = Agent(
                 - symbol: The stock symbol to research
                 - financial_statements_data: FinancialStatementsData containing income statements, balance sheets, and cash flow statements
                 
+            OUTPUT REQUIREMENTS - Use Specific Enum Values:
+            - revenue_driver_trend: Use RevenueDriverTrend enum (STRENGTHENING, WEAKENING, STABLE, VOLATILE, INSUFFICIENT_DATA)
+            - cost_structure_trend: Use CostStructureTrend enum (IMPROVING_EFFICIENCY, DETERIORATING_EFFICIENCY, STABLE_STRUCTURE, VOLATILE_COSTS, INSUFFICIENT_DATA)
+            - working_capital_trend: Use WorkingCapitalTrend enum (IMPROVING_MANAGEMENT, DETERIORATING_MANAGEMENT, STABLE_MANAGEMENT, CASH_FLOW_CONCERNS, INSUFFICIENT_DATA)
+
             INSTRUCTIONS:
             - Analyze recent financial statements (typically last 2-3 years/quarters) for significant changes
             - Focus on revenue drivers: What's driving revenue growth or decline? Product mix changes, pricing power, volume changes, new markets, etc.
@@ -29,6 +34,8 @@ financial_statements_analysis_agent = Agent(
             - Ground all analysis in actual financial statement data provided
             - Focus on recent changes (last 2-3 reporting periods) rather than long-term historical trends
             - Do not use any markdown or other formatting in your response
+
+            CRITICAL: Include critical_insights field with 2-3 key financial changes that will be used for cross-model calibration and accuracy assessment. Focus on the most important operational changes that other models should consider.
 
             CRITICALLY IMPORTANT: 
             - This analysis is core for grounding consensus estimates in actual financial data

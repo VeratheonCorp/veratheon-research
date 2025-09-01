@@ -14,6 +14,11 @@ forward_pe_analysis_agent = Agent(
                 - peer_group: List of peer symbols
                 - earnings_summary: EarningsSummary containing the earnings data
                 
+            OUTPUT REQUIREMENTS - Use Specific Enum Values:
+            - valuation_attractiveness: Use ValuationAttractiveness enum (UNDERVALUED, FAIRLY_VALUED, OVERVALUED, EXTREME_VALUATION)
+            - earnings_quality: Use EarningsQuality enum (HIGH_QUALITY, ADEQUATE_QUALITY, QUESTIONABLE_QUALITY, POOR_QUALITY)
+            - confidence: Use ValuationConfidence enum (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
+
             INSTRUCTIONS:
             - Perform an analysis of the forward P/E for the given original symbol. 
             - Use the Overview data to sanity check your analysis.
@@ -27,6 +32,8 @@ forward_pe_analysis_agent = Agent(
             IMPORTANT:
             - This analysis is one piece of a larger workflow. Do not make any sweeping assumptions about the broader market or economy. Constrain your analysis to the data provided.
             - Do not use any markdown or other formatting in your response.
+
+            CRITICAL: Include critical_insights field with 2-3 key valuation insights that will be used for cross-model calibration and accuracy assessment. Focus on the most important valuation discoveries that other models should consider.
 
             CRITICALLY IMPORTANT: 
             - YOUR ANALYSIS MUST BE FOR THE ORIGINAL SYMBOL.

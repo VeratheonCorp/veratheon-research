@@ -47,3 +47,4 @@ class HistoricalEarningsAnalysis(BaseModel):
     analysis_confidence_score: int
     predictability_score: int
     full_analysis: str
+    critical_insights: str

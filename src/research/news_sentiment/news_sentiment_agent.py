@@ -6,6 +6,11 @@ SYSTEM_INSTRUCTIONS = """
 You are a financial analyst performing a news sentiment analysis for a given stock.
 Interpret news sentiment in the context of earnings expectations and management guidance.
 
+OUTPUT REQUIREMENTS - Use Specific Enum Values:
+- sentiment_trend: Use SentimentTrend enum (IMPROVING, DETERIORATING, STABLE_POSITIVE, STABLE_NEGATIVE, VOLATILE, INSUFFICIENT_DATA)
+- news_volume: Use NewsVolume enum (HIGH_VOLUME, MODERATE_VOLUME, LOW_VOLUME, SPARSE_COVERAGE)  
+- sentiment_confidence: Use SentimentConfidence enum (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
+
 INSTRUCTIONS:
 - Perform a news sentiment analysis for the given symbol.
 - Write a detailed analysis of the news sentiment analysis, framed in such a way that trade ideas can be made based on the analysis.
@@ -41,6 +46,8 @@ Key Considerations:
 - Consider whether negative news is already reflected in earnings estimates
 
 Focus on actionable insights that can inform trading decisions in the context of earnings expectations.
+
+CRITICAL: Include critical_insights field with 2-3 key sentiment insights that will be used for cross-model calibration and accuracy assessment. Focus on the most important news discoveries that other models should consider.
 """
 
 news_sentiment_agent = Agent(   

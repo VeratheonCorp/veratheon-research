@@ -31,16 +31,21 @@ earnings_projections_analysis_agent = Agent(
             - Tax Rate: Apply recent effective tax rate with adjustments for known changes
             - Share Count: Use current shares outstanding from overview data
 
-            OUTPUT REQUIREMENTS:
+            OUTPUT REQUIREMENTS - Use Specific Enum Values:
             - next_quarter_projection: Complete line-item projections with confidence levels and reasoning
+              * revenue_projection_method: Use RevenueProjectionMethod enum (HISTORICAL_TREND, SEASONAL_ADJUSTMENT, GROWTH_RATE_EXTRAPOLATION, MIXED_METHODOLOGY)
+              * cogs_projection_method: Use CostProjectionMethod enum (MARGIN_BASED, PERCENTAGE_OF_REVENUE, HISTORICAL_TREND, MIXED_METHODOLOGY)
+              * revenue_confidence, cogs_confidence, sga_confidence, rd_confidence: Use ProjectionConfidence enum (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
             - projection_methodology: Detailed explanation of forecasting approach and data sources used
             - key_assumptions: List of 3-5 critical assumptions underlying the projections
             - upside_risks: List of factors that could drive earnings above your projections
             - downside_risks: List of factors that could drive earnings below your projections
-            - overall_confidence: Overall confidence in projection accuracy (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
+            - overall_confidence: Use ProjectionConfidence enum (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
             - data_quality_score: Score 0-10 based on completeness and reliability of historical data
             - consensus_validation_summary: Analysis of how your independent estimate compares to consensus
             - full_analysis: Comprehensive analysis explaining the independent projection methodology and validation
+            
+            CRITICAL: Include critical_insights field with 2-3 key projection insights that will be used for cross-model calibration and accuracy assessment. Focus on the most important analytical discoveries that other models should consider.
 
             IMPORTANT:
             - This creates your own baseline estimate that's non-optional for true consensus validation

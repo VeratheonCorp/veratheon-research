@@ -90,3 +90,4 @@ class EarningsProjectionAnalysis(BaseModel):
     data_quality_score: int
     consensus_validation_summary: str
     full_analysis: str
+    critical_insights: str
