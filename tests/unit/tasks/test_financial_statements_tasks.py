@@ -81,7 +81,8 @@ class TestFinancialStatementsAnalysisTask:
             near_term_projection_risks=["Market competition risk"],
             analysis_confidence_score=85,
             data_quality_score=90,
-            full_analysis="Strong financial performance with improving margins and efficiency"
+            long_form_analysis="Strong financial performance with improving margins and efficiency",
+            critical_insights="Improving financial metrics indicate operational efficiency gains"
         )
         
         # Mock the runner result

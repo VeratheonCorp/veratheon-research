@@ -54,7 +54,8 @@ class TestMainResearchFlow:
             key_insights=["Strong pricing power", "Operational efficiency gains"],
             analysis_confidence_score=85,
             predictability_score=90,
-            full_analysis="Strong historical performance with consistent beats"
+            long_form_analysis="Strong historical performance with consistent beats",
+            critical_insights="Company shows strong fundamental strength"
         )
         mock_historical_earnings_flow.return_value = mock_historical
         
@@ -71,7 +72,8 @@ class TestMainResearchFlow:
             near_term_projection_risks=["Market competition risk"],
             analysis_confidence_score=85,
             data_quality_score=90,
-            full_analysis="Strong financial performance with improving margins and efficiency"
+            long_form_analysis="Strong financial performance with improving margins and efficiency",
+            critical_insights="Improving financial metrics support earnings growth trajectory"
         )
         mock_financial_statements_flow.return_value = mock_financial
         
@@ -124,7 +126,8 @@ class TestMainResearchFlow:
             overall_confidence="HIGH",
             data_quality_score=85,
             consensus_validation_summary="Our projection is 6% above consensus, driven by stronger revenue outlook",
-            full_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings"
+            long_form_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings",
+            critical_insights="Strong fundamentals support above-consensus earnings potential"
         )
         mock_earnings_projections_flow.return_value = mock_projections
         
@@ -134,16 +137,17 @@ class TestMainResearchFlow:
             quarter_analyzed="2024Q1",
             transcript_available=True,
             guidance_indicators=[],
-            overall_guidance_tone="optimistic",
+            overall_guidance_tone="OPTIMISTIC",
             risk_factors_mentioned=["Supply chain constraints"],
             opportunities_mentioned=["New product launches", "Market expansion"],
-            revenue_guidance_direction="positive",
-            margin_guidance_direction="neutral",
-            eps_guidance_direction="positive",
-            guidance_confidence="high",
-            consensus_validation_signal="bullish",
+            revenue_guidance_direction="POSITIVE",
+            margin_guidance_direction="NEUTRAL",
+            eps_guidance_direction="POSITIVE",
+            guidance_confidence="HIGH",
+            consensus_validation_signal="BULLISH",
             key_guidance_summary="Management provided bullish guidance for next quarter with strong revenue outlook",
-            analysis_notes="Overall positive tone with specific revenue growth drivers mentioned"
+            long_form_analysis="Overall positive tone with specific revenue growth drivers mentioned",
+            critical_insights="Management guidance reinforces positive fundamental outlook"
         )
         mock_management_guidance_flow.return_value = mock_guidance
         
@@ -156,35 +160,66 @@ class TestMainResearchFlow:
         
         # Mock forward PE sanity check
         mock_sanity = ForwardPeSanityCheck(
-            analysis="Earnings data appears consistent and reliable for forward PE calculation",
-            realistic=ForwardPeSanityCheckRealistic.REALISTIC
+            symbol="AAPL",
+            earnings_data_quality="HIGH_QUALITY",
+            consensus_reliability="HIGH",
+            long_form_analysis="Earnings data appears consistent and reliable for forward PE calculation",
+            is_realistic=ForwardPeSanityCheckRealistic.REALISTIC,
+            critical_insights="Earnings data quality supports reliable valuation analysis"
         )
         mock_forward_pe_sanity_check_flow.return_value = mock_sanity
         
         # Mock forward PE valuation
         mock_pe_valuation = ForwardPeValuation(
-            analysis="Trading below peer average with strong fundamentals",
-            analysis_confidence_score=85
+            symbol="AAPL",
+            current_price=150.0,
+            forward_pe_ratio=22.5,
+            sector_average_pe=25.0,
+            historical_pe_range="18-28",
+            valuation_attractiveness="UNDERVALUED",
+            earnings_quality="HIGH_QUALITY",
+            confidence="HIGH",
+            long_form_analysis="Trading below peer average with strong fundamentals",
+            critical_insights="Undervalued relative to peers with superior fundamentals"
         )
         mock_forward_pe_flow.return_value = mock_pe_valuation
         
         # Mock news sentiment summary
         mock_sentiment = NewsSentimentSummary(
             symbol="AAPL",
+            sentiment_trend="IMPROVING",
+            news_volume="MODERATE_VOLUME",
+            sentiment_confidence="HIGH",
+            key_themes=["Strong earnings", "Product demand"],
+            positive_catalysts=["Earnings beat", "New product launches"],
+            negative_concerns=["Market volatility"],
             news_sentiment_analysis="Recent news shows positive sentiment driven by strong earnings and product demand",
-            overall_sentiment_label="POSITIVE"
+            long_form_analysis="Detailed sentiment analysis shows broad positive coverage",
+            overall_sentiment_label="POSITIVE",
+            critical_insights="News sentiment supports positive fundamental thesis"
         )
         mock_news_sentiment_flow.return_value = mock_sentiment
         
         # Mock trade ideas
         mock_trade_idea = TradeIdea(
+            symbol="AAPL",
+            trade_direction="LONG",
+            time_horizon="MEDIUM_TERM",
+            risk_level="MEDIUM",
+            overall_confidence="HIGH",
             high_level_trade_idea="BUY AAPL - Undervalued tech leader with strong fundamentals",
             reasoning="Trading below peer average with strong fundamentals and positive sentiment",
+            key_catalysts=["Earnings beat", "New product cycle"],
+            risk_factors=["Market volatility", "Economic slowdown"],
             simple_equity_trade_specifics="Long AAPL at $150, target $175, stop loss $140, 3-6 month horizon",
             option_play="Buy AAPL Mar calls, strike $155, delta 0.65, for leveraged exposure",
             simple_equity_trade_specifics_confidence_score=85,
             option_play_confidence_score=75,
-            risk_hedge="Consider position sizing at 3-5% of portfolio to manage single name risk"
+            risk_hedge="Consider position sizing at 3-5% of portfolio to manage single name risk",
+            entry_price_target="$150",
+            upside_price_target="$175",
+            downside_stop_loss="$140",
+            critical_insights="Undervaluation with strong fundamentals creates compelling risk/reward"
         )
         mock_trade_ideas_flow.return_value = mock_trade_idea
         
@@ -195,10 +230,13 @@ class TestMainResearchFlow:
         result = await main_research_flow("AAPL")
         
         # Verify the result
-        assert isinstance(result, TradeIdea)
-        assert "BUY AAPL" in result.high_level_trade_idea
-        assert result.simple_equity_trade_specifics_confidence_score == 85
-        assert result.option_play_confidence_score == 75
+        assert isinstance(result, dict)
+        assert result["symbol"] == "AAPL"
+        assert "trade_idea" in result
+        trade_idea = result["trade_idea"]
+        assert "BUY AAPL" in trade_idea["high_level_trade_idea"]
+        assert trade_idea["simple_equity_trade_specifics_confidence_score"] == 85
+        assert trade_idea["option_play_confidence_score"] == 75
         
         # Verify all flows were called in the correct order
         mock_historical_earnings_flow.assert_called_once_with("AAPL")

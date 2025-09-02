@@ -58,7 +58,8 @@ class TestHistoricalEarningsFlow:
             key_insights=["Strong pricing power", "Operational efficiency gains"],
             analysis_confidence_score=85,
             predictability_score=90,
-            full_analysis="Strong historical performance with consistent beats"
+            long_form_analysis="Strong historical performance with consistent beats",
+            critical_insights="Company shows strong fundamental strength"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -159,7 +160,8 @@ class TestEarningsProjectionsFlow:
             overall_confidence="HIGH",
             data_quality_score=85,
             consensus_validation_summary="Our projection is 6% above consensus, driven by stronger revenue outlook",
-            full_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings"
+            long_form_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings",
+            critical_insights="Strong fundamentals indicate higher than consensus earnings potential"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -261,7 +263,8 @@ class TestEarningsProjectionsFlow:
             overall_confidence="MEDIUM",
             data_quality_score=60,
             consensus_validation_summary="Limited consensus comparison available",
-            full_analysis="Analysis based on limited historical data"
+            long_form_analysis="Analysis based on limited historical data",
+            critical_insights="Limited historical data constrains projection confidence"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -316,7 +319,8 @@ class TestFinancialStatementsFlow:
             near_term_projection_risks=["Economic slowdown risk"],
             analysis_confidence_score=85,
             data_quality_score=90,
-            full_analysis="Strong financial performance with improving trends"
+            long_form_analysis="Strong financial performance with improving trends",
+            critical_insights="Financial performance trends support positive outlook"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -368,16 +372,17 @@ class TestManagementGuidanceFlow:
             quarter_analyzed="2024Q1",
             transcript_available=True,
             guidance_indicators=[],
-            overall_guidance_tone="optimistic",
+            overall_guidance_tone="OPTIMISTIC",
             risk_factors_mentioned=["Supply chain constraints"],
             opportunities_mentioned=["New product launches", "Market expansion"],
-            revenue_guidance_direction="positive",
-            margin_guidance_direction="neutral",
-            eps_guidance_direction="positive",
-            guidance_confidence="high",
-            consensus_validation_signal="bullish",
+            revenue_guidance_direction="POSITIVE",
+            margin_guidance_direction="NEUTRAL",
+            eps_guidance_direction="POSITIVE",
+            guidance_confidence="HIGH",
+            consensus_validation_signal="BULLISH",
             key_guidance_summary="Strong forward guidance provided for next quarter",
-            analysis_notes="Management provided positive outlook with specific growth drivers"
+            long_form_analysis="Management provided positive outlook with specific growth drivers",
+            critical_insights="Management guidance aligns with positive fundamental outlook"
         )
         mock_analysis_task.return_value = mock_analysis
         
@@ -396,7 +401,8 @@ class TestManagementGuidanceFlow:
             key_insights=["Strong pricing power", "Operational efficiency gains"],
             analysis_confidence_score=85,
             predictability_score=90,
-            full_analysis="Strong historical performance with consistent beats"
+            long_form_analysis="Strong historical performance with consistent beats",
+            critical_insights="Consistent historical performance indicates strong execution"
         )
         financial_context = FinancialStatementsAnalysis(
             symbol="AAPL",
@@ -410,7 +416,8 @@ class TestManagementGuidanceFlow:
             near_term_projection_risks=["Market competition risk"],
             analysis_confidence_score=85,
             data_quality_score=90,
-            full_analysis="Strong financial performance with improving trends"
+            long_form_analysis="Strong financial performance with improving trends",
+            critical_insights="Improving financial trends support growth trajectory"
         )
         
         # Execute the flow
@@ -423,7 +430,7 @@ class TestManagementGuidanceFlow:
         # Verify the result
         assert isinstance(result, ManagementGuidanceAnalysis)
         assert result.symbol == "AAPL"
-        assert result.overall_guidance_tone == "optimistic"
+        assert result.overall_guidance_tone == "OPTIMISTIC"
         
         # Verify tasks were called correctly
         mock_fetch_task.assert_called_once_with("AAPL")

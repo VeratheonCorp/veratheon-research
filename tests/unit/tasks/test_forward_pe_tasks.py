@@ -88,8 +88,12 @@ class TestForwardPESanityCheckTask:
         
         # Mock the agent response
         mock_sanity_check = ForwardPeSanityCheck(
-            analysis="Data appears reliable for analysis with consistent earnings",
-            realistic="REALISTIC"
+            symbol="AAPL",
+            earnings_data_quality="HIGH_QUALITY",
+            consensus_reliability="HIGH",
+            long_form_analysis="Data appears reliable for analysis with consistent earnings",
+            is_realistic="REALISTIC",
+            critical_insights="Earnings data quality supports reliable analysis"
         )
         
         # Mock the runner result
@@ -99,8 +103,8 @@ class TestForwardPESanityCheckTask:
         result = await forward_pe_sanity_check_task(earnings_summary)
         
         assert isinstance(result, ForwardPeSanityCheck)
-        assert result.realistic == "REALISTIC"
-        assert "consistent earnings" in result.analysis
+        assert result.is_realistic == "REALISTIC"
+        assert "consistent earnings" in result.long_form_analysis
         mock_runner.assert_called_once()
 
 
@@ -142,8 +146,16 @@ class TestForwardPEAnalysisTask:
         
         # Mock the agent response
         mock_valuation = ForwardPeValuation(
-            analysis="Trading below peer average with strong fundamentals. Forward PE of 25.0 vs peer average of 27.5 suggests undervaluation.",
-            analysis_confidence_score=85
+            symbol="AAPL",
+            current_price=150.0,
+            forward_pe_ratio=25.0,
+            sector_average_pe=27.5,
+            historical_pe_range="20-30",
+            valuation_attractiveness="UNDERVALUED",
+            earnings_quality="HIGH_QUALITY",
+            confidence="HIGH",
+            long_form_analysis="Trading below peer average with strong fundamentals. Forward PE of 25.0 vs peer average of 27.5 suggests undervaluation.",
+            critical_insights="Strong fundamentals support undervaluation thesis"
         )
         
         # Mock the runner result
@@ -158,8 +170,8 @@ class TestForwardPEAnalysisTask:
         )
         
         assert isinstance(result, ForwardPeValuation)
-        assert result.analysis_confidence_score == 85
-        assert "undervaluation" in result.analysis
+        assert result.confidence == "HIGH"
+        assert "undervaluation" in result.long_form_analysis
         mock_runner.assert_called_once()
 
     @patch('src.tasks.forward_pe.forward_pe_analysis_task.Runner.run')
@@ -175,8 +187,16 @@ class TestForwardPEAnalysisTask:
         )
         
         mock_valuation = ForwardPeValuation(
-            analysis="Limited context analysis shows fair valuation with some upside potential.",
-            analysis_confidence_score=65
+            symbol="AAPL",
+            current_price=150.0,
+            forward_pe_ratio=27.0,
+            sector_average_pe=27.5,
+            historical_pe_range="20-30",
+            valuation_attractiveness="FAIRLY_VALUED",
+            earnings_quality="ADEQUATE_QUALITY",
+            confidence="MEDIUM",
+            long_form_analysis="Limited context analysis shows fair valuation with some upside potential.",
+            critical_insights="Limited context provides moderate confidence in valuation"
         )
         
         # Mock the runner result
@@ -186,6 +206,6 @@ class TestForwardPEAnalysisTask:
         result = await forward_pe_analysis_task("AAPL", earnings_summary)
         
         assert isinstance(result, ForwardPeValuation)
-        assert result.analysis_confidence_score == 65
-        assert "Limited context" in result.analysis
+        assert result.confidence == "MEDIUM"
+        assert "Limited context" in result.long_form_analysis
         mock_runner.assert_called_once()

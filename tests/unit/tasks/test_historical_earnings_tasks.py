@@ -57,7 +57,8 @@ class TestHistoricalEarningsAnalysisTask:
             key_insights=["Strong pricing power", "Operational efficiency gains"],
             analysis_confidence_score=85,
             predictability_score=90,
-            full_analysis="Strong historical performance with consistent beats"
+            long_form_analysis="Strong historical performance with consistent beats",
+            critical_insights="Consistent beat pattern indicates strong management execution"
         )
         
         # Mock the runner result

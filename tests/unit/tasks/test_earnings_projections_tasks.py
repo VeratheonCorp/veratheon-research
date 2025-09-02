@@ -126,7 +126,8 @@ class TestEarningsProjectionsAnalysisTask:
             overall_confidence="HIGH",
             data_quality_score=85,
             consensus_validation_summary="Our projection is 6% above consensus, driven by stronger revenue outlook",
-            full_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings"
+            long_form_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings",
+            critical_insights="Strong fundamentals support above-consensus earnings potential"
         )
         
         # Mock the runner result

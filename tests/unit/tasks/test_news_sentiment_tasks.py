@@ -99,8 +99,16 @@ class TestNewsSentimentAnalysisTask:
         # Mock the agent response
         mock_sentiment = NewsSentimentSummary(
             symbol="AAPL",
+            sentiment_trend="IMPROVING",
+            news_volume="MODERATE_VOLUME",
+            sentiment_confidence="HIGH",
+            key_themes=["Earnings beat", "Product demand", "Strong fundamentals"],
+            positive_catalysts=["Earnings beat", "Product demand"],
+            negative_concerns=["Market volatility"],
             news_sentiment_analysis="Strong positive sentiment driven by earnings beat and product demand. Market shows bullish outlook on company fundamentals.",
-            overall_sentiment_label="Bullish"
+            long_form_analysis="Detailed analysis shows broad positive coverage with strong fundamentals theme",
+            overall_sentiment_label="Bullish",
+            critical_insights="Strong positive sentiment supports bullish outlook"
         )
         
         # Mock the runner result
@@ -138,8 +146,16 @@ class TestNewsSentimentAnalysisTask:
         
         mock_sentiment = NewsSentimentSummary(
             symbol="AAPL",
+            sentiment_trend="STABLE_POSITIVE",
+            news_volume="MODERATE_VOLUME",
+            sentiment_confidence="MEDIUM",
+            key_themes=["General coverage", "Stable business"],
+            positive_catalysts=["Stable fundamentals"],
+            negative_concerns=["No strong catalysts"],
             news_sentiment_analysis="Neutral sentiment with general coverage showing no strong directional bias.",
-            overall_sentiment_label="Neutral"
+            long_form_analysis="Neutral coverage with mixed signals and no clear directional bias",
+            overall_sentiment_label="Neutral",
+            critical_insights="Neutral sentiment provides limited trading signals"
         )
         
         # Mock the runner result

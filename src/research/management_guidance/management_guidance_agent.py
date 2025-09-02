@@ -161,7 +161,7 @@ def _create_no_transcript_analysis(symbol: str) -> ManagementGuidanceAnalysis:
         guidance_confidence=GuidanceConfidence.LOW,
         consensus_validation_signal=ConsensusValidationSignal.NEUTRAL,
         key_guidance_summary="No earnings call transcript available for analysis",
-        analysis_notes="Management guidance analysis could not be performed due to lack of available earnings call transcript",
+        long_form_analysis="Management guidance analysis could not be performed due to lack of available earnings call transcript",
         critical_insights="No transcript available - unable to extract guidance signals for model calibration"
     )
 
@@ -182,7 +182,7 @@ def _create_error_analysis(symbol: str, error_msg: str) -> ManagementGuidanceAna
         guidance_confidence=GuidanceConfidence.LOW,
         consensus_validation_signal=ConsensusValidationSignal.NEUTRAL,
         key_guidance_summary=f"Analysis failed due to error: {error_msg}",
-        analysis_notes=f"Management guidance analysis encountered an error: {error_msg}",
+        long_form_analysis=f"Management guidance analysis encountered an error: {error_msg}",
         critical_insights=f"Analysis failed - unable to extract insights due to error: {error_msg}"
     )
 

@@ -71,16 +71,17 @@ class TestManagementGuidanceAnalysisTask:
             quarter_analyzed="2023Q4",
             transcript_available=True,
             guidance_indicators=[],
-            overall_guidance_tone="optimistic",
+            overall_guidance_tone="OPTIMISTIC",
             risk_factors_mentioned=["Economic uncertainty"],
             opportunities_mentioned=["New product launches", "Market expansion"],
-            revenue_guidance_direction="positive",
-            margin_guidance_direction="stable",
-            eps_guidance_direction="positive",
-            guidance_confidence="high",
-            consensus_validation_signal="bullish",
+            revenue_guidance_direction="POSITIVE",
+            margin_guidance_direction="NEUTRAL",
+            eps_guidance_direction="POSITIVE",
+            guidance_confidence="HIGH",
+            consensus_validation_signal="BULLISH",
             key_guidance_summary="Strong forward guidance with positive outlook",
-            analysis_notes="Management expressed high confidence in upcoming quarters"
+            long_form_analysis="Management expressed high confidence in upcoming quarters",
+            critical_insights="Management guidance signals strong confidence in execution"
         )
         
         mock_agent.return_value = mock_analysis
@@ -95,7 +96,7 @@ class TestManagementGuidanceAnalysisTask:
         assert isinstance(result, ManagementGuidanceAnalysis)
         assert result.symbol == "AAPL"
         assert result.transcript_available is True
-        assert result.overall_guidance_tone == "optimistic"
+        assert result.overall_guidance_tone == "OPTIMISTIC"
         assert len(result.opportunities_mentioned) == 2
         assert len(result.risk_factors_mentioned) == 1
         mock_agent.assert_called_once()
@@ -116,13 +117,14 @@ class TestManagementGuidanceAnalysisTask:
             quarter_analyzed="2023Q4",
             transcript_available=True,
             guidance_indicators=[],
-            overall_guidance_tone="neutral",
+            overall_guidance_tone="NEUTRAL",
             risk_factors_mentioned=[],
             opportunities_mentioned=[],
-            guidance_confidence="medium",
-            consensus_validation_signal="neutral",
+            guidance_confidence="MEDIUM",
+            consensus_validation_signal="NEUTRAL",
             key_guidance_summary="Standard guidance provided without specific details",
-            analysis_notes="Limited forward-looking statements in transcript"
+            long_form_analysis="Limited forward-looking statements in transcript",
+            critical_insights="Limited guidance reduces forward visibility and confidence"
         )
         
         mock_agent.return_value = mock_analysis
@@ -131,5 +133,5 @@ class TestManagementGuidanceAnalysisTask:
         
         assert isinstance(result, ManagementGuidanceAnalysis)
         assert result.symbol == "AAPL"
-        assert result.overall_guidance_tone == "neutral"
+        assert result.overall_guidance_tone == "NEUTRAL"
         mock_agent.assert_called_once_with("AAPL", guidance_data, None, None)
