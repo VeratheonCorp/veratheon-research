@@ -35,7 +35,7 @@ class ForwardPeValuation(BaseModel):
     current_price: float
     forward_pe_ratio: float
     sector_average_pe: float
-    historical_pe_range: Dict[str, float]
+    historical_pe_range: str
     valuation_attractiveness: ValuationAttractiveness
     earnings_quality: EarningsQuality
     confidence: ValuationConfidence
