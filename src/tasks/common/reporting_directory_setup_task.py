@@ -12,9 +12,12 @@ async def ensure_reporting_directory_exists() -> str:
         str: Path to the reporting directory
     """
     
-    # Create reports directory in the project root
+    # Create reports directory in the project root with 777 permissions
     reports_dir = Path("reports")
-    reports_dir.mkdir(exist_ok=True)
+    reports_dir.mkdir(mode=0o777, exist_ok=True)
+    
+    # Set permissions explicitly in case umask affects mkdir
+    os.chmod(reports_dir, 0o777)
     
     logger.info(f"Reporting directory ensured at: {reports_dir.absolute()}")
     

@@ -46,5 +46,5 @@ class HistoricalEarningsAnalysis(BaseModel):
     key_insights: List[str]
     analysis_confidence_score: int
     predictability_score: int
-    full_analysis: str
+    long_form_analysis: str
     critical_insights: str

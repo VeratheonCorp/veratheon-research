@@ -15,3 +15,5 @@ wheels/
 # Test results
 .coverage
 htmlcov
+
+reports/

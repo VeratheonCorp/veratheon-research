@@ -56,5 +56,6 @@ class NewsSentimentSummary(BaseModel):
     positive_catalysts: List[str]
     negative_concerns: List[str]
     news_sentiment_analysis: str
+    long_form_analysis: str
     overall_sentiment_label: str
     critical_insights: str

@@ -46,5 +46,5 @@ class FinancialStatementsAnalysis(BaseModel):
     near_term_projection_risks: List[str]
     analysis_confidence_score: int
     data_quality_score: int
-    full_analysis: str
+    long_form_analysis: str
     critical_insights: str

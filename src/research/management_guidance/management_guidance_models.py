@@ -79,5 +79,5 @@ class ManagementGuidanceAnalysis(BaseModel):
     key_guidance_summary: str = Field(description="Summary of key guidance points for next quarter")
     
     # Metadata
-    analysis_notes: str = Field(description="Additional analysis notes and context")
+    long_form_analysis: str = Field(description="Additional analysis notes and context")
     critical_insights: str = Field(description="Critical insights for model calibration across all analyses")

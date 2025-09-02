@@ -39,8 +39,7 @@ class ForwardPeValuation(BaseModel):
     valuation_attractiveness: ValuationAttractiveness
     earnings_quality: EarningsQuality
     confidence: ValuationConfidence
-    analysis: str
-    analysis_confidence_score: int
+    long_form_analysis: str
     critical_insights: str
 
 class ForwardPeSanityCheckRealistic(str, enum.Enum):
@@ -52,6 +51,6 @@ class ForwardPeSanityCheck(BaseModel):
     symbol: str
     earnings_data_quality: EarningsQuality
     consensus_reliability: ValuationConfidence
-    analysis: str
-    realistic: ForwardPeSanityCheckRealistic
+    long_form_analysis: str
+    is_realistic: ForwardPeSanityCheckRealistic
     critical_insights: str

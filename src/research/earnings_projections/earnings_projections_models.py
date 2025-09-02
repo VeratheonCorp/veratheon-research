@@ -89,5 +89,5 @@ class EarningsProjectionAnalysis(BaseModel):
     overall_confidence: ProjectionConfidence
     data_quality_score: int
     consensus_validation_summary: str
-    full_analysis: str
+    long_form_analysis: str
     critical_insights: str
