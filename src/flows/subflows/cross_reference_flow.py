@@ -8,6 +8,7 @@ from src.research.historical_earnings.historical_earnings_models import Historic
 from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionAnalysis
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
+from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisSummary
 import logging
 import time
 from typing import List
@@ -42,6 +43,12 @@ async def cross_reference_flow(
         ],
         original_analysis_type="forward_pe"
     )
+    cross_reference_forward_pe_analysis_summary = CrossReferencedAnalysisSummary(
+        symbol=symbol,
+        original_analysis_type="forward_pe",
+        cross_reference_analysis=cross_reference_forward_pe_analysis
+    )
+    await cross_reference_reporting_task(symbol, [cross_reference_forward_pe_analysis_summary])
 
     cross_reference_news_sentiment_analysis: CrossReferencedAnalysis = await cross_reference_task(
         symbol=symbol,
@@ -55,6 +62,12 @@ async def cross_reference_flow(
         ],
         original_analysis_type="news_sentiment"
     )
+    cross_reference_news_sentiment_analysis_summary = CrossReferencedAnalysisSummary(
+        symbol=symbol,
+        original_analysis_type="news_sentiment",
+        cross_reference_analysis=cross_reference_news_sentiment_analysis
+    )
+    await cross_reference_reporting_task(symbol, [cross_reference_news_sentiment_analysis_summary])
 
     cross_reference_historical_earnings_analysis: CrossReferencedAnalysis = await cross_reference_task(
         symbol=symbol,
@@ -68,7 +81,13 @@ async def cross_reference_flow(
         ],
         original_analysis_type="historical_earnings"
     )
-
+    cross_reference_historical_earnings_analysis_summary = CrossReferencedAnalysisSummary(
+        symbol=symbol,
+        original_analysis_type="historical_earnings",
+        cross_reference_analysis=cross_reference_historical_earnings_analysis
+    )
+    await cross_reference_reporting_task(symbol, [cross_reference_historical_earnings_analysis_summary])
+    
     cross_reference_financial_statements_analysis: CrossReferencedAnalysis = await cross_reference_task(
         symbol=symbol,
         original_analysis=financial_statements_analysis,
@@ -81,6 +100,12 @@ async def cross_reference_flow(
         ],
         original_analysis_type="financial_statements"
     )
+    cross_reference_financial_statements_analysis_summary = CrossReferencedAnalysisSummary(
+        symbol=symbol,
+        original_analysis_type="financial_statements",
+        cross_reference_analysis=cross_reference_financial_statements_analysis
+    )
+    await cross_reference_reporting_task(symbol, [cross_reference_financial_statements_analysis_summary])
 
     cross_reference_earnings_projections_analysis: CrossReferencedAnalysis = await cross_reference_task(
         symbol=symbol,
@@ -94,6 +119,12 @@ async def cross_reference_flow(
         ],
         original_analysis_type="earnings_projections"
     )
+    cross_reference_earnings_projections_analysis_summary = CrossReferencedAnalysisSummary(
+        symbol=symbol,
+        original_analysis_type="earnings_projections",
+        cross_reference_analysis=cross_reference_earnings_projections_analysis
+    )
+    await cross_reference_reporting_task(symbol, [cross_reference_earnings_projections_analysis_summary])
 
     cross_reference_management_guidance_analysis: CrossReferencedAnalysis = await cross_reference_task(
         symbol=symbol,
@@ -107,6 +138,12 @@ async def cross_reference_flow(
         ],
         original_analysis_type="management_guidance"
     )
+    cross_reference_management_guidance_analysis_summary = CrossReferencedAnalysisSummary(
+        symbol=symbol,
+        original_analysis_type="management_guidance",
+        cross_reference_analysis=cross_reference_management_guidance_analysis
+    )
+    await cross_reference_reporting_task(symbol, [cross_reference_management_guidance_analysis_summary])
 
     cross_referenced_analysis = [
         cross_reference_forward_pe_analysis,
