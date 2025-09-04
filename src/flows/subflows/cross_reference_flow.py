@@ -10,6 +10,7 @@ from src.research.earnings_projections.earnings_projections_models import Earnin
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
 import logging
 import time
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ async def cross_reference_flow(
     financial_statements_analysis: FinancialStatementsAnalysis,
     earnings_projections_analysis: EarningsProjectionAnalysis,
     management_guidance_analysis: ManagementGuidanceAnalysis,
-) -> CrossReferencedAnalysis:
+) -> List[CrossReferencedAnalysis]:
     
     start_time = time.time()
     logger.info(f"Cross Reference flow started for {symbol}")
@@ -38,7 +39,8 @@ async def cross_reference_flow(
             financial_statements_analysis,
             earnings_projections_analysis,
             management_guidance_analysis
-        ]
+        ],
+        original_analysis_type="forward_pe"
     )
 
     cross_reference_news_sentiment_analysis: CrossReferencedAnalysis = await cross_reference_task(
@@ -50,7 +52,8 @@ async def cross_reference_flow(
             financial_statements_analysis,
             earnings_projections_analysis,
             management_guidance_analysis
-        ]
+        ],
+        original_analysis_type="news_sentiment"
     )
 
     cross_reference_historical_earnings_analysis: CrossReferencedAnalysis = await cross_reference_task(
@@ -62,7 +65,8 @@ async def cross_reference_flow(
             financial_statements_analysis,
             earnings_projections_analysis,
             management_guidance_analysis
-        ]
+        ],
+        original_analysis_type="historical_earnings"
     )
 
     cross_reference_financial_statements_analysis: CrossReferencedAnalysis = await cross_reference_task(
@@ -74,7 +78,8 @@ async def cross_reference_flow(
             news_sentiment_flow_result,
             earnings_projections_analysis,
             management_guidance_analysis
-        ]
+        ],
+        original_analysis_type="financial_statements"
     )
 
     cross_reference_earnings_projections_analysis: CrossReferencedAnalysis = await cross_reference_task(
@@ -86,7 +91,8 @@ async def cross_reference_flow(
             financial_statements_analysis,
             news_sentiment_flow_result,
             management_guidance_analysis
-        ]
+        ],
+        original_analysis_type="earnings_projections"
     )
 
     cross_reference_management_guidance_analysis: CrossReferencedAnalysis = await cross_reference_task(
@@ -98,7 +104,8 @@ async def cross_reference_flow(
             financial_statements_analysis,
             earnings_projections_analysis,
             news_sentiment_flow_result
-        ]
+        ],
+        original_analysis_type="management_guidance"
     )
 
     cross_referenced_analysis = [

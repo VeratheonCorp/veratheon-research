@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 async def cross_reference_task(
     symbol: str, 
+    original_analysis_type: str,
     original_analysis: Any,
     data_points: List[Any]
 ) -> CrossReferencedAnalysis:
@@ -17,12 +18,13 @@ async def cross_reference_task(
     
     Args:
         symbol: Stock symbol to research
+        original_analysis_type: Type of original analysis for the symbol
         original_analysis: Original analysis for the symbol
         data_points: List of data points to cross reference against
     Returns:
         CrossReferencedAnalysis containing the cross reference analysis
     """
-    logger.info(f"Performing cross reference analysis for {symbol}")
+    logger.info(f"Performing cross reference analysis for original analysis: {original_analysis_type}")
 
     # Build input with optional context
     input_data = f"original_symbol: {symbol}, original_analysis: {original_analysis}, data_points: {data_points}"
@@ -32,6 +34,6 @@ async def cross_reference_task(
         input=input_data)
     cross_reference: CrossReferencedAnalysis = result.final_output
 
-    logger.debug(f"Cross reference for {symbol}: {json.dumps(cross_reference.model_dump(), indent=2)}")
+    logger.debug(f"Cross reference for original analysis: {original_analysis}: {json.dumps(cross_reference.model_dump(), indent=2)}")
 
     return cross_reference

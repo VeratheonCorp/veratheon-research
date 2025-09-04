@@ -86,11 +86,6 @@ async def main_research_flow(
         management_guidance_analysis
     )
 
-
-
-
-
-
     trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(
         symbol, 
         forward_pe_flow_result, 
@@ -115,6 +110,6 @@ async def main_research_flow(
         "forward_pe_sanity_check": forward_pe_sanity_check.model_dump(),
         "forward_pe_valuation": forward_pe_flow_result.model_dump(),
         "news_sentiment_summary": news_sentiment_flow_result.model_dump(),
-        "cross_reference": cross_reference_flow_result.model_dump(),
+        "cross_reference": [item.model_dump() for item in cross_reference_flow_result],
         "trade_idea": trade_ideas_flow_result.model_dump()
     }
