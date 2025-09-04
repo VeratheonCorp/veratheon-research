@@ -85,7 +85,6 @@ async def forward_pe_sanity_check_flow(
     # Generate reporting output
     await forward_pe_sanity_check_reporting_task(symbol, forward_pe_sanity_check)
 
-    logger.info(f"Forward PE sanity check flow completed for {symbol}")
     logger.info(f"Forward PE sanity check flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "forward_pe_sanity_check_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})

@@ -46,7 +46,6 @@ async def earnings_projections_flow(
     # Generate reporting output
     await earnings_projections_reporting_task(symbol, projections_analysis)
 
-    logger.info(f"Independent Earnings Projections flow completed for {symbol}")
     logger.info(f"Independent Earnings Projections flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "earnings_projections_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})

@@ -36,7 +36,6 @@ async def financial_statements_flow(symbol: str) -> FinancialStatementsAnalysis:
     # Generate reporting output
     await financial_statements_reporting_task(symbol, financial_analysis)
 
-    logger.info(f"Financial statements flow completed for {symbol}")
     logger.info(f"Financial statements flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "financial_statements_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})

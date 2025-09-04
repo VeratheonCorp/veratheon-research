@@ -37,7 +37,6 @@ async def historical_earnings_flow(symbol: str) -> HistoricalEarningsAnalysis:
     # Generate reporting output
     await historical_earnings_reporting_task(symbol, historical_analysis)
 
-    logger.info(f"Historical Earnings flow completed for {symbol}")
     logger.info(f"Historical Earnings flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "historical_earnings_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})

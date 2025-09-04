@@ -46,7 +46,6 @@ async def management_guidance_flow(
     # Generate reporting output
     await management_guidance_reporting_task(symbol, guidance_analysis)
 
-    logger.info(f"Management Guidance flow completed for {symbol}")
     logger.info(f"Management Guidance flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "management_guidance_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})

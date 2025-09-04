@@ -32,7 +32,6 @@ async def news_sentiment_flow(
     # Generate reporting output
     await news_sentiment_reporting_task(symbol, news_sentiment_analysis_task_result)
 
-    logger.info(f"News Sentiment flow completed for {symbol}")
     logger.info(f"News Sentiment flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "news_sentiment_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})

@@ -7,6 +7,7 @@ from src.flows.subflows.historical_earnings_flow import historical_earnings_flow
 from src.flows.subflows.financial_statements_flow import financial_statements_flow
 from src.flows.subflows.earnings_projections_flow import earnings_projections_flow
 from src.flows.subflows.management_guidance_flow import management_guidance_flow
+from src.flows.subflows.cross_reference_flow import cross_reference_flow
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.common.peer_group_reporting_task import peer_group_reporting_task
 from src.tasks.common.reporting_directory_setup_task import ensure_reporting_directory_exists
@@ -19,6 +20,7 @@ from src.research.earnings_projections.earnings_projections_models import Earnin
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
 from src.research.common.peer_group_agent import peer_group_agent
 from src.research.common.models.peer_group import PeerGroup
+
 import logging
 import time
 
@@ -33,41 +35,32 @@ async def main_research_flow(
     start_time = time.time()
     logger.info(f"Main research flow started for {symbol}")
     
-    # Ensure reporting directory exists
     await ensure_reporting_directory_exists()
     
     await publish_status_update_task("starting", {"flow": "main_research_flow", "symbol": symbol})
 
-    # Step 1: Historical earnings analysis (CRITICAL - foundational baseline)
     historical_earnings_analysis: HistoricalEarningsAnalysis = await historical_earnings_flow(symbol)
 
-    # Step 2: Financial statements analysis (CRITICAL - recent changes for projection accuracy)
     financial_statements_analysis: FinancialStatementsAnalysis = await financial_statements_flow(symbol)
 
-    # Step 3: Independent earnings projections (CRITICAL - foundational baseline for consensus validation)
     earnings_projections_analysis: EarningsProjectionAnalysis = await earnings_projections_flow(
         symbol, 
         historical_earnings_analysis.model_dump(), 
         financial_statements_analysis.model_dump()
     )
 
-    # Step 4: Management guidance analysis (CRITICAL - cross-check against management guidance from earnings calls)
     management_guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_flow(
         symbol, 
         historical_earnings_analysis, 
         financial_statements_analysis
     )
 
-    # Step 5: Peer group identification (enhanced with financial context)
     peer_group: PeerGroup = await peer_group_agent(symbol, financial_statements_analysis)
     
-    # Generate peer group reporting output
     await peer_group_reporting_task(symbol, peer_group)
 
-    # Step 6: Forward PE sanity check
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol)
 
-    # Step 7: Forward PE analysis (enhanced with projections, management guidance and sanity check)
     forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(
         symbol, 
         peer_group, 
@@ -76,7 +69,6 @@ async def main_research_flow(
         forward_pe_sanity_check
     )
 
-    # Step 8: News sentiment analysis (enhanced with earnings projections and management guidance)
     news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(
         symbol, 
         peer_group, 
@@ -84,8 +76,7 @@ async def main_research_flow(
         management_guidance_analysis
     )
 
-    # Step 9: Generate trade ideas (enhanced with all previous analyses)
-    trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(
+    cross_reference_flow_result: CrossReferencedAnalysis = await cross_reference_flow(
         symbol, 
         forward_pe_flow_result, 
         news_sentiment_flow_result,
@@ -95,20 +86,21 @@ async def main_research_flow(
         management_guidance_analysis
     )
 
-    
-    logger.info(f"Main research for {symbol} completed successfully!")
-    logger.info(f"Historical earnings pattern: {historical_earnings_analysis.earnings_pattern}")
-    logger.info(f"Revenue growth trend: {historical_earnings_analysis.revenue_growth_trend}")
-    logger.info(f"Margin trend: {historical_earnings_analysis.margin_trend}")
-    logger.info(f"Revenue driver trend: {financial_statements_analysis.revenue_driver_trend}")
-    logger.info(f"Cost structure trend: {financial_statements_analysis.cost_structure_trend}")
-    logger.info(f"Working capital trend: {financial_statements_analysis.working_capital_trend}")
-    logger.info(f"Independent EPS projection: ${earnings_projections_analysis.next_quarter_projection.projected_eps:.2f}")
-    logger.info(f"Projection confidence: {earnings_projections_analysis.overall_confidence}")
-    logger.info(f"Management guidance tone: {management_guidance_analysis.overall_guidance_tone}")
-    logger.info(f"Consensus validation signal: {management_guidance_analysis.consensus_validation_signal}")
 
-    logger.info(f"Main research for {symbol} completed successfully!")
+
+
+
+
+    trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(
+        symbol, 
+        forward_pe_flow_result, 
+        news_sentiment_flow_result,
+        historical_earnings_analysis,
+        financial_statements_analysis,
+        earnings_projections_analysis,
+        management_guidance_analysis
+    )
+    
     logger.info(f"Main research for {symbol} completed successfully! in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "main_research_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
@@ -123,5 +115,6 @@ async def main_research_flow(
         "forward_pe_sanity_check": forward_pe_sanity_check.model_dump(),
         "forward_pe_valuation": forward_pe_flow_result.model_dump(),
         "news_sentiment_summary": news_sentiment_flow_result.model_dump(),
+        "cross_reference": cross_reference_flow_result.model_dump(),
         "trade_idea": trade_ideas_flow_result.model_dump()
     }

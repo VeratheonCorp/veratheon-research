@@ -38,7 +38,6 @@ async def trade_ideas_flow(
     # Generate reporting output
     await trade_ideas_reporting_task(symbol, trade_idea)
     
-    logger.info(f"Trade Ideas flow completed for {symbol}") 
     logger.info(f"Trade Ideas flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
     await publish_status_update_task("completed", {"flow": "trade_ideas_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
