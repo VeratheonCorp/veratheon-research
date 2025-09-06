@@ -2,3 +2,12 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 @plugin 'daisyui';
+
+/* Theme transition animation */
+.theme-transition,
+.theme-transition *,
+.theme-transition *:before,
+.theme-transition *:after {
+  transition: all 350ms !important;
+  transition-delay: 0 !important;
+}

@@ -100,8 +100,6 @@
 </script>
 
 <div class="container mx-auto p-6">
-  <h1 class="text-3xl font-bold mb-6">Market Research Agent</h1>
-
   <div class="mb-6">
     <div class="card bg-base-100 shadow">
       <div class="card-body">
@@ -237,11 +235,6 @@
     <!-- Management Guidance Analysis -->
     {#if researchResult.management_guidance_analysis}
       <ManagementGuidanceDisplay analysis={researchResult.management_guidance_analysis} />
-    {/if}
-
-    <!-- Peer Group Analysis -->
-    {#if researchResult.peer_group}
-      <PeerGroupDisplay analysis={researchResult.peer_group} />
     {/if}
 
     <!-- Forward PE Analysis -->
