@@ -13,7 +13,6 @@ trade_idea_agent = Agent(
             - trade_direction: TradeDirection (LONG, SHORT, NEUTRAL, COMPLEX)
             - time_horizon: TimeHorizon (SHORT_TERM <3mo, MEDIUM_TERM 3-12mo, LONG_TERM >12mo)
             - risk_level: RiskLevel (LOW, MEDIUM, HIGH, VERY_HIGH)
-            - overall_confidence: TradeConfidence (HIGH, MEDIUM, LOW, SPECULATIVE)
 
             TRADE DEVELOPMENT:
             - Synthesize earnings projections, forward P/E analysis, and news sentiment

@@ -48,7 +48,6 @@ class GuidanceIndicator(BaseModel):
     
     type: str = Field(description="Type of guidance (revenue, eps, margin, etc.)")
     direction: GuidanceDirection = Field(description="Direction of guidance")
-    confidence: GuidanceConfidence = Field(description="Confidence level of guidance")
     context: str = Field(description="Context or quote from transcript")
     impact_assessment: str = Field(description="Assessment of potential impact on earnings")
 
@@ -74,7 +73,6 @@ class ManagementGuidanceAnalysis(BaseModel):
     eps_guidance_direction: Optional[GuidanceDirection] = Field(default=None, description="EPS guidance direction if mentioned")
     
     # Confidence and validation
-    guidance_confidence: GuidanceConfidence = Field(description="Overall confidence in guidance signals")
     consensus_validation_signal: ConsensusValidationSignal = Field(description="Signal for consensus validation")
     key_guidance_summary: str = Field(description="Summary of key guidance points for next quarter")
     

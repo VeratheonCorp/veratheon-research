@@ -93,24 +93,6 @@
       </div>
     </div>
 
-    <!-- Confidence Scores -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-      <div class="stat bg-base-200 rounded-lg">
-        <div class="stat-title">Analysis Confidence</div>
-        <div class="stat-value text-2xl flex items-center gap-2">
-          {analysis.analysis_confidence_score}/100
-          <progress class="progress progress-primary w-20" value={analysis.analysis_confidence_score} max="100"></progress>
-        </div>
-      </div>
-      
-      <div class="stat bg-base-200 rounded-lg">
-        <div class="stat-title">Predictability Score</div>
-        <div class="stat-value text-2xl flex items-center gap-2">
-          {analysis.predictability_score}/100
-          <progress class="progress progress-secondary w-20" value={analysis.predictability_score} max="100"></progress>
-        </div>
-      </div>
-    </div>
 
     <!-- Key Insights -->
     {#if analysis.key_insights.length > 0}
@@ -126,6 +108,16 @@
       </div>
     {/if}
 
+    <!-- Critical Insights -->
+    {#if analysis.critical_insights}
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold mb-3">Critical Insights</h3>
+        <div class="alert alert-warning">
+          <span class="text-sm prose prose-sm max-w-none">{@html renderMarkdown(analysis.critical_insights)}</span>
+        </div>
+      </div>
+    {/if}
+
     <!-- Full Analysis (Collapsible) -->
     <div class="collapse collapse-arrow bg-base-200 mt-6">
       <input type="checkbox" />
@@ -134,7 +126,7 @@
       </div>
       <div class="collapse-content">
         <div class="prose prose-sm max-w-none">
-          <p>{@html renderMarkdown(analysis.full_analysis || '')}</p>
+          <p>{@html renderMarkdown(analysis.long_form_analysis || '')}</p>
         </div>
       </div>
     </div>

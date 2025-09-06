@@ -3,13 +3,6 @@ from pydantic import BaseModel
 import enum
 
 
-class ProjectionConfidence(str, enum.Enum):
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
-    INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
-
-
 class RevenueProjectionMethod(str, enum.Enum):
     HISTORICAL_TREND = "HISTORICAL_TREND"
     SEASONAL_ADJUSTMENT = "SEASONAL_ADJUSTMENT"
@@ -39,13 +32,11 @@ class NextQuarterProjection(BaseModel):
     # Revenue Projection
     projected_revenue: float
     revenue_projection_method: RevenueProjectionMethod
-    revenue_confidence: ProjectionConfidence
     revenue_reasoning: str
     
     # Cost Projections
     projected_cogs: float
     cogs_projection_method: CostProjectionMethod
-    cogs_confidence: ProjectionConfidence
     cogs_reasoning: str
     
     projected_gross_profit: float
@@ -53,11 +44,9 @@ class NextQuarterProjection(BaseModel):
     
     # Operating Expense Projections
     projected_sga: float
-    sga_confidence: ProjectionConfidence
     sga_reasoning: str
     
     projected_rd: float
-    rd_confidence: ProjectionConfidence
     rd_reasoning: str
     
     projected_total_opex: float
@@ -86,7 +75,6 @@ class EarningsProjectionAnalysis(BaseModel):
     key_assumptions: List[str]
     upside_risks: List[str]
     downside_risks: List[str]
-    overall_confidence: ProjectionConfidence
     data_quality_score: int
     consensus_validation_summary: str
     long_form_analysis: str

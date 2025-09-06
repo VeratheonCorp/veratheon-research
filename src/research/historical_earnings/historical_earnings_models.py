@@ -44,7 +44,5 @@ class HistoricalEarningsAnalysis(BaseModel):
     margin_trend: MarginTrend
     margin_trend_details: str
     key_insights: List[str]
-    analysis_confidence_score: int
-    predictability_score: int
     long_form_analysis: str
     critical_insights: str

@@ -12,7 +12,6 @@ earnings_projections_analysis_agent = Agent(
             ENUM REQUIREMENTS:
             - revenue_projection_method: RevenueProjectionMethod (HISTORICAL_TREND, SEASONAL_ADJUSTMENT, GROWTH_RATE_EXTRAPOLATION, MIXED_METHODOLOGY)
             - cogs_projection_method: CostProjectionMethod (MARGIN_BASED, PERCENTAGE_OF_REVENUE, HISTORICAL_TREND, MIXED_METHODOLOGY)  
-            - confidence fields: ProjectionConfidence (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
 
             PROJECTION APPROACH:
             - Revenue: Historical trends + seasonal patterns + recent growth trajectory

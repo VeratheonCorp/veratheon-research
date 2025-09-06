@@ -34,9 +34,8 @@ export interface HistoricalEarningsAnalysis {
   margin_trend: MarginTrend;
   margin_trend_details: string;
   key_insights: string[];
-  analysis_confidence_score: number;
-  predictability_score: number;
-  full_analysis: string;
+  long_form_analysis: string;
+  critical_insights: string;
 }
 
 export interface ResearchResult {

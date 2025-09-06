@@ -18,7 +18,6 @@ management_guidance_analysis_agent = Agent(
     ENUM REQUIREMENTS:
     - overall_guidance_tone: GuidanceTone (OPTIMISTIC, CAUTIOUS, NEUTRAL, PESSIMISTIC, MIXED_SIGNALS)
     - guidance_direction fields: GuidanceDirection (POSITIVE, NEGATIVE, NEUTRAL, UNCLEAR)
-    - guidance_confidence: GuidanceConfidence (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA) 
     - consensus_validation_signal: ConsensusValidationSignal (BULLISH, BEARISH, NEUTRAL, MIXED)
 
     ANALYSIS APPROACH:

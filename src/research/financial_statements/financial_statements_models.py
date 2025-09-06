@@ -44,7 +44,5 @@ class FinancialStatementsAnalysis(BaseModel):
     working_capital_details: str
     key_financial_changes: List[str]
     near_term_projection_risks: List[str]
-    analysis_confidence_score: int
-    data_quality_score: int
     long_form_analysis: str
     critical_insights: str

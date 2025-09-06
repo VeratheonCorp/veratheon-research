@@ -8,7 +8,6 @@ Analyze news sentiment in context of earnings expectations and management guidan
 ENUM REQUIREMENTS:
 - sentiment_trend: SentimentTrend (IMPROVING, DETERIORATING, STABLE_POSITIVE, STABLE_NEGATIVE, VOLATILE, INSUFFICIENT_DATA)
 - news_volume: NewsVolume (HIGH_VOLUME, MODERATE_VOLUME, LOW_VOLUME, SPARSE_COVERAGE)
-- sentiment_confidence: SentimentConfidence (HIGH, MEDIUM, LOW, INSUFFICIENT_DATA)
 
 ANALYSIS APPROACH:
 - Determine overall sentiment direction (bullish, bearish, neutral) and provide label
