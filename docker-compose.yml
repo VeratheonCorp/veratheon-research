@@ -21,6 +21,11 @@ services:
     build: ./agent-ui
     container_name: market-research-ui
     network_mode: host
+    environment:
+      - API_URL=http://localhost:8085
+      - REDIS_URL=redis://localhost:6379/0
+      # Configure undici timeouts via Node.js options
+      - NODE_OPTIONS=--max-http-header-size=32768
     volumes:
       - ./agent-ui:/app
       - /app/node_modules

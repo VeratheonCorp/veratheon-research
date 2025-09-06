@@ -1,5 +1,23 @@
 import { json } from '@sveltejs/kit';
 
+// Custom fetch wrapper with extended timeouts for long-running operations
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
 export async function POST({ request }) {
   try {
     const { symbol } = await request.json();
@@ -10,13 +28,18 @@ export async function POST({ request }) {
     
     // Call the FastAPI backend research endpoint
     const apiUrl = process.env.API_URL || 'http://localhost:8085';
-    const response = await fetch(`${apiUrl}/research`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    
+    const response = await fetchWithTimeout(
+      `${apiUrl}/research`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symbol: symbol.trim().toUpperCase() }),
       },
-      body: JSON.stringify({ symbol: symbol.trim().toUpperCase() }),
-    });
+      5 * 60 * 1000 // 5 minutes timeout
+    );
     
     if (!response.ok) {
       const errorText = await response.text();
