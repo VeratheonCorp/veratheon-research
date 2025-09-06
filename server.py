@@ -28,4 +28,11 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "8085"))
     reload = os.getenv("RELOAD", "false").lower() in {"1", "true", "yes", "on"}
     app = load_app_from_api()
-    uvicorn.run(app, host=host, port=port, reload=reload)
+    uvicorn.run(
+        app, 
+        host=host, 
+        port=port, 
+        reload=reload,
+        timeout_keep_alive=30,  # Keep connections alive for 30 seconds
+        timeout_graceful_shutdown=30,  # Allow 30 seconds for graceful shutdown
+    )

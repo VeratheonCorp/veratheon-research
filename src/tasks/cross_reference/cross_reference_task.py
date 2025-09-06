@@ -27,7 +27,7 @@ async def cross_reference_task(
     logger.info(f"Performing cross reference analysis for original analysis: {original_analysis_type}")
 
     # Build input with optional context
-    input_data = f"original_symbol: {symbol}, original_analysis: {original_analysis}, data_points: {data_points}"
+    input_data = f"original_symbol: {symbol}, original_analysis_type: {original_analysis_type}, original_analysis: {original_analysis}, data_points: {data_points}"
 
     result: RunResult = await Runner.run(
         cross_reference_agent,

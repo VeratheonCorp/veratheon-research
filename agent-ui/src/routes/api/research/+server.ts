@@ -9,6 +9,12 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
+      // Add keepalive and disable default timeouts
+      keepalive: true,
+      headers: {
+        ...options.headers,
+        'Connection': 'keep-alive',
+      }
     });
     clearTimeout(timeoutId);
     return response;
@@ -38,7 +44,7 @@ export async function POST({ request }) {
         },
         body: JSON.stringify({ symbol: symbol.trim().toUpperCase() }),
       },
-      5 * 60 * 1000 // 5 minutes timeout
+      15 * 60 * 1000 // 15 minutes timeout
     );
     
     if (!response.ok) {
