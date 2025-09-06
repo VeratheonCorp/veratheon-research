@@ -72,7 +72,7 @@ npm run check      # Svelte type checking
 
 ## Architecture
 
-This is a **market research agent** for stock analysis using async flows and OpenAI Agents SDK with FastAPI backend and SvelteKit UI.
+This is a **market research agent** for stock analysis using async flows with OpenAI Agents SDK, featuring a FastAPI backend and SvelteKit UI frontend.
 
 ### Key Architectural Principles
 
@@ -92,7 +92,7 @@ This is a **market research agent** for stock analysis using async flows and Ope
    - Model selection via `MODEL_SELECTED` environment variable
 
 4. **Full-Stack Application**:
-   - **Backend**: FastAPI server (`server/api.py`) with `/health` and `/research` endpoints
+   - **Backend**: FastAPI server (`server.py`) with `/health` and `/research` endpoints
    - **Frontend**: SvelteKit UI (`agent-ui/`) with Tailwind CSS and DaisyUI
    - **Infrastructure**: Docker Compose with Redis for caching/state management
 
@@ -107,7 +107,8 @@ The agent performs comprehensive stock research through these sequential steps:
 6. **Forward PE Sanity Check**: Validates earnings data quality  
 7. **Forward PE Analysis**: Calculates valuation metrics (enhanced with projections and guidance)
 8. **News Sentiment Analysis**: Analyzes recent news sentiment (enhanced with earnings context)
-9. **Trade Ideas Generation**: Synthesizes all analyses into actionable insights
+9. **Cross-Reference Analysis**: Cross-validates insights across all previous analyses
+10. **Trade Ideas Generation**: Synthesizes all analyses into actionable insights
 
 ### Environment Variables
 
