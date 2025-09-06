@@ -40,8 +40,8 @@ async def earnings_projections_analysis_task(
     
     logger.info(f"Earnings Projections flow completed for {symbol}: "
                f"Projected EPS: ${next_quarter.projected_eps:.2f}, "
-               f"Projected Revenue: ${next_quarter.projected_revenue:,.0f}, "
-               f"Overall Confidence: {projections_analysis.overall_confidence}")
+               f"Projected Revenue: ${next_quarter.projected_revenue:,.0f}"
+    )
     
     # Log consensus comparison if available
     if next_quarter.consensus_eps_estimate:

@@ -17,3 +17,6 @@ wheels/
 htmlcov
 
 reports/
+
+redis_data/
+dump.rdb

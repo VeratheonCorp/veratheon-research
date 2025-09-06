@@ -45,10 +45,8 @@ class NextQuarterProjection(BaseModel):
     # Operating Expense Projections
     projected_sga: float
     sga_reasoning: str
-    
     projected_rd: float
     rd_reasoning: str
-    
     projected_total_opex: float
     
     # Bottom Line Projections
