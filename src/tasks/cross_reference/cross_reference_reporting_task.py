@@ -1,4 +1,4 @@
-from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisSummary
+from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion
 import json
 import logging
 from datetime import datetime
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 async def cross_reference_reporting_task(
     symbol: str, 
-    cross_reference_analysis: List[CrossReferencedAnalysisSummary]
+    cross_reference_analysis: List[CrossReferencedAnalysisCompletion]
 ) -> None:
     """
     Reporting task to write JSON dump of cross reference analysis results to file.

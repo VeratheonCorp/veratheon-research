@@ -20,6 +20,7 @@ from src.research.earnings_projections.earnings_projections_models import Earnin
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
 from src.research.common.peer_group_agent import peer_group_agent
 from src.research.common.models.peer_group import PeerGroup
+from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion
 
 import logging
 import time
@@ -76,7 +77,7 @@ async def main_research_flow(
         management_guidance_analysis
     )
 
-    cross_reference_flow_result: CrossReferencedAnalysis = await cross_reference_flow(
+    cross_reference_flow_result: List[CrossReferencedAnalysisCompletion] = await cross_reference_flow(
         symbol, 
         forward_pe_flow_result, 
         news_sentiment_flow_result,

@@ -1,11 +1,11 @@
 from agents import Agent
-from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysis
+from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion
 from src.lib.llm_model import get_model
 
 cross_reference_agent = Agent(
             name="Cross Reference Analyst",      
             model=get_model(),
-            output_type=CrossReferencedAnalysis,
+            output_type=CrossReferencedAnalysisCompletion,
             instructions="""
             Cross-reference original analysis against other data points.
 

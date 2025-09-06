@@ -1,19 +1,42 @@
-from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysis
-from src.tasks.common.status_update_task import publish_status_update_task
-from src.tasks.cross_reference.cross_reference_reporting_task import cross_reference_reporting_task
-from src.tasks.cross_reference.cross_reference_task import cross_reference_task
+from src.research.cross_reference.cross_reference_models import (
+    CrossReferencedAnalysisCompletion,
+)
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
-from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
-from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
-from src.research.earnings_projections.earnings_projections_models import EarningsProjectionAnalysis
-from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
-from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisSummary
+from src.research.historical_earnings.historical_earnings_models import (
+    HistoricalEarningsAnalysis,
+)
+from src.research.financial_statements.financial_statements_models import (
+    FinancialStatementsAnalysis,
+)
+from src.research.earnings_projections.earnings_projections_models import (
+    EarningsProjectionAnalysis,
+)
+from src.research.management_guidance.management_guidance_models import (
+    ManagementGuidanceAnalysis,
+)
 import logging
 import time
 from typing import List
+from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.cross_reference.cross_reference_task import cross_reference_task
+from src.tasks.cross_reference.cross_reference_reporting_task import (
+    cross_reference_reporting_task,
+)
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class CrossReferenceContext:
+    symbol: str
+    forward_pe_flow_result: ForwardPeValuation
+    news_sentiment_flow_result: NewsSentimentSummary
+    historical_earnings_analysis: HistoricalEarningsAnalysis
+    financial_statements_analysis: FinancialStatementsAnalysis
+    earnings_projections_analysis: EarningsProjectionAnalysis
+    management_guidance_analysis: ManagementGuidanceAnalysis
 
 
 async def cross_reference_flow(
@@ -24,141 +47,178 @@ async def cross_reference_flow(
     financial_statements_analysis: FinancialStatementsAnalysis,
     earnings_projections_analysis: EarningsProjectionAnalysis,
     management_guidance_analysis: ManagementGuidanceAnalysis,
-) -> List[CrossReferencedAnalysis]:
-    
+) -> List[CrossReferencedAnalysisCompletion]:
+
+    context = CrossReferenceContext(
+        symbol=symbol,
+        forward_pe_flow_result=forward_pe_flow_result,
+        news_sentiment_flow_result=news_sentiment_flow_result,
+        historical_earnings_analysis=historical_earnings_analysis,
+        financial_statements_analysis=financial_statements_analysis,
+        earnings_projections_analysis=earnings_projections_analysis,
+        management_guidance_analysis=management_guidance_analysis,
+    )
+
     start_time = time.time()
-    logger.info(f"Cross Reference flow started for {symbol}")
-    
-    await publish_status_update_task("starting", {"flow": "cross_reference_flow", "symbol": symbol})
+    logger.info(f"Cross Reference flow started for {context.symbol}")
 
-    cross_reference_forward_pe_analysis: CrossReferencedAnalysis = await cross_reference_task(
-        symbol=symbol,
-        original_analysis=forward_pe_flow_result,
-        data_points=[
-            news_sentiment_flow_result,
-            historical_earnings_analysis,
-            financial_statements_analysis,
-            earnings_projections_analysis,
-            management_guidance_analysis
-        ],
-        original_analysis_type="forward_pe"
+    await publish_status_update_task(
+        "starting", {"flow": "cross_reference_flow", "symbol": context.symbol}
     )
-    cross_reference_forward_pe_analysis_summary = CrossReferencedAnalysisSummary(
-        symbol=symbol,
-        original_analysis_type="forward_pe",
-        cross_reference_analysis=cross_reference_forward_pe_analysis
-    )
-    await cross_reference_reporting_task(symbol, [cross_reference_forward_pe_analysis_summary])
 
-    cross_reference_news_sentiment_analysis: CrossReferencedAnalysis = await cross_reference_task(
-        symbol=symbol,
-        original_analysis=news_sentiment_flow_result,
-        data_points=[
-            forward_pe_flow_result,
-            historical_earnings_analysis,
-            financial_statements_analysis,
-            earnings_projections_analysis,
-            management_guidance_analysis
-        ],
-        original_analysis_type="news_sentiment"
-    )
-    cross_reference_news_sentiment_analysis_summary = CrossReferencedAnalysisSummary(
-        symbol=symbol,
-        original_analysis_type="news_sentiment",
-        cross_reference_analysis=cross_reference_news_sentiment_analysis
-    )
-    await cross_reference_reporting_task(symbol, [cross_reference_news_sentiment_analysis_summary])
+    cross_reference_forward_pe_completion = await forward_pe_cross_reference(context)
 
-    cross_reference_historical_earnings_analysis: CrossReferencedAnalysis = await cross_reference_task(
-        symbol=symbol,
-        original_analysis=historical_earnings_analysis,
-        data_points=[
-            forward_pe_flow_result,
-            news_sentiment_flow_result,
-            financial_statements_analysis,
-            earnings_projections_analysis,
-            management_guidance_analysis
-        ],
-        original_analysis_type="historical_earnings"
+    cross_reference_news_sentiment_completion = await news_sentiment_cross_reference(
+        context
     )
-    cross_reference_historical_earnings_analysis_summary = CrossReferencedAnalysisSummary(
-        symbol=symbol,
-        original_analysis_type="historical_earnings",
-        cross_reference_analysis=cross_reference_historical_earnings_analysis
-    )
-    await cross_reference_reporting_task(symbol, [cross_reference_historical_earnings_analysis_summary])
-    
-    cross_reference_financial_statements_analysis: CrossReferencedAnalysis = await cross_reference_task(
-        symbol=symbol,
-        original_analysis=financial_statements_analysis,
-        data_points=[
-            forward_pe_flow_result,
-            historical_earnings_analysis,
-            news_sentiment_flow_result,
-            earnings_projections_analysis,
-            management_guidance_analysis
-        ],
-        original_analysis_type="financial_statements"
-    )
-    cross_reference_financial_statements_analysis_summary = CrossReferencedAnalysisSummary(
-        symbol=symbol,
-        original_analysis_type="financial_statements",
-        cross_reference_analysis=cross_reference_financial_statements_analysis
-    )
-    await cross_reference_reporting_task(symbol, [cross_reference_financial_statements_analysis_summary])
 
-    cross_reference_earnings_projections_analysis: CrossReferencedAnalysis = await cross_reference_task(
-        symbol=symbol,
-        original_analysis=earnings_projections_analysis,
-        data_points=[
-            forward_pe_flow_result,
-            historical_earnings_analysis,
-            financial_statements_analysis,
-            news_sentiment_flow_result,
-            management_guidance_analysis
-        ],
-        original_analysis_type="earnings_projections"
+    cross_reference_historical_earnings_completion = (
+        await historical_earnings_cross_reference(context)
     )
-    cross_reference_earnings_projections_analysis_summary = CrossReferencedAnalysisSummary(
-        symbol=symbol,
-        original_analysis_type="earnings_projections",
-        cross_reference_analysis=cross_reference_earnings_projections_analysis
-    )
-    await cross_reference_reporting_task(symbol, [cross_reference_earnings_projections_analysis_summary])
 
-    cross_reference_management_guidance_analysis: CrossReferencedAnalysis = await cross_reference_task(
-        symbol=symbol,
-        original_analysis=management_guidance_analysis,
-        data_points=[
-            forward_pe_flow_result,
-            historical_earnings_analysis,
-            financial_statements_analysis,
-            earnings_projections_analysis,
-            news_sentiment_flow_result
-        ],
-        original_analysis_type="management_guidance"
+    cross_reference_financial_statements_completion = (
+        await financial_statements_cross_reference(context)
     )
-    cross_reference_management_guidance_analysis_summary = CrossReferencedAnalysisSummary(
-        symbol=symbol,
-        original_analysis_type="management_guidance",
-        cross_reference_analysis=cross_reference_management_guidance_analysis
+
+    cross_reference_earnings_projections_completion = (
+        await earnings_projections_cross_reference(context)
     )
-    await cross_reference_reporting_task(symbol, [cross_reference_management_guidance_analysis_summary])
+
+    cross_reference_management_guidance_completion = (
+        await management_guidance_cross_reference(context)
+    )
 
     cross_referenced_analysis = [
-        cross_reference_forward_pe_analysis,
-        cross_reference_news_sentiment_analysis,
-        cross_reference_historical_earnings_analysis,
-        cross_reference_financial_statements_analysis,
-        cross_reference_earnings_projections_analysis,
-        cross_reference_management_guidance_analysis
+        cross_reference_forward_pe_completion,
+        cross_reference_news_sentiment_completion,
+        cross_reference_historical_earnings_completion,
+        cross_reference_financial_statements_completion,
+        cross_reference_earnings_projections_completion,
+        cross_reference_management_guidance_completion,
     ]
 
     # Generate reporting output
-    # await cross_reference_reporting_task(symbol, cross_reference_analysis)
+    await cross_reference_reporting_task(symbol, cross_referenced_analysis)
 
-    logger.info(f"Cross Reference flow completed for {symbol} in {int(time.time() - start_time)} seconds")
-    
-    await publish_status_update_task("completed", {"flow": "cross_reference_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
+    logger.info(
+        f"Cross Reference flow completed for {context.symbol} in {int(time.time() - start_time)} seconds"
+    )
+
+    await publish_status_update_task(
+        "completed",
+        {
+            "flow": "cross_reference_flow",
+            "symbol": context.symbol,
+            "duration_seconds": int(time.time() - start_time),
+        },
+    )
 
     return cross_referenced_analysis
+
+
+async def forward_pe_cross_reference(context: CrossReferenceContext):
+    cross_reference_forward_pe_completion: CrossReferencedAnalysisCompletion = (
+        await cross_reference_task(
+            symbol=context.symbol,
+            original_analysis_type="forward_pe",
+            original_analysis=context.forward_pe_flow_result,
+            data_points=[
+                context.news_sentiment_flow_result,
+                context.historical_earnings_analysis,
+                context.financial_statements_analysis,
+                context.earnings_projections_analysis,
+                context.management_guidance_analysis,
+            ],
+        )
+    )
+    return cross_reference_forward_pe_completion
+
+
+async def news_sentiment_cross_reference(context: CrossReferenceContext):
+    cross_reference_news_sentiment_completion: CrossReferencedAnalysisCompletion = (
+        await cross_reference_task(
+            symbol=context.symbol,
+            original_analysis_type="news_sentiment",
+            original_analysis=context.news_sentiment_flow_result,
+            data_points=[
+                context.forward_pe_flow_result,
+                context.historical_earnings_analysis,
+                context.financial_statements_analysis,
+                context.earnings_projections_analysis,
+                context.management_guidance_analysis,
+            ],
+        )
+    )
+    return cross_reference_news_sentiment_completion
+
+
+async def historical_earnings_cross_reference(context: CrossReferenceContext):
+    cross_reference_historical_earnings_completion: (
+        CrossReferencedAnalysisCompletion
+    ) = await cross_reference_task(
+        symbol=context.symbol,
+        original_analysis_type="historical_earnings",
+        original_analysis=context.historical_earnings_analysis,
+        data_points=[
+            context.forward_pe_flow_result,
+            context.news_sentiment_flow_result,
+            context.financial_statements_analysis,
+            context.earnings_projections_analysis,
+            context.management_guidance_analysis,
+        ],
+    )
+    return cross_reference_historical_earnings_completion
+
+
+async def financial_statements_cross_reference(context: CrossReferenceContext):
+    cross_reference_financial_statements_completion: (
+        CrossReferencedAnalysisCompletion
+    ) = await cross_reference_task(
+        symbol=context.symbol,
+        original_analysis_type="financial_statements",
+        original_analysis=context.financial_statements_analysis,
+        data_points=[
+            context.forward_pe_flow_result,
+            context.historical_earnings_analysis,
+            context.news_sentiment_flow_result,
+            context.earnings_projections_analysis,
+            context.management_guidance_analysis,
+        ],
+    )
+    return cross_reference_financial_statements_completion
+
+
+async def earnings_projections_cross_reference(context: CrossReferenceContext):
+    cross_reference_earnings_projections_completion: (
+        CrossReferencedAnalysisCompletion
+    ) = await cross_reference_task(
+        symbol=context.symbol,
+        original_analysis_type="earnings_projections",
+        original_analysis=context.earnings_projections_analysis,
+        data_points=[
+            context.forward_pe_flow_result,
+            context.historical_earnings_analysis,
+            context.news_sentiment_flow_result,
+            context.financial_statements_analysis,
+            context.management_guidance_analysis,
+        ],
+    )
+    return cross_reference_earnings_projections_completion
+
+
+async def management_guidance_cross_reference(context: CrossReferenceContext):
+    cross_reference_management_guidance_completion: (
+        CrossReferencedAnalysisCompletion
+    ) = await cross_reference_task(
+        symbol=context.symbol,
+        original_analysis_type="management_guidance",
+        original_analysis=context.management_guidance_analysis,
+        data_points=[
+            context.forward_pe_flow_result,
+            context.historical_earnings_analysis,
+            context.news_sentiment_flow_result,
+            context.financial_statements_analysis,
+            context.earnings_projections_analysis,
+        ],
+    )
+    return cross_reference_management_guidance_completion

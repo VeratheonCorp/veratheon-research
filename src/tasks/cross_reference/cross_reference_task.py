@@ -3,7 +3,7 @@ from agents import Runner, RunResult
 import json
 import logging
 from typing import List, Any
-from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysis
+from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ async def cross_reference_task(
     original_analysis_type: str,
     original_analysis: Any,
     data_points: List[Any]
-) -> CrossReferencedAnalysis:
+) -> CrossReferencedAnalysisCompletion:
     """
     Task to perform cross reference analysis for a given symbol.
     
@@ -22,7 +22,7 @@ async def cross_reference_task(
         original_analysis: Original analysis for the symbol
         data_points: List of data points to cross reference against
     Returns:
-        CrossReferencedAnalysis containing the cross reference analysis
+        CrossReferencedAnalysisResponse containing the cross reference analysis
     """
     logger.info(f"Performing cross reference analysis for original analysis: {original_analysis_type}")
 
@@ -32,7 +32,7 @@ async def cross_reference_task(
     result: RunResult = await Runner.run(
         cross_reference_agent,
         input=input_data)
-    cross_reference: CrossReferencedAnalysis = result.final_output
+    cross_reference: CrossReferencedAnalysisCompletion = result.final_output
 
     logger.debug(f"Cross reference for original analysis: {original_analysis}: {json.dumps(cross_reference.model_dump(), indent=2)}")
 
