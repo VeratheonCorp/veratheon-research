@@ -1,4 +1,5 @@
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
+from src.lib.redis_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime
@@ -11,13 +12,17 @@ async def forward_pe_valuation_reporting_task(
     forward_pe_valuation: ForwardPeValuation
 ) -> None:
     """
-    Reporting task to write JSON dump of forward PE valuation analysis results to file.
+    Reporting task to write JSON dump of forward PE valuation analysis results to file and cache to Redis.
     
     Args:
         symbol: Stock symbol being analyzed
         forward_pe_valuation: ForwardPeValuation model to report
     """
     logger.info(f"Forward PE Valuation Reporting for {symbol}")
+    
+    # Cache the analysis in Redis (24 hour TTL for reports)
+    cache = get_redis_cache()
+    cache.cache_report("forward_pe_valuation", symbol, forward_pe_valuation, ttl=86400)
     
     # Create filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -35,13 +40,17 @@ async def forward_pe_sanity_check_reporting_task(
     forward_pe_sanity_check: ForwardPeSanityCheck
 ) -> None:
     """
-    Reporting task to write JSON dump of forward PE sanity check results to file.
+    Reporting task to write JSON dump of forward PE sanity check results to file and cache to Redis.
     
     Args:
         symbol: Stock symbol being analyzed
         forward_pe_sanity_check: ForwardPeSanityCheck model to report
     """
     logger.info(f"Forward PE Sanity Check Reporting for {symbol}")
+    
+    # Cache the analysis in Redis (24 hour TTL for reports)
+    cache = get_redis_cache()
+    cache.cache_report("forward_pe_sanity_check", symbol, forward_pe_sanity_check, ttl=86400)
     
     # Create filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

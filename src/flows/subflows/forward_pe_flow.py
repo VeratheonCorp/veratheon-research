@@ -3,6 +3,7 @@ from src.tasks.forward_pe.forward_pe_analysis_task import forward_pe_analysis_ta
 from src.tasks.forward_pe.forward_pe_sanity_check_task import forward_pe_sanity_check_task
 from src.tasks.forward_pe.forward_pe_reporting_task import forward_pe_valuation_reporting_task, forward_pe_sanity_check_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.cache_retrieval.forward_pe_cache_retrieval_task import forward_pe_valuation_cache_retrieval_task, forward_pe_sanity_check_cache_retrieval_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPEEarningsSummary, ForwardPeSanityCheck
 from src.research.common.models.peer_group import PeerGroup
 from typing import Optional, Any
@@ -34,6 +35,13 @@ async def forward_pe_flow(
     start_time = time.time()
     logger.info(f"Forward PE flow started for {symbol}")
     
+    # Try to get cached report first
+    cached_result = await forward_pe_valuation_cache_retrieval_task(symbol, peer_group, earnings_projections_analysis, management_guidance_analysis, forward_pe_sanity_check)
+    if cached_result is not None:
+        logger.info(f"Returning cached forward PE valuation analysis for {symbol}")
+        return cached_result
+    
+    logger.info(f"No cached data found, running fresh forward PE valuation analysis for {symbol}")
     await publish_status_update_task("starting", {"flow": "forward_pe_flow", "symbol": symbol})
     
     # Get the earnings data for the user's symbol and its peer group
@@ -74,6 +82,13 @@ async def forward_pe_sanity_check_flow(
     start_time = time.time()
     logger.info(f"Forward PE sanity check flow started for {symbol}")
     
+    # Try to get cached report first
+    cached_result = await forward_pe_sanity_check_cache_retrieval_task(symbol)
+    if cached_result is not None:
+        logger.info(f"Returning cached forward PE sanity check analysis for {symbol}")
+        return cached_result
+    
+    logger.info(f"No cached data found, running fresh forward PE sanity check analysis for {symbol}")
     await publish_status_update_task("starting", {"flow": "forward_pe_sanity_check_flow", "symbol": symbol})
     
     # Get the earnings data for the user's symbol and its peer group

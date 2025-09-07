@@ -1,4 +1,5 @@
 from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion
+from src.lib.redis_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime
@@ -12,7 +13,7 @@ async def cross_reference_reporting_task(
     cross_reference_analysis: List[CrossReferencedAnalysisCompletion]
 ) -> None:
     """
-    Reporting task to write JSON dump of cross reference analysis results to file.
+    Reporting task to write JSON dump of cross reference analysis results to file and cache to Redis.
     
     Args:
         symbol: Stock symbol being analyzed
@@ -20,13 +21,17 @@ async def cross_reference_reporting_task(
     """
     logger.info(f"Cross Reference Reporting for {symbol}")
     
+    # Cache the analysis in Redis (24 hour TTL for reports)
+    cache = get_redis_cache()
+    analysis_data = [analysis.model_dump() for analysis in cross_reference_analysis]
+    cache.cache_report("cross_reference", symbol, analysis_data, ttl=86400)
+    
     # Create filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"cross_reference_{symbol}_{timestamp}.json"
     filepath = Path("reports") / filename
     
-    # Write JSON to file
-    analysis_data = [analysis.model_dump() for analysis in cross_reference_analysis]
+    # Write JSON to file (analysis_data already created for caching)
     with open(filepath, 'w') as f:
         json.dump(analysis_data, f, indent=2)
     

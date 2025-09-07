@@ -1,4 +1,5 @@
 from src.research.common.models.peer_group import PeerGroup
+from src.lib.redis_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime
@@ -11,13 +12,17 @@ async def peer_group_reporting_task(
     peer_group: PeerGroup
 ) -> None:
     """
-    Reporting task to write JSON dump of peer group analysis results to file.
+    Reporting task to write JSON dump of peer group analysis results to file and cache to Redis.
     
     Args:
         symbol: Stock symbol being analyzed
         peer_group: PeerGroup model to report
     """
     logger.info(f"Peer Group Reporting for {symbol}")
+    
+    # Cache the analysis in Redis (24 hour TTL for reports)
+    cache = get_redis_cache()
+    cache.cache_report("peer_group", symbol, peer_group, ttl=86400)
     
     # Create filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

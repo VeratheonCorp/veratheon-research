@@ -3,6 +3,7 @@ from src.tasks.news_sentiment.news_sentiment_analysis_task import news_sentiment
 from src.tasks.news_sentiment.news_sentiment_fetch_summaries_task import news_sentiment_fetch_summaries_task
 from src.tasks.news_sentiment.news_sentiment_reporting_task import news_sentiment_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.cache_retrieval.news_sentiment_cache_retrieval_task import news_sentiment_cache_retrieval_task
 from src.research.common.models.peer_group import PeerGroup
 from typing import List, Optional, Any
 import logging
@@ -21,6 +22,13 @@ async def news_sentiment_flow(
     start_time = time.time()
     logger.info(f"News Sentiment flow started for {symbol}")
     
+    # Try to get cached report first
+    cached_result = await news_sentiment_cache_retrieval_task(symbol, peer_group, earnings_projections_analysis, management_guidance_analysis)
+    if cached_result is not None:
+        logger.info(f"Returning cached news sentiment analysis for {symbol}")
+        return cached_result
+    
+    logger.info(f"No cached data found, running fresh news sentiment analysis for {symbol}")
     await publish_status_update_task("starting", {"flow": "news_sentiment_flow", "symbol": symbol})
 
     peer_group_summaries: List[RawNewsSentimentSummary] = await news_sentiment_fetch_summaries_task(symbol, peer_group.peer_group)

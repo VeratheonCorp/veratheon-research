@@ -2,6 +2,7 @@ from src.tasks.management_guidance.management_guidance_fetch_task import managem
 from src.tasks.management_guidance.management_guidance_analysis_task import management_guidance_analysis_task
 from src.tasks.management_guidance.management_guidance_reporting_task import management_guidance_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.cache_retrieval.management_guidance_cache_retrieval_task import management_guidance_cache_retrieval_task
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceData, ManagementGuidanceAnalysis
 from typing import Optional, Any
 import logging
@@ -33,6 +34,13 @@ async def management_guidance_flow(
     start_time = time.time()
     logger.info(f"Management Guidance flow started for {symbol}")
     
+    # Try to get cached report first
+    cached_result = await management_guidance_cache_retrieval_task(symbol, historical_earnings_analysis, financial_statements_analysis)
+    if cached_result is not None:
+        logger.info(f"Returning cached management guidance analysis for {symbol}")
+        return cached_result
+    
+    logger.info(f"No cached data found, running fresh management guidance analysis for {symbol}")
     await publish_status_update_task("starting", {"flow": "management_guidance_flow", "symbol": symbol})
     
     # Fetch management guidance data (earnings estimates + transcripts)

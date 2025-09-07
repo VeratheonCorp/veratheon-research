@@ -1,4 +1,5 @@
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
+from src.lib.redis_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime
@@ -11,13 +12,17 @@ async def historical_earnings_reporting_task(
     historical_analysis: HistoricalEarningsAnalysis
 ) -> None:
     """
-    Reporting task to write JSON dump of historical earnings analysis results to file.
+    Reporting task to write JSON dump of historical earnings analysis results to file and cache to Redis.
     
     Args:
         symbol: Stock symbol being analyzed
         historical_analysis: HistoricalEarningsAnalysis model to report
     """
     logger.info(f"Historical Earnings Reporting for {symbol}")
+    
+    # Cache the analysis in Redis (24 hour TTL for reports)
+    cache = get_redis_cache()
+    cache.cache_report("historical_earnings", symbol, historical_analysis, ttl=86400)
     
     # Create filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

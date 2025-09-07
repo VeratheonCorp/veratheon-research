@@ -2,6 +2,7 @@ from src.tasks.historical_earnings.historical_earnings_fetch_task import histori
 from src.tasks.historical_earnings.historical_earnings_analysis_task import historical_earnings_analysis_task
 from src.tasks.historical_earnings.historical_earnings_reporting_task import historical_earnings_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.cache_retrieval.historical_earnings_cache_retrieval_task import historical_earnings_cache_retrieval_task
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsData, HistoricalEarningsAnalysis
 import logging
 import time
@@ -24,6 +25,13 @@ async def historical_earnings_flow(symbol: str) -> HistoricalEarningsAnalysis:
     start_time = time.time()
     logger.info(f"Historical Earnings flow started for {symbol}")
     
+    # Try to get cached report first
+    cached_result = await historical_earnings_cache_retrieval_task(symbol)
+    if cached_result is not None:
+        logger.info(f"Returning cached historical earnings analysis for {symbol}")
+        return cached_result
+    
+    logger.info(f"No cached data found, running fresh historical earnings analysis for {symbol}")
     await publish_status_update_task("starting", {"flow": "historical_earnings_flow", "symbol": symbol})
     
     # Fetch historical earnings data from Alpha Vantage

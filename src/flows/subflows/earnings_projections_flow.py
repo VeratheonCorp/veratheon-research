@@ -3,6 +3,7 @@ from src.tasks.earnings_projections.earnings_projections_fetch_task import earni
 from src.tasks.earnings_projections.earnings_projections_analysis_task import earnings_projections_analysis_task
 from src.tasks.earnings_projections.earnings_projections_reporting_task import earnings_projections_reporting_task
 from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.cache_retrieval.earnings_projections_cache_retrieval_task import earnings_projections_cache_retrieval_task
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData, EarningsProjectionAnalysis
 import logging
 import time
@@ -31,6 +32,13 @@ async def earnings_projections_flow(
     start_time = time.time()
     logger.info(f"Independent Earnings Projections flow started for {symbol}")
     
+    # Try to get cached report first
+    cached_result = await earnings_projections_cache_retrieval_task(symbol, historical_earnings_analysis, financial_statements_analysis)
+    if cached_result is not None:
+        logger.info(f"Returning cached earnings projections analysis for {symbol}")
+        return cached_result
+    
+    logger.info(f"No cached data found, running fresh earnings projections analysis for {symbol}")
     await publish_status_update_task("starting", {"flow": "earnings_projections_flow", "symbol": symbol})
     
     # Fetch comprehensive data for earnings projections

@@ -12,31 +12,38 @@ from src.research.forward_pe.forward_pe_models import ForwardPeValuation, Forwar
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.common.models.peer_group import PeerGroup
+from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion, CrossReferencedAnalysis
 
 
 class TestMainResearchFlow:
     
     @patch('src.flows.research_flow.publish_status_update_task')
     @patch('src.flows.research_flow.trade_ideas_flow')
+    @patch('src.flows.research_flow.cross_reference_flow')
     @patch('src.flows.research_flow.news_sentiment_flow')
     @patch('src.flows.research_flow.forward_pe_flow')
     @patch('src.flows.research_flow.forward_pe_sanity_check_flow')
+    @patch('src.flows.research_flow.peer_group_reporting_task')
     @patch('src.flows.research_flow.peer_group_agent')
     @patch('src.flows.research_flow.management_guidance_flow')
     @patch('src.flows.research_flow.earnings_projections_flow')
     @patch('src.flows.research_flow.financial_statements_flow')
     @patch('src.flows.research_flow.historical_earnings_flow')
+    @patch('src.flows.research_flow.ensure_reporting_directory_exists')
     @pytest.mark.anyio
     async def test_main_research_flow_success(
         self,
+        mock_ensure_reporting_directory_exists,
         mock_historical_earnings_flow,
         mock_financial_statements_flow,
         mock_earnings_projections_flow,
         mock_management_guidance_flow,
         mock_peer_group_agent,
+        mock_peer_group_reporting_task,
         mock_forward_pe_sanity_check_flow,
         mock_forward_pe_flow,
         mock_news_sentiment_flow,
+        mock_cross_reference_flow,
         mock_trade_ideas_flow,
         mock_publish_status_update_task
     ):
@@ -200,6 +207,16 @@ class TestMainResearchFlow:
         )
         mock_news_sentiment_flow.return_value = mock_sentiment
         
+        # Mock cross-reference analysis
+        mock_cross_reference = [CrossReferencedAnalysisCompletion(
+            original_analysis_type="historical_earnings",
+            cross_referenced_analysis=CrossReferencedAnalysis(
+                major_adjustments=None,
+                minor_adjustments=None
+            )
+        )]
+        mock_cross_reference_flow.return_value = mock_cross_reference
+        
         # Mock trade ideas
         mock_trade_idea = TradeIdea(
             symbol="AAPL",
@@ -213,8 +230,6 @@ class TestMainResearchFlow:
             risk_factors=["Market volatility", "Economic slowdown"],
             simple_equity_trade_specifics="Long AAPL at $150, target $175, stop loss $140, 3-6 month horizon",
             option_play="Buy AAPL Mar calls, strike $155, delta 0.65, for leveraged exposure",
-            simple_equity_trade_specifics_confidence_score=85,
-            option_play_confidence_score=75,
             risk_hedge="Consider position sizing at 3-5% of portfolio to manage single name risk",
             entry_price_target="$150",
             upside_price_target="$175",
@@ -223,7 +238,9 @@ class TestMainResearchFlow:
         )
         mock_trade_ideas_flow.return_value = mock_trade_idea
         
-        # Mock status update task
+        # Mock additional tasks
+        mock_ensure_reporting_directory_exists.return_value = None
+        mock_peer_group_reporting_task.return_value = None
         mock_publish_status_update_task.return_value = True
         
         # Execute the main research flow
@@ -235,8 +252,8 @@ class TestMainResearchFlow:
         assert "trade_idea" in result
         trade_idea = result["trade_idea"]
         assert "BUY AAPL" in trade_idea["high_level_trade_idea"]
-        assert trade_idea["simple_equity_trade_specifics_confidence_score"] == 85
-        assert trade_idea["option_play_confidence_score"] == 75
+        assert trade_idea["symbol"] == "AAPL"
+        assert trade_idea["trade_direction"] == "LONG"
         
         # Verify all flows were called in the correct order
         mock_historical_earnings_flow.assert_called_once_with("AAPL")

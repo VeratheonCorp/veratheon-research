@@ -19,6 +19,7 @@ import logging
 import time
 from typing import List
 from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.cache_retrieval.cross_reference_cache_retrieval_task import cross_reference_cache_retrieval_task
 from src.tasks.cross_reference.cross_reference_task import cross_reference_task
 from src.tasks.cross_reference.cross_reference_reporting_task import (
     cross_reference_reporting_task,
@@ -62,6 +63,13 @@ async def cross_reference_flow(
     start_time = time.time()
     logger.info(f"Cross Reference flow started for {context.symbol}")
 
+    # Try to get cached report first
+    cached_result = await cross_reference_cache_retrieval_task(context.symbol, forward_pe_flow_result, news_sentiment_flow_result, historical_earnings_analysis, financial_statements_analysis, earnings_projections_analysis, management_guidance_analysis)
+    if cached_result is not None:
+        logger.info(f"Returning cached cross reference analysis for {context.symbol}")
+        return cached_result
+    
+    logger.info(f"No cached data found, running fresh cross reference analysis for {context.symbol}")
     await publish_status_update_task(
         "starting", {"flow": "cross_reference_flow", "symbol": context.symbol}
     )

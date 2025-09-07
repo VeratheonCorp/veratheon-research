@@ -1,8 +1,7 @@
 from dotenv import load_dotenv
-from src.flows.subflows.forward_pe_flow import forward_pe_flow
+from src.flows.subflows.forward_pe_flow import forward_pe_flow, forward_pe_sanity_check_flow
 from src.flows.subflows.trade_ideas_flow import trade_ideas_flow
 from src.flows.subflows.news_sentiment_flow import news_sentiment_flow
-from src.flows.subflows.forward_pe_flow import forward_pe_sanity_check_flow
 from src.flows.subflows.historical_earnings_flow import historical_earnings_flow
 from src.flows.subflows.financial_statements_flow import financial_statements_flow
 from src.flows.subflows.earnings_projections_flow import earnings_projections_flow
@@ -24,6 +23,7 @@ from src.research.cross_reference.cross_reference_models import CrossReferencedA
 
 import logging
 import time
+from typing import List
 
 logger = logging.getLogger(__name__)
 

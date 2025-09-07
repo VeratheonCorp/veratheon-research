@@ -1,4 +1,5 @@
 from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
+from src.lib.redis_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime
@@ -11,13 +12,17 @@ async def financial_statements_reporting_task(
     financial_analysis: FinancialStatementsAnalysis
 ) -> None:
     """
-    Reporting task to write JSON dump of financial statements analysis results to file.
+    Reporting task to write JSON dump of financial statements analysis results to file and cache to Redis.
     
     Args:
         symbol: Stock symbol being analyzed
         financial_analysis: FinancialStatementsAnalysis model to report
     """
     logger.info(f"Financial Statements Reporting for {symbol}")
+    
+    # Cache the analysis in Redis (24 hour TTL for reports)
+    cache = get_redis_cache()
+    cache.cache_report("financial_statements", symbol, financial_analysis, ttl=86400)
     
     # Create filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

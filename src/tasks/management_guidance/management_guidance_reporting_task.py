@@ -1,4 +1,5 @@
 from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
+from src.lib.redis_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime
@@ -11,13 +12,17 @@ async def management_guidance_reporting_task(
     management_guidance_analysis: ManagementGuidanceAnalysis
 ) -> None:
     """
-    Reporting task to write JSON dump of management guidance analysis results to file.
+    Reporting task to write JSON dump of management guidance analysis results to file and cache to Redis.
     
     Args:
         symbol: Stock symbol being analyzed
         management_guidance_analysis: ManagementGuidanceAnalysis model to report
     """
     logger.info(f"Management Guidance Reporting for {symbol}")
+    
+    # Cache the analysis in Redis (24 hour TTL for reports)
+    cache = get_redis_cache()
+    cache.cache_report("management_guidance", symbol, management_guidance_analysis, ttl=86400)
     
     # Create filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
