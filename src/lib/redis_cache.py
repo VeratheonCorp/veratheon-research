@@ -38,7 +38,7 @@ class RedisCache:
     
     def _generate_cache_key(self, prefix: str, symbol: str, **kwargs) -> str:
         """
-        Generate a cache key based on prefix, symbol and optional parameters.
+        Generate a cache key based on prefix, symbol, daily timestamp and optional parameters.
         
         Args:
             prefix: Cache key prefix (e.g., 'historical_earnings', 'financial_statements')
@@ -46,17 +46,20 @@ class RedisCache:
             **kwargs: Additional parameters to include in key generation
         
         Returns:
-            String cache key
+            String cache key in format: prefix:symbol:YYYYMMDD[:kwargs_hash]
         """
+        # Add daily timestamp in YYYYMMDD format
+        daily_timestamp = datetime.now().strftime("%Y%m%d")
+        
         # Create a consistent hash of kwargs for cache key stability
         kwargs_str = json.dumps(kwargs, sort_keys=True) if kwargs else ""
-        key_components = [prefix, symbol.upper(), kwargs_str]
+        key_components = [prefix, symbol.upper(), daily_timestamp, kwargs_str]
         key_base = ":".join(filter(None, key_components))
         
         # For very long keys, use hash to keep key length reasonable
         if len(key_base) > 200:
             key_hash = hashlib.md5(key_base.encode()).hexdigest()
-            return f"{prefix}:{symbol.upper()}:{key_hash}"
+            return f"{prefix}:{symbol.upper()}:{daily_timestamp}:{key_hash}"
         
         return key_base
     
