@@ -31,6 +31,7 @@ load_dotenv()
 
 async def main_research_flow(
     symbol: str,
+    force_recompute: bool = False,
 ) -> dict:
 
     start_time = time.time()
@@ -40,41 +41,45 @@ async def main_research_flow(
     
     await publish_status_update_task("starting", {"flow": "main_research_flow", "symbol": symbol})
 
-    historical_earnings_analysis: HistoricalEarningsAnalysis = await historical_earnings_flow(symbol)
+    historical_earnings_analysis: HistoricalEarningsAnalysis = await historical_earnings_flow(symbol, force_recompute=force_recompute)
 
-    financial_statements_analysis: FinancialStatementsAnalysis = await financial_statements_flow(symbol)
+    financial_statements_analysis: FinancialStatementsAnalysis = await financial_statements_flow(symbol, force_recompute=force_recompute)
 
     earnings_projections_analysis: EarningsProjectionAnalysis = await earnings_projections_flow(
         symbol, 
         historical_earnings_analysis.model_dump(), 
-        financial_statements_analysis.model_dump()
+        financial_statements_analysis.model_dump(),
+        force_recompute=force_recompute
     )
 
     management_guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_flow(
         symbol, 
         historical_earnings_analysis, 
-        financial_statements_analysis
+        financial_statements_analysis,
+        force_recompute=force_recompute
     )
 
     peer_group: PeerGroup = await peer_group_agent(symbol, financial_statements_analysis)
     
     await peer_group_reporting_task(symbol, peer_group)
 
-    forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol)
+    forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol, force_recompute=force_recompute)
 
     forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(
         symbol, 
         peer_group, 
         earnings_projections_analysis,
         management_guidance_analysis, 
-        forward_pe_sanity_check
+        forward_pe_sanity_check,
+        force_recompute=force_recompute
     )
 
     news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(
         symbol, 
         peer_group, 
         earnings_projections_analysis, 
-        management_guidance_analysis
+        management_guidance_analysis,
+        force_recompute=force_recompute
     )
 
     cross_reference_flow_result: List[CrossReferencedAnalysisCompletion] = await cross_reference_flow(
@@ -84,7 +89,8 @@ async def main_research_flow(
         historical_earnings_analysis,
         financial_statements_analysis,
         earnings_projections_analysis,
-        management_guidance_analysis
+        management_guidance_analysis,
+        force_recompute=force_recompute
     )
 
     trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(
@@ -94,7 +100,8 @@ async def main_research_flow(
         historical_earnings_analysis,
         financial_statements_analysis,
         earnings_projections_analysis,
-        management_guidance_analysis
+        management_guidance_analysis,
+        force_recompute=force_recompute
     )
     
     logger.info(f"Main research for {symbol} completed successfully! in {int(time.time() - start_time)} seconds")

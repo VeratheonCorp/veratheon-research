@@ -48,6 +48,7 @@ async def cross_reference_flow(
     financial_statements_analysis: FinancialStatementsAnalysis,
     earnings_projections_analysis: EarningsProjectionAnalysis,
     management_guidance_analysis: ManagementGuidanceAnalysis,
+    force_recompute: bool = False,
 ) -> List[CrossReferencedAnalysisCompletion]:
 
     context = CrossReferenceContext(
@@ -64,7 +65,7 @@ async def cross_reference_flow(
     logger.info(f"Cross Reference flow started for {context.symbol}")
 
     # Try to get cached report first
-    cached_result = await cross_reference_cache_retrieval_task(context.symbol, forward_pe_flow_result, news_sentiment_flow_result, historical_earnings_analysis, financial_statements_analysis, earnings_projections_analysis, management_guidance_analysis)
+    cached_result = await cross_reference_cache_retrieval_task(context.symbol, forward_pe_flow_result, news_sentiment_flow_result, historical_earnings_analysis, financial_statements_analysis, earnings_projections_analysis, management_guidance_analysis, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached cross reference analysis for {context.symbol}")
         return cached_result

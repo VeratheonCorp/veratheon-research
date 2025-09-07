@@ -9,7 +9,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-async def historical_earnings_flow(symbol: str) -> HistoricalEarningsAnalysis:
+async def historical_earnings_flow(symbol: str, force_recompute: bool = False) -> HistoricalEarningsAnalysis:
     """
     Main flow for running historical earnings analysis.
     
@@ -26,7 +26,7 @@ async def historical_earnings_flow(symbol: str) -> HistoricalEarningsAnalysis:
     logger.info(f"Historical Earnings flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await historical_earnings_cache_retrieval_task(symbol)
+    cached_result = await historical_earnings_cache_retrieval_task(symbol, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached historical earnings analysis for {symbol}")
         return cached_result

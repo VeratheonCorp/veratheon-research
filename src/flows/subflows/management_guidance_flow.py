@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 async def management_guidance_flow(
     symbol: str,
     historical_earnings_analysis: Optional[Any] = None,
-    financial_statements_analysis: Optional[Any] = None
+    financial_statements_analysis: Optional[Any] = None,
+    force_recompute: bool = False
 ) -> ManagementGuidanceAnalysis:
     """
     Main flow for analyzing management guidance from earnings calls.
@@ -35,7 +36,7 @@ async def management_guidance_flow(
     logger.info(f"Management Guidance flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await management_guidance_cache_retrieval_task(symbol, historical_earnings_analysis, financial_statements_analysis)
+    cached_result = await management_guidance_cache_retrieval_task(symbol, historical_earnings_analysis, financial_statements_analysis, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached management guidance analysis for {symbol}")
         return cached_result

@@ -10,22 +10,28 @@ logger = logging.getLogger(__name__)
 async def management_guidance_cache_retrieval_task(
     symbol: str, 
     historical_earnings_analysis: HistoricalEarningsAnalysis,
-    financial_statements_analysis: FinancialStatementsAnalysis
+    financial_statements_analysis: FinancialStatementsAnalysis,
+    force_recompute: bool = False
 ) -> Optional[ManagementGuidanceAnalysis]:
     """
     Cache retrieval task for management guidance analysis.
     
     Checks Redis cache for existing management guidance report. If found, returns cached data.
-    If not found, launches the management_guidance_flow to generate fresh analysis.
+    If not found, returns None. If force_recompute is True, skips cache lookup.
     
     Args:
         symbol: Stock symbol to analyze
         historical_earnings_analysis: Historical earnings analysis context
         financial_statements_analysis: Financial statements analysis context
+        force_recompute: If True, skip cache lookup and return None
         
     Returns:
-        ManagementGuidanceAnalysis from cache or fresh analysis
+        ManagementGuidanceAnalysis from cache or None if cache miss/force_recompute
     """
+    if force_recompute:
+        logger.info(f"Skipping cache lookup for management guidance analysis: {symbol} (force_recompute=True)")
+        return None
+        
     logger.info(f"Checking cache for management guidance analysis: {symbol}")
     
     cache = get_redis_cache()

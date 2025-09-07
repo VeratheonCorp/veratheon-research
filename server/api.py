@@ -29,6 +29,7 @@ app = FastAPI(title="Market Research Agent API", version="0.1.0")
 
 class ResearchRequest(BaseModel):
     symbol: str = "PG"
+    force_recompute: bool = False
 
 
 @app.get("/health")
@@ -47,7 +48,7 @@ async def run_research(req: ResearchRequest, request: Request):
             raise HTTPException(status_code=408, detail="Client disconnected")
         
         # Run the research flow with periodic disconnect checks
-        result = await main_research_flow(symbol=req.symbol)
+        result = await main_research_flow(symbol=req.symbol, force_recompute=req.force_recompute)
         
         # Final disconnect check before returning
         if await request.is_disconnected():

@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 async def earnings_projections_flow(
     symbol: str,
     historical_earnings_analysis: Optional[Dict[str, Any]] = None,
-    financial_statements_analysis: Optional[Dict[str, Any]] = None
+    financial_statements_analysis: Optional[Dict[str, Any]] = None,
+    force_recompute: bool = False
 ) -> EarningsProjectionAnalysis:
     """
     Main flow for creating independent earnings projections for next quarter validation.
@@ -33,7 +34,7 @@ async def earnings_projections_flow(
     logger.info(f"Independent Earnings Projections flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await earnings_projections_cache_retrieval_task(symbol, historical_earnings_analysis, financial_statements_analysis)
+    cached_result = await earnings_projections_cache_retrieval_task(symbol, historical_earnings_analysis, financial_statements_analysis, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached earnings projections analysis for {symbol}")
         return cached_result

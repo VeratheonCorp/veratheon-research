@@ -5,19 +5,24 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-async def historical_earnings_cache_retrieval_task(symbol: str) -> Optional[HistoricalEarningsAnalysis]:
+async def historical_earnings_cache_retrieval_task(symbol: str, force_recompute: bool = False) -> Optional[HistoricalEarningsAnalysis]:
     """
     Cache retrieval task for historical earnings analysis.
     
     Checks Redis cache for existing historical earnings report. If found, returns cached data.
-    If not found, returns None.
+    If not found, returns None. If force_recompute is True, skips cache lookup.
     
     Args:
         symbol: Stock symbol to analyze
+        force_recompute: If True, skip cache lookup and return None
         
     Returns:
-        HistoricalEarningsAnalysis from cache or None if cache miss
+        HistoricalEarningsAnalysis from cache or None if cache miss/force_recompute
     """
+    if force_recompute:
+        logger.info(f"Skipping cache lookup for historical earnings analysis: {symbol} (force_recompute=True)")
+        return None
+        
     logger.info(f"Checking cache for historical earnings analysis: {symbol}")
     
     cache = get_redis_cache()

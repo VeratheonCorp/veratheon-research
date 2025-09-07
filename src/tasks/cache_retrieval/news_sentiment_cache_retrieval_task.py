@@ -12,23 +12,29 @@ async def news_sentiment_cache_retrieval_task(
     symbol: str, 
     peer_group: PeerGroup,
     earnings_projections_analysis: EarningsProjectionAnalysis,
-    management_guidance_analysis: ManagementGuidanceAnalysis
+    management_guidance_analysis: ManagementGuidanceAnalysis,
+    force_recompute: bool = False
 ) -> Optional[NewsSentimentSummary]:
     """
     Cache retrieval task for news sentiment analysis.
     
     Checks Redis cache for existing news sentiment report. If found, returns cached data.
-    If not found, launches the news_sentiment_flow to generate fresh analysis.
+    If not found, returns None. If force_recompute is True, skips cache lookup.
     
     Args:
         symbol: Stock symbol to analyze
         peer_group: Peer group analysis context
         earnings_projections_analysis: Earnings projections analysis context
         management_guidance_analysis: Management guidance analysis context
+        force_recompute: If True, skip cache lookup and return None
         
     Returns:
-        NewsSentimentSummary from cache or fresh analysis
+        NewsSentimentSummary from cache or None if cache miss/force_recompute
     """
+    if force_recompute:
+        logger.info(f"Skipping cache lookup for news sentiment analysis: {symbol} (force_recompute=True)")
+        return None
+        
     logger.info(f"Checking cache for news sentiment analysis: {symbol}")
     
     cache = get_redis_cache()

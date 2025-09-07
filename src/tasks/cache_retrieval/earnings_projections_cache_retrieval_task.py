@@ -8,22 +8,28 @@ logger = logging.getLogger(__name__)
 async def earnings_projections_cache_retrieval_task(
     symbol: str, 
     historical_earnings_context: Dict[str, Any], 
-    financial_statements_context: Dict[str, Any]
+    financial_statements_context: Dict[str, Any],
+    force_recompute: bool = False
 ) -> Optional[EarningsProjectionAnalysis]:
     """
     Cache retrieval task for earnings projections analysis.
     
     Checks Redis cache for existing earnings projections report. If found, returns cached data.
-    If not found, launches the earnings_projections_flow to generate fresh analysis.
+    If not found, returns None. If force_recompute is True, skips cache lookup.
     
     Args:
         symbol: Stock symbol to analyze
         historical_earnings_context: Historical earnings analysis context
         financial_statements_context: Financial statements analysis context
+        force_recompute: If True, skip cache lookup and return None
         
     Returns:
-        EarningsProjectionAnalysis from cache or fresh analysis
+        EarningsProjectionAnalysis from cache or None if cache miss/force_recompute
     """
+    if force_recompute:
+        logger.info(f"Skipping cache lookup for earnings projections analysis: {symbol} (force_recompute=True)")
+        return None
+        
     logger.info(f"Checking cache for earnings projections analysis: {symbol}")
     
     cache = get_redis_cache()

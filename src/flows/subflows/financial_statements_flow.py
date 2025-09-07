@@ -9,7 +9,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-async def financial_statements_flow(symbol: str) -> FinancialStatementsAnalysis:
+async def financial_statements_flow(symbol: str, force_recompute: bool = False) -> FinancialStatementsAnalysis:
     """
     Main flow for analyzing recent financial statements for changes in revenue drivers, cost structures, and working capital.
     
@@ -25,7 +25,7 @@ async def financial_statements_flow(symbol: str) -> FinancialStatementsAnalysis:
     logger.info(f"Financial statements flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await financial_statements_cache_retrieval_task(symbol)
+    cached_result = await financial_statements_cache_retrieval_task(symbol, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached financial statements analysis for {symbol}")
         return cached_result

@@ -16,6 +16,7 @@
   let statusUpdates: StatusUpdate[] = [];
   let subscriber = createRedisSubscriber();
   let stockSymbol = '';
+  let forceRecompute = false;
   let isRunningResearch = false;
   let redisConnectionError = false;
   let researchResult: ResearchResult | null = null;
@@ -76,7 +77,10 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ symbol: stockSymbol.trim().toUpperCase() })
+        body: JSON.stringify({ 
+          symbol: stockSymbol.trim().toUpperCase(),
+          force_recompute: forceRecompute
+        })
       });
       
       if (!response.ok) {
@@ -121,6 +125,20 @@
                   runResearch();
                 }
               }}
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="force-recompute">
+              <span class="label-text">Force Recompute</span>
+              <span class="label-text-alt text-xs">Skip cache</span>
+            </label>
+            <input
+              id="force-recompute"
+              type="checkbox"
+              class="toggle toggle-secondary"
+              bind:checked={forceRecompute}
+              disabled={isRunningResearch}
             />
           </div>
 

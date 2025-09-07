@@ -18,6 +18,7 @@ async def forward_pe_flow(
     earnings_projections_analysis: Optional[Any] = None,
     management_guidance_analysis: Optional[Any] = None,
     forward_pe_sanity_check: Optional[ForwardPeSanityCheck] = None,
+    force_recompute: bool = False,
 ) -> ForwardPeValuation:
     """
     Main flow for running forward PE analysis.
@@ -36,7 +37,7 @@ async def forward_pe_flow(
     logger.info(f"Forward PE flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await forward_pe_valuation_cache_retrieval_task(symbol, peer_group, earnings_projections_analysis, management_guidance_analysis, forward_pe_sanity_check)
+    cached_result = await forward_pe_valuation_cache_retrieval_task(symbol, peer_group, earnings_projections_analysis, management_guidance_analysis, forward_pe_sanity_check, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached forward PE valuation analysis for {symbol}")
         return cached_result
@@ -69,6 +70,7 @@ async def forward_pe_flow(
 
 async def forward_pe_sanity_check_flow(
     symbol: str,
+    force_recompute: bool = False,
 ) -> ForwardPeSanityCheck:
     """
     Main flow for running forward PE sanity check.
@@ -83,7 +85,7 @@ async def forward_pe_sanity_check_flow(
     logger.info(f"Forward PE sanity check flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await forward_pe_sanity_check_cache_retrieval_task(symbol)
+    cached_result = await forward_pe_sanity_check_cache_retrieval_task(symbol, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached forward PE sanity check analysis for {symbol}")
         return cached_result

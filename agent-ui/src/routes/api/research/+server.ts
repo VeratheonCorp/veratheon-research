@@ -26,7 +26,7 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 
 export async function POST({ request }) {
   try {
-    const { symbol } = await request.json();
+    const { symbol, force_recompute } = await request.json();
     
     if (!symbol || typeof symbol !== 'string') {
       return json({ error: 'Invalid symbol' }, { status: 400 });
@@ -42,7 +42,10 @@ export async function POST({ request }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ symbol: symbol.trim().toUpperCase() }),
+        body: JSON.stringify({ 
+          symbol: symbol.trim().toUpperCase(),
+          force_recompute: Boolean(force_recompute)
+        }),
       },
       15 * 60 * 1000 // 15 minutes timeout
     );

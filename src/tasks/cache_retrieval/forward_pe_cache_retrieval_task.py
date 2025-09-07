@@ -8,19 +8,24 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-async def forward_pe_sanity_check_cache_retrieval_task(symbol: str) -> Optional[ForwardPeSanityCheck]:
+async def forward_pe_sanity_check_cache_retrieval_task(symbol: str, force_recompute: bool = False) -> Optional[ForwardPeSanityCheck]:
     """
     Cache retrieval task for forward PE sanity check analysis.
     
     Checks Redis cache for existing forward PE sanity check report. If found, returns cached data.
-    If not found, launches the forward_pe_sanity_check_flow to generate fresh analysis.
+    If not found, returns None. If force_recompute is True, skips cache lookup.
     
     Args:
         symbol: Stock symbol to analyze
+        force_recompute: If True, skip cache lookup and return None
         
     Returns:
-        ForwardPeSanityCheck from cache or fresh analysis
+        ForwardPeSanityCheck from cache or None if cache miss/force_recompute
     """
+    if force_recompute:
+        logger.info(f"Skipping cache lookup for forward PE sanity check analysis: {symbol} (force_recompute=True)")
+        return None
+        
     logger.info(f"Checking cache for forward PE sanity check analysis: {symbol}")
     
     cache = get_redis_cache()
@@ -45,13 +50,14 @@ async def forward_pe_valuation_cache_retrieval_task(
     peer_group: PeerGroup,
     earnings_projections_analysis: EarningsProjectionAnalysis,
     management_guidance_analysis: ManagementGuidanceAnalysis,
-    forward_pe_sanity_check: ForwardPeSanityCheck
+    forward_pe_sanity_check: ForwardPeSanityCheck,
+    force_recompute: bool = False
 ) -> Optional[ForwardPeValuation]:
     """
     Cache retrieval task for forward PE valuation analysis.
     
     Checks Redis cache for existing forward PE valuation report. If found, returns cached data.
-    If not found, launches the forward_pe_flow to generate fresh analysis.
+    If not found, returns None. If force_recompute is True, skips cache lookup.
     
     Args:
         symbol: Stock symbol to analyze
@@ -59,10 +65,15 @@ async def forward_pe_valuation_cache_retrieval_task(
         earnings_projections_analysis: Earnings projections analysis context
         management_guidance_analysis: Management guidance analysis context
         forward_pe_sanity_check: Forward PE sanity check analysis context
+        force_recompute: If True, skip cache lookup and return None
         
     Returns:
-        ForwardPeValuation from cache or fresh analysis
+        ForwardPeValuation from cache or None if cache miss/force_recompute
     """
+    if force_recompute:
+        logger.info(f"Skipping cache lookup for forward PE valuation analysis: {symbol} (force_recompute=True)")
+        return None
+        
     logger.info(f"Checking cache for forward PE valuation analysis: {symbol}")
     
     cache = get_redis_cache()

@@ -17,13 +17,14 @@ async def news_sentiment_flow(
     peer_group: PeerGroup,
     earnings_projections_analysis: Optional[Any] = None,
     management_guidance_analysis: Optional[Any] = None,
+    force_recompute: bool = False,
 ) -> NewsSentimentSummary:
     
     start_time = time.time()
     logger.info(f"News Sentiment flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await news_sentiment_cache_retrieval_task(symbol, peer_group, earnings_projections_analysis, management_guidance_analysis)
+    cached_result = await news_sentiment_cache_retrieval_task(symbol, peer_group, earnings_projections_analysis, management_guidance_analysis, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached news sentiment analysis for {symbol}")
         return cached_result

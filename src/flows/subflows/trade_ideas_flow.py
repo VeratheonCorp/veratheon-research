@@ -19,13 +19,14 @@ async def trade_ideas_flow(
     financial_statements_analysis: Optional[Any] = None,
     earnings_projections_analysis: Optional[Any] = None,
     management_guidance_analysis: Optional[Any] = None,
+    force_recompute: bool = False,
 ) -> TradeIdea:
     
     start_time = time.time()
     logger.info(f"Trade Ideas flow started for {symbol}")
     
     # Try to get cached report first
-    cached_result = await trade_ideas_cache_retrieval_task(symbol, forward_pe_valuation, news_sentiment_summary, historical_earnings_analysis, financial_statements_analysis, earnings_projections_analysis, management_guidance_analysis)
+    cached_result = await trade_ideas_cache_retrieval_task(symbol, forward_pe_valuation, news_sentiment_summary, historical_earnings_analysis, financial_statements_analysis, earnings_projections_analysis, management_guidance_analysis, force_recompute)
     if cached_result is not None:
         logger.info(f"Returning cached trade ideas analysis for {symbol}")
         return cached_result
