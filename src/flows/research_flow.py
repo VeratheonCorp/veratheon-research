@@ -7,6 +7,7 @@ from src.flows.subflows.financial_statements_flow import financial_statements_fl
 from src.flows.subflows.earnings_projections_flow import earnings_projections_flow
 from src.flows.subflows.management_guidance_flow import management_guidance_flow
 from src.flows.subflows.cross_reference_flow import cross_reference_flow
+from src.flows.subflows.comprehensive_report_flow import comprehensive_report_flow
 from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.common.peer_group_reporting_task import peer_group_reporting_task
 from src.tasks.common.reporting_directory_setup_task import ensure_reporting_directory_exists
@@ -20,6 +21,7 @@ from src.research.management_guidance.management_guidance_models import Manageme
 from src.research.common.peer_group_agent import peer_group_agent
 from src.research.common.models.peer_group import PeerGroup
 from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion
+from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport
 
 import logging
 import time
@@ -103,12 +105,9 @@ async def main_research_flow(
         management_guidance_analysis,
         force_recompute=force_recompute
     )
-    
-    logger.info(f"Main research for {symbol} completed successfully! in {int(time.time() - start_time)} seconds")
-    
-    await publish_status_update_task("completed", {"flow": "main_research_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
-    
-    return {
+
+    # Collect all analyses for comprehensive report
+    all_analyses = {
         "symbol": symbol,
         "historical_earnings_analysis": historical_earnings_analysis.model_dump(),
         "financial_statements_analysis": financial_statements_analysis.model_dump(),
@@ -120,4 +119,36 @@ async def main_research_flow(
         "news_sentiment_summary": news_sentiment_flow_result.model_dump(),
         "cross_reference": [item.model_dump() for item in cross_reference_flow_result],
         "trade_idea": trade_ideas_flow_result.model_dump()
+    }
+
+    # Generate comprehensive report
+    comprehensive_report: ComprehensiveReport = await comprehensive_report_flow(
+        symbol,
+        all_analyses,
+        force_recompute=force_recompute
+    )
+    logger.info(f"Comprehensive report:")
+    logger.info(comprehensive_report.model_dump_json(indent=2))
+
+
+    logger.info(f"Main research for {symbol} completed successfully! in {int(time.time() - start_time)} seconds")
+    
+    await publish_status_update_task("completed", {"flow": "main_research_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
+    
+    return {
+        "symbol": symbol,
+        "comprehensive_report": comprehensive_report.model_dump(),
+        # Raw analyses (for debugging/detailed inspection if needed)
+        "raw_analyses": {
+            "historical_earnings_analysis": historical_earnings_analysis.model_dump(),
+            "financial_statements_analysis": financial_statements_analysis.model_dump(),
+            "earnings_projections_analysis": earnings_projections_analysis.model_dump(),
+            "management_guidance_analysis": management_guidance_analysis.model_dump(),
+            "peer_group": peer_group.model_dump(),
+            "forward_pe_sanity_check": forward_pe_sanity_check.model_dump(),
+            "forward_pe_valuation": forward_pe_flow_result.model_dump(),
+            "news_sentiment_summary": news_sentiment_flow_result.model_dump(),
+            "cross_reference": [item.model_dump() for item in cross_reference_flow_result],
+            "trade_idea": trade_ideas_flow_result.model_dump()
+        }
     }
