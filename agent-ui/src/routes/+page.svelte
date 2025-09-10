@@ -231,7 +231,7 @@
     </div>
     
     <!-- Comprehensive Report with Rich Markdown Formatting -->
-    {#if researchResult.comprehensive_analysis}
+    {#if researchResult.comprehensive_report?.comprehensive_analysis}
       <div class="card bg-base-100 shadow-xl border-2 border-base-200">
         <div class="card-body p-8">
           <div class="flex items-center gap-3 mb-6">
@@ -240,7 +240,7 @@
           </div>
           
           <!-- Critical Insights Section - Prominent display at top -->
-          {#if researchResult.critical_insights}
+          {#if researchResult.comprehensive_report.critical_insights}
             <div class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-8 border-2 border-primary/30 shadow-lg mb-8">
               <div class="flex items-center gap-4 mb-6">
                 <div class="text-primary text-3xl">💡</div>
@@ -257,7 +257,7 @@
                           prose-code:bg-primary/10 prose-code:px-2 prose-code:py-1 prose-code:rounded
                           prose-blockquote:border-l-4 prose-blockquote:border-primary 
                           prose-blockquote:bg-primary/5 prose-blockquote:p-4 prose-blockquote:rounded-r">
-                {@html renderMarkdown(researchResult.critical_insights)}
+                {@html renderMarkdown(researchResult.comprehensive_report.critical_insights)}
               </div>
             </div>
           {/if}
@@ -288,7 +288,7 @@
                         prose-th:bg-primary prose-th:text-primary-content prose-th:p-3
                         prose-td:border prose-td:border-base-300 prose-td:p-3
                         prose-hr:border-base-300 prose-hr:my-8">
-              {@html renderMarkdown(researchResult.comprehensive_analysis)}
+              {@html renderMarkdown(researchResult.comprehensive_report.comprehensive_analysis)}
             </div>
           </div>
           
