@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { flip } from 'svelte/animate';
-  import { fade } from 'svelte/transition';
+  import { fade, slide } from 'svelte/transition';
   import { createRedisSubscriber, type StatusUpdate } from '$lib/redis-subscriber';
   import { marked } from 'marked';
   import type { ResearchResult } from '$lib/research-types';
@@ -167,7 +167,7 @@
 
 <!-- Research & Status Unified Section -->
 {#if isRunningResearch || statusUpdates.length > 0 || researchResult}
-  <div class="mt-8">
+  <div class="mt-8" transition:slide={{ duration: 400 }}>
     <!-- Unified Research Card -->
     <div class="card bg-base-100 shadow-2xl border border-primary/20">
       <div class="card-body p-8">
