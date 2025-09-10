@@ -57,6 +57,24 @@
     );
   });
 
+  // Custom fetch wrapper with extended timeouts for long-running operations
+  async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
   async function runResearch() {
     if (!stockSymbol.trim()) {
       alert('Please enter a stock symbol');
@@ -69,7 +87,7 @@
     isRunningResearch = true;
     
     try {
-      const response = await fetch('/api/research', {
+      const response = await fetchWithTimeout('/api/research', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -78,7 +96,7 @@
           symbol: stockSymbol.trim().toUpperCase(),
           force_recompute: forceRecompute
         })
-      });
+      }, 60 * 60 * 1000); // 1 hour timeout
       
       if (!response.ok) {
         throw new Error(`Research failed: ${response.statusText}`);
