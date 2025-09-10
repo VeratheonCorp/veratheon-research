@@ -137,18 +137,5 @@ async def main_research_flow(
     
     return {
         "symbol": symbol,
-        "comprehensive_report": comprehensive_report.model_dump(),
-        # Raw analyses (for debugging/detailed inspection if needed)
-        "raw_analyses": {
-            "historical_earnings_analysis": historical_earnings_analysis.model_dump(),
-            "financial_statements_analysis": financial_statements_analysis.model_dump(),
-            "earnings_projections_analysis": earnings_projections_analysis.model_dump(),
-            "management_guidance_analysis": management_guidance_analysis.model_dump(),
-            "peer_group": peer_group.model_dump(),
-            "forward_pe_sanity_check": forward_pe_sanity_check.model_dump(),
-            "forward_pe_valuation": forward_pe_flow_result.model_dump(),
-            "news_sentiment_summary": news_sentiment_flow_result.model_dump(),
-            "cross_reference": [item.model_dump() for item in cross_reference_flow_result],
-            "trade_idea": trade_ideas_flow_result.model_dump()
-        }
+        "comprehensive_report": comprehensive_report.model_dump()
     }

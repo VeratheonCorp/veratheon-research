@@ -259,7 +259,7 @@
                       prose-th:bg-primary prose-th:text-primary-content prose-th:p-3
                       prose-td:border prose-td:border-base-300 prose-td:p-3
                       prose-hr:border-base-300 prose-hr:my-8">
-            {@html renderMarkdown(researchResult.comprehensive_report)}
+            {@html renderMarkdown(researchResult.comprehensive_report.comprehensive_analysis)}
           </div>
           
           <div class="divider divider-primary mt-8"></div>
