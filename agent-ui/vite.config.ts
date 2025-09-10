@@ -6,7 +6,8 @@ export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	server: {
 		host: '0.0.0.0',
-		port: 5173
+		port: 5173,
+		allowedHosts: ['restlessapi-ubuntu.tail9576b0.ts.net']
 	},
 	test: {
 		expect: { requireAssertions: true },
