@@ -239,27 +239,57 @@
             <h3 class="card-title text-2xl text-primary">Market Research Report</h3>
           </div>
           
+          <!-- Critical Insights Section - Prominent display at top -->
+          {#if researchResult.comprehensive_report.critical_insights}
+            <div class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-8 border-2 border-primary/30 shadow-lg mb-8">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="text-primary text-3xl">💡</div>
+                <h3 class="text-2xl font-bold text-primary">Key Insights</h3>
+              </div>
+              
+              <div class="prose prose-lg max-w-none
+                          prose-headings:text-primary prose-headings:font-bold
+                          prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
+                          prose-p:text-base-content prose-p:leading-relaxed prose-p:mb-4
+                          prose-strong:text-primary prose-strong:font-semibold
+                          prose-ol:space-y-3 prose-ul:space-y-3
+                          prose-li:text-base-content prose-li:leading-relaxed prose-li:mb-2
+                          prose-code:bg-primary/10 prose-code:px-2 prose-code:py-1 prose-code:rounded
+                          prose-blockquote:border-l-4 prose-blockquote:border-primary 
+                          prose-blockquote:bg-primary/5 prose-blockquote:p-4 prose-blockquote:rounded-r">
+                {@html renderMarkdown(researchResult.comprehensive_report.critical_insights)}
+              </div>
+            </div>
+          {/if}
+          
           <div class="divider divider-primary"></div>
           
-          <!-- Rendered Markdown Content with Enhanced Typography -->
-          <div class="prose prose-lg max-w-none 
-                      prose-headings:text-primary prose-headings:font-bold
-                      prose-h1:text-3xl prose-h1:border-b prose-h1:border-primary prose-h1:pb-3
-                      prose-h2:text-2xl prose-h2:text-secondary prose-h2:mt-8 prose-h2:mb-4
-                      prose-h3:text-xl prose-h3:text-accent prose-h3:mt-6 prose-h3:mb-3
-                      prose-p:text-base-content prose-p:leading-relaxed prose-p:mb-4
-                      prose-strong:text-primary prose-strong:font-semibold
-                      prose-ul:space-y-2 prose-ol:space-y-2
-                      prose-li:text-base-content
-                      prose-blockquote:border-l-4 prose-blockquote:border-primary 
-                      prose-blockquote:bg-base-200 prose-blockquote:p-4 prose-blockquote:rounded-r
-                      prose-code:bg-base-200 prose-code:px-2 prose-code:py-1 prose-code:rounded
-                      prose-pre:bg-base-300 prose-pre:p-4 prose-pre:rounded-lg
-                      prose-table:w-full prose-table:border-collapse
-                      prose-th:bg-primary prose-th:text-primary-content prose-th:p-3
-                      prose-td:border prose-td:border-base-300 prose-td:p-3
-                      prose-hr:border-base-300 prose-hr:my-8">
-            {@html renderMarkdown(researchResult.comprehensive_report.comprehensive_analysis)}
+          <!-- Comprehensive Analysis Section -->
+          <div class="mb-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="text-secondary text-2xl">📈</div>
+              <h3 class="text-xl font-bold text-secondary">Detailed Analysis</h3>
+            </div>
+            
+            <div class="prose prose-lg max-w-none 
+                        prose-headings:text-primary prose-headings:font-bold
+                        prose-h1:text-3xl prose-h1:border-b prose-h1:border-primary prose-h1:pb-3
+                        prose-h2:text-2xl prose-h2:text-secondary prose-h2:mt-8 prose-h2:mb-4
+                        prose-h3:text-xl prose-h3:text-accent prose-h3:mt-6 prose-h3:mb-3
+                        prose-p:text-base-content prose-p:leading-relaxed prose-p:mb-4
+                        prose-strong:text-primary prose-strong:font-semibold
+                        prose-ul:space-y-2 prose-ol:space-y-2
+                        prose-li:text-base-content
+                        prose-blockquote:border-l-4 prose-blockquote:border-primary 
+                        prose-blockquote:bg-base-200 prose-blockquote:p-4 prose-blockquote:rounded-r
+                        prose-code:bg-base-200 prose-code:px-2 prose-code:py-1 prose-code:rounded
+                        prose-pre:bg-base-300 prose-pre:p-4 prose-pre:rounded-lg
+                        prose-table:w-full prose-table:border-collapse
+                        prose-th:bg-primary prose-th:text-primary-content prose-th:p-3
+                        prose-td:border prose-td:border-base-300 prose-td:p-3
+                        prose-hr:border-base-300 prose-hr:my-8">
+              {@html renderMarkdown(researchResult.comprehensive_report.comprehensive_analysis)}
+            </div>
           </div>
           
           <div class="divider divider-primary mt-8"></div>
