@@ -46,6 +46,11 @@ export async function POST({ request }) {
           symbol: symbol.trim().toUpperCase(),
           force_recompute: Boolean(force_recompute)
         }),
+        // Configure undici timeouts for long-running requests
+        // @ts-ignore - undici specific options
+        headersTimeout: 15 * 60 * 1000, // 15 minutes for headers
+        bodyTimeout: 15 * 60 * 1000,    // 15 minutes for body
+        connectTimeout: 30 * 1000,      // 30 seconds to connect
       },
       15 * 60 * 1000 // 15 minutes timeout
     );
