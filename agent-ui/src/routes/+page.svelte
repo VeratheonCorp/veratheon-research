@@ -5,6 +5,9 @@
   import type { ResearchResult } from '$lib/research-types';
   import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
 
+  // Configuration
+  const MAX_STEPS = 16;
+
   interface JobStep {
     step: string;
     timestamp: string;
@@ -47,6 +50,20 @@
   }
 
   let researchPollingInterval: ReturnType<typeof setInterval> | null = null;
+
+  // Update browser tab title with completion percentage
+  $: {
+    if (typeof document !== 'undefined') {
+      if (isRunningResearch && jobStatus?.steps) {
+        const percentage = Math.round((jobStatus.steps.length / MAX_STEPS) * 100);
+        document.title = `Research ${percentage}% - ${stockSymbol.toUpperCase() || 'Market Research'}`;
+      } else if (researchResult) {
+        document.title = `Complete - ${stockSymbol.toUpperCase() || 'Market Research'}`;
+      } else {
+        document.title = 'Market Research Agent';
+      }
+    }
+  }
 
   // Start research and return job ID
   async function startResearch() {
@@ -284,7 +301,7 @@
               <span>Research Progress</span>
               <span>{jobStatus.steps?.length || 0} steps completed</span>
             </div>
-            <progress class="progress progress-primary w-full" value="{jobStatus.steps?.length || 0}" max="15"></progress>
+            <progress class="progress progress-primary w-full" value="{jobStatus.steps?.length || 0}" max="{MAX_STEPS}"></progress>
             
             <!-- Current step indicator -->
             {#if jobStatus.steps && jobStatus.steps.length > 0}
