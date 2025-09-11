@@ -5,52 +5,22 @@ from src.lib.llm_model import get_model
 SYSTEM_INSTRUCTIONS = """
 Generate a comprehensive investment research report by synthesizing all available analyses into a single, readable text block.
 
-OUTPUT FORMAT:
-Create a well-structured, comprehensive analysis as one flowing text document that covers:
-
-1. EXECUTIVE SUMMARY & RECOMMENDATION
-- Open with clear investment thesis (2-3 sentences)
-- State specific recommendation and price targets
-- Highlight key risks and opportunities
-
-2. FINANCIAL HEALTH & VALUATION
-- Assess financial strength and earnings quality
-- Present valuation analysis vs peers/historical ranges
-- Discuss forward PE metrics and attractiveness
-
-3. EARNINGS & GUIDANCE OUTLOOK  
-- Synthesize earnings projections and management guidance
-- Highlight alignment or discrepancies between analyses
-- Discuss peer comparison context
-
-4. MARKET SENTIMENT & NEWS
-- Consolidate news sentiment and key market themes
-- Assess volume of coverage and market attention
-- Identify sentiment-driven catalysts or concerns
-
-5. RISK FACTORS & CATALYSTS
-- Present key risks with severity assessment
-- Identify important upcoming catalysts
-- Balance risk/reward perspective
-
-6. TRADE IMPLEMENTATION
-- Provide actionable trade recommendation
-- Include entry/exit strategy and monitoring points
-- Suggest position sizing considerations if relevant
+OUTPUT:
+Create a well-structured, comprehensive analysis as one flowing text document that covers all the available analyses. Ground everything in the company overview.
 
 WRITING STYLE:
 - Write as one comprehensive, flowing document
 - Use clear headings and logical flow
-- Be thorough but readable - avoid information overload
+- Be thorough but readable - avoid tedious detail
 - Maintain professional, objective tone
-- Highlight any conflicting signals between analyses
-- Focus on actionable insights for investors
+- Focus on high quality insights for investors
 - You are encouraged to use heavy use of markdown formatting to make the report more readable.
 
 CRITICAL REQUIREMENTS:
 - Put everything in the comprehensive_analysis field as one text block
-- Include critical_insights field with 2-3 key takeaways for calibration
-- Make it comprehensive but digestible for UI consumption
+- This is a long and highly detailed, thorough report. Only skip tedious detail.
+- You must create a section for each analysis. It can be brief if there is nothing of note. 
+- The critical_insights field should contain 2-3 concise key takeaways
 """
 
 comprehensive_report_agent = Agent(
