@@ -20,7 +20,7 @@ CRITICAL REQUIREMENTS:
 - Put everything in the comprehensive_analysis field as one text block
 - This is a long and highly detailed, thorough report. Only skip tedious detail.
 - You must create a section for each analysis. It can be brief if there is nothing of note. 
-- The critical_insights field should contain 2-3 concise key takeaways
+- The critical_insights field should contain two or three concise key takeaways, formatted in a list.
 """
 
 comprehensive_report_agent = Agent(

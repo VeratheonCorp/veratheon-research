@@ -1,20 +1,15 @@
 import { json } from '@sveltejs/kit';
 
-// Custom fetch wrapper with extended timeouts for long-running operations
-async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
+// Long timeout wrapper for research operations
+async function longTimeoutFetch(url: string, options: RequestInit) {
+  // Use a very long timeout since research can take 30+ minutes
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutId = setTimeout(() => controller.abort(), 60 * 60 * 1000); // 1 hour
   
   try {
     const response = await fetch(url, {
       ...options,
-      signal: controller.signal,
-      // Add keepalive and disable default timeouts
-      keepalive: true,
-      headers: {
-        ...options.headers,
-        'Connection': 'keep-alive',
-      }
+      signal: controller.signal
     });
     clearTimeout(timeoutId);
     return response;
@@ -35,7 +30,7 @@ export async function POST({ request }) {
     // Call the FastAPI backend research endpoint
     const apiUrl = process.env.API_URL || 'http://localhost:8085';
     
-    const response = await fetchWithTimeout(
+    const response = await longTimeoutFetch(
       `${apiUrl}/research`,
       {
         method: 'POST',
@@ -45,14 +40,8 @@ export async function POST({ request }) {
         body: JSON.stringify({ 
           symbol: symbol.trim().toUpperCase(),
           force_recompute: Boolean(force_recompute)
-        }),
-        // Configure undici timeouts for long-running requests
-        // @ts-ignore - undici specific options
-        headersTimeout: 60 * 60 * 1000, // 1 hour for headers
-        bodyTimeout: 60 * 60 * 1000,    // 1 hour for body
-        connectTimeout: 30 * 1000,      // 30 seconds to connect
-      },
-      60 * 60 * 1000 // 1 hour timeout
+        })
+      }
     );
     
     if (!response.ok) {

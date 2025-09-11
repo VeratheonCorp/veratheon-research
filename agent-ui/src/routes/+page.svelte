@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { flip } from 'svelte/animate';
-  import { fade, slide } from 'svelte/transition';
+  import { slide } from 'svelte/transition';
   import { createRedisSubscriber, type StatusUpdate } from '$lib/redis-subscriber';
   import { marked } from 'marked';
   import type { ResearchResult } from '$lib/research-types';
@@ -13,7 +12,6 @@
   let isRunningResearch = false;
   let redisConnectionError = false;
   let researchResult: ResearchResult | null = null;
-  let isUpdatesCollapsed = true;
   let slideOffset = 0;
   let isAnimating = false;
   let showModal = false;
@@ -22,15 +20,6 @@
     return marked(text);
   }
 
-  function slideUpdates() {
-    if (isAnimating) return;
-    isAnimating = true;
-    slideOffset = 100;
-    setTimeout(() => {
-      slideOffset = 0;
-      isAnimating = false;
-    }, 800);
-  }
 
   $: if (showModal) {
     // Scroll to bottom of modal when opened
@@ -57,22 +46,40 @@
     );
   });
 
-  // Custom fetch wrapper with extended timeouts for long-running operations
-  async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  let researchPollingInterval: ReturnType<typeof setInterval> | null = null;
+  let currentResearchSymbol = '';
+
+  // Start research without waiting for completion
+  async function startResearch() {
+    const response = await fetch('/api/research/start', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        symbol: stockSymbol.trim().toUpperCase(),
+        force_recompute: forceRecompute
+      })
+    });
     
-    try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      return response;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Failed to start research: ${response.statusText}`);
     }
+    
+    return await response.json();
+  }
+
+  // Check research status
+  async function checkResearchStatus() {
+    const response = await fetch(`/api/research/status/${currentResearchSymbol}`, {
+      method: 'GET'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to check status: ${response.statusText}`);
+    }
+    
+    return await response.json();
   }
 
   async function runResearch() {
@@ -83,38 +90,53 @@
     
     // Clear old status updates for new research run
     statusUpdates = [];
+    researchResult = null;
+    currentResearchSymbol = stockSymbol.trim().toUpperCase();
     
     isRunningResearch = true;
     
     try {
-      const response = await fetchWithTimeout('/api/research', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          symbol: stockSymbol.trim().toUpperCase(),
-          force_recompute: forceRecompute
-        })
-      }, 60 * 60 * 1000); // 1 hour timeout
+      // Start research (non-blocking)
+      await startResearch();
+      console.log('Research started for', currentResearchSymbol);
       
-      if (!response.ok) {
-        throw new Error(`Research failed: ${response.statusText}`);
-      }
+      // Poll for completion every 30 seconds
+      researchPollingInterval = setInterval(async () => {
+        try {
+          const status = await checkResearchStatus();
+          
+          if (status.completed) {
+            console.log('Research completed:', status.result);
+            researchResult = status.result as ResearchResult;
+            isRunningResearch = false;
+            
+            if (researchPollingInterval) {
+              clearInterval(researchPollingInterval);
+              researchPollingInterval = null;
+            }
+          }
+        } catch (error) {
+          console.error('Status check error:', error);
+          // Continue polling unless it's a critical error
+        }
+      }, 5000); // Poll every 5 seconds
       
-      const result = await response.json();
-      console.log('Research completed:', result);
-      researchResult = result as ResearchResult;
     } catch (error) {
       console.error('Research error:', error);
       alert(`Research failed: ${error.message}`);
-    } finally {
       isRunningResearch = false;
+      if (researchPollingInterval) {
+        clearInterval(researchPollingInterval);
+        researchPollingInterval = null;
+      }
     }
   }
 
   onDestroy(() => {
     subscriber.unsubscribe();
+    if (researchPollingInterval) {
+      clearInterval(researchPollingInterval);
+    }
   });
 </script>
 
@@ -152,7 +174,7 @@
           <div class="flex items-center gap-3">
             <!-- Recompute Checkbox -->
             <div class="flex items-center gap-2">
-              <span class="text-sm text-base-content/70">Recompute</span>
+              <label for="force-recompute" class="text-sm text-base-content/70">Recompute</label>
               <input
                 id="force-recompute"
                 type="checkbox"
@@ -250,7 +272,7 @@
               <span>Research Progress</span>
               <span>{statusUpdates.length} steps completed</span>
             </div>
-            <progress class="progress progress-primary w-full" value="{statusUpdates.length}" max="10"></progress>
+            <progress class="progress progress-primary w-full" value="{statusUpdates.length}" max="24"></progress>
             
             <!-- Current step indicator -->
             {#if statusUpdates.length > 0}
