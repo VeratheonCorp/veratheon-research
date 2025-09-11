@@ -4,6 +4,7 @@
   import { createRedisSubscriber, type StatusUpdate } from '$lib/redis-subscriber';
   import { marked } from 'marked';
   import type { ResearchResult } from '$lib/research-types';
+  import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
 
   let statusUpdates: StatusUpdate[] = [];
   let subscriber = createRedisSubscriber();
@@ -195,7 +196,7 @@
                 <span class="loading loading-spinner loading-sm"></span>
                 Analyzing...
               {:else}
-                <span class="text-lg">🔍</span>
+                <Search class="w-5 h-5" />
                 Start Research
               {/if}
             </button>
@@ -218,9 +219,9 @@
               {#if isRunningResearch}
                 <span class="loading loading-spinner loading-lg text-primary"></span>
               {:else if researchResult}
-                📊
+                <ChartNoAxesCombined class="w-8 h-8" />
               {:else}
-                ✅
+                <CircleCheckBig class="w-8 h-8" />
               {/if}
             </div>
             <div>
@@ -303,7 +304,11 @@
           {#if researchResult.comprehensive_report.critical_insights}
             <div class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-8 border-2 border-primary/30 shadow-lg mb-8">
               <div class="flex items-center gap-4 mb-6">
-                <div class="text-primary text-3xl">💡</div>
+                <div class="text-primary text-3xl">
+                <div class="text-primary text-3xl">
+                  <Lightbulb class="w-8 h-8" />
+                </div>
+                </div>
                 <h3 class="text-2xl font-bold text-primary">Key Insights</h3>
               </div>
               
@@ -327,7 +332,11 @@
           <!-- Comprehensive Analysis Section -->
           <div class="mb-6">
             <div class="flex items-center gap-3 mb-4">
-              <div class="text-secondary text-2xl">📈</div>
+              <div class="text-secondary text-2xl">
+              <div class="text-secondary text-2xl">
+                <TrendingUp class="w-7 h-7" />
+              </div>
+              </div>
               <h3 class="text-xl font-bold text-secondary">Detailed Analysis</h3>
             </div>
             
@@ -367,7 +376,11 @@
         {:else if !isRunningResearch}
           <!-- Fallback when no report is available -->
           <div class="text-center py-12">
-            <div class="text-6xl mb-4">📈</div>
+            <div class="text-6xl mb-4">
+            <div class="text-6xl mb-4">
+              <TrendingUp class="w-16 h-16 mx-auto text-primary" />
+            </div>
+            </div>
             <h3 class="text-xl font-semibold mb-2">Research Complete</h3>
             <p class="text-base-content/70">
               Research analysis completed but comprehensive report is not available.
@@ -383,7 +396,11 @@
 <div class="modal" class:modal-open={showModal}>
   <div class="modal-box max-w-4xl">
     <div class="flex items-center gap-3 mb-4">
-      <div class="text-primary text-2xl">🔄</div>
+      <div class="text-primary text-2xl">
+      <div class="text-primary text-2xl">
+        <ListEnd class="w-7 h-7" />
+      </div>
+      </div>
       <h3 class="font-bold text-xl text-primary">Research Process Details</h3>
     </div>
     
