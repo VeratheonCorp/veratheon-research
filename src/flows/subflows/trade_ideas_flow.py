@@ -1,6 +1,5 @@
 from src.tasks.trade_ideas.trade_ideas_task import trade_ideas_task
 from src.tasks.trade_ideas.trade_ideas_reporting_task import trade_ideas_reporting_task
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.trade_ideas_cache_retrieval_task import trade_ideas_cache_retrieval_task
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.trade_ideas.trade_idea_models import TradeIdea
@@ -32,7 +31,6 @@ async def trade_ideas_flow(
         return cached_result
     
     logger.info(f"No cached data found, running fresh trade ideas analysis for {symbol}")
-    await publish_status_update_task("starting", {"flow": "trade_ideas_flow", "symbol": symbol})
     
     trade_idea = await trade_ideas_task(
         symbol, 
@@ -49,6 +47,5 @@ async def trade_ideas_flow(
     
     logger.info(f"Trade Ideas flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
-    await publish_status_update_task("completed", {"flow": "trade_ideas_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
     
     return trade_idea

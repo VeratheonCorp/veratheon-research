@@ -10,7 +10,8 @@ from src.flows.subflows.cross_reference_flow import cross_reference_flow
 from src.flows.subflows.comprehensive_report_flow import comprehensive_report_flow
 from src.flows.subflows.company_overview_flow import company_overview_flow
 from src.flows.subflows.global_quote_flow import global_quote_flow
-from src.tasks.common.status_update_task import publish_status_update_task
+from src.tasks.common.job_status_task import update_job_status_task
+from src.lib.job_tracker import JobStatus
 from src.tasks.common.peer_group_reporting_task import peer_group_reporting_task
 from src.tasks.common.reporting_directory_setup_task import ensure_reporting_directory_exists
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
@@ -48,6 +49,7 @@ def get_current_date() -> str:
 async def main_research_flow(
     symbol: str,
     force_recompute: bool = False,
+    job_id: str = None,
 ) -> dict:
 
     start_time = time.time()
@@ -55,18 +57,23 @@ async def main_research_flow(
     
     await ensure_reporting_directory_exists()
     
-    await publish_status_update_task("starting", {"flow": "main_research_flow", "symbol": symbol})
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Starting main research flow", "main_research_flow")
 
     # Company overview provides foundational business context
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing company overview", "company_overview_flow")
     company_overview_analysis: CompanyOverviewAnalysis = await company_overview_flow(symbol, force_recompute=force_recompute)
 
     # Global quote provides current price data
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Fetching current market data", "global_quote_flow")
     global_quote_data: GlobalQuoteData = await global_quote_flow(symbol, force_recompute=force_recompute)
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing historical earnings", "historical_earnings_flow")
     historical_earnings_analysis: HistoricalEarningsAnalysis = await historical_earnings_flow(symbol, force_recompute=force_recompute)
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing financial statements", "financial_statements_flow")
     financial_statements_analysis: FinancialStatementsAnalysis = await financial_statements_flow(symbol, force_recompute=force_recompute)
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Generating earnings projections", "earnings_projections_flow")
     earnings_projections_analysis: EarningsProjectionAnalysis = await earnings_projections_flow(
         symbol, 
         historical_earnings_analysis.model_dump(), 
@@ -74,6 +81,7 @@ async def main_research_flow(
         force_recompute=force_recompute
     )
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing management guidance", "management_guidance_flow")
     management_guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_flow(
         symbol, 
         historical_earnings_analysis, 
@@ -81,12 +89,15 @@ async def main_research_flow(
         force_recompute=force_recompute
     )
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Identifying peer group", "peer_group_analysis")
     peer_group: PeerGroup = await peer_group_agent(symbol, financial_statements_analysis)
     
     await peer_group_reporting_task(symbol, peer_group)
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Performing forward PE sanity check", "forward_pe_sanity_check_flow")
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol, force_recompute=force_recompute)
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Calculating forward PE analysis", "forward_pe_flow")
     forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(
         symbol, 
         peer_group, 
@@ -96,6 +107,7 @@ async def main_research_flow(
         force_recompute=force_recompute
     )
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing news sentiment", "news_sentiment_flow")
     news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(
         symbol, 
         peer_group, 
@@ -104,6 +116,7 @@ async def main_research_flow(
         force_recompute=force_recompute
     )
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Cross-referencing analysis", "cross_reference_flow")
     cross_reference_flow_result: List[CrossReferencedAnalysisCompletion] = await cross_reference_flow(
         symbol, 
         forward_pe_flow_result, 
@@ -115,6 +128,7 @@ async def main_research_flow(
         force_recompute=force_recompute
     )
 
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Generating trade ideas", "trade_ideas_flow")
     trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(
         symbol, 
         forward_pe_flow_result, 
@@ -145,6 +159,7 @@ async def main_research_flow(
     }
 
     # Generate comprehensive report
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Generating comprehensive report", "comprehensive_report_flow")
     comprehensive_report: ComprehensiveReport = await comprehensive_report_flow(
         symbol,
         all_analyses,
@@ -153,10 +168,8 @@ async def main_research_flow(
     logger.info(f"Comprehensive report:")
     logger.info(comprehensive_report.model_dump_json(indent=2))
 
-
-    logger.info(f"Main research for {symbol} completed successfully! in {int(time.time() - start_time)} seconds")
-    
-    await publish_status_update_task("completed", {"flow": "main_research_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
+    duration_seconds = int(time.time() - start_time)
+    logger.info(f"Main research for {symbol} completed successfully! in {duration_seconds} seconds")
     
     return {
         "symbol": symbol,

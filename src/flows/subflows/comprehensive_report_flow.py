@@ -3,7 +3,6 @@ from typing import Dict, Any
 import time
 from src.tasks.comprehensive_report.comprehensive_report_task import comprehensive_report_task
 from src.tasks.comprehensive_report.comprehensive_report_reporting_task import comprehensive_report_reporting_task
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.comprehensive_report_cache_retrieval_task import comprehensive_report_cache_retrieval_task
 from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport
 
@@ -38,7 +37,6 @@ async def comprehensive_report_flow(
         return cached_result
     
     logger.info(f"No cached data found, running fresh comprehensive report analysis for {symbol}")
-    await publish_status_update_task("starting", {"flow": "comprehensive_report_flow", "symbol": symbol})
     
     comprehensive_report = await comprehensive_report_task(symbol, all_analyses)
     
@@ -47,6 +45,5 @@ async def comprehensive_report_flow(
     
     logger.info(f"Comprehensive report flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
-    await publish_status_update_task("completed", {"flow": "comprehensive_report_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
     
     return comprehensive_report

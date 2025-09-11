@@ -1,20 +1,34 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { createRedisSubscriber, type StatusUpdate } from '$lib/redis-subscriber';
   import { marked } from 'marked';
   import type { ResearchResult } from '$lib/research-types';
   import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
 
-  let statusUpdates: StatusUpdate[] = [];
-  let subscriber = createRedisSubscriber();
+  interface JobStep {
+    step: string;
+    timestamp: string;
+    status: string;
+  }
+
+  interface JobStatus {
+    job_id?: string;
+    symbol?: string;
+    status?: string;
+    completed?: boolean;
+    result?: ResearchResult;
+    error?: string;
+    steps?: JobStep[];
+    created_at?: string;
+    updated_at?: string;
+  }
+
   let stockSymbol = '';
   let forceRecompute = false;
   let isRunningResearch = false;
-  let redisConnectionError = false;
   let researchResult: ResearchResult | null = null;
-  let slideOffset = 0;
-  let isAnimating = false;
+  let currentJobId: string | null = null;
+  let jobStatus: JobStatus | null = null;
   let showModal = false;
 
   function renderMarkdown(text: string) {
@@ -32,25 +46,9 @@
     }, 10);
   }
 
-  onMount(() => {
-    console.log('Auto-subscribing to Redis status updates...');
-    subscriber.subscribe(
-      (data: StatusUpdate) => {
-        console.log('Received status update:', data);
-        statusUpdates = [...statusUpdates, data].slice(-20); // Keep only last 20 updates
-        redisConnectionError = false; // Connection is working
-      },
-      (error) => {
-        console.error('Status update error:', error);
-        redisConnectionError = true;
-      }
-    );
-  });
-
   let researchPollingInterval: ReturnType<typeof setInterval> | null = null;
-  let currentResearchSymbol = '';
 
-  // Start research without waiting for completion
+  // Start research and return job ID
   async function startResearch() {
     const response = await fetch('/api/research/start', {
       method: 'POST',
@@ -70,9 +68,9 @@
     return await response.json();
   }
 
-  // Check research status
-  async function checkResearchStatus() {
-    const response = await fetch(`/api/research/status/${currentResearchSymbol}`, {
+  // Check job status by job ID
+  async function checkJobStatus(jobId: string) {
+    const response = await fetch(`/api/research/status/${stockSymbol.trim().toUpperCase()}?job_id=${jobId}`, {
       method: 'GET'
     });
     
@@ -89,26 +87,42 @@
       return;
     }
     
-    // Clear old status updates for new research run
-    statusUpdates = [];
+    // Clear old data for new research run
     researchResult = null;
-    currentResearchSymbol = stockSymbol.trim().toUpperCase();
+    jobStatus = null;
+    currentJobId = null;
     
     isRunningResearch = true;
     
     try {
-      // Start research (non-blocking)
-      await startResearch();
-      console.log('Research started for', currentResearchSymbol);
+      // Start research and get job ID
+      const startResult = await startResearch();
+      console.log('Research started:', startResult);
       
-      // Poll for completion every 30 seconds
+      currentJobId = startResult.job_id;
+      
+      // Poll for completion every 3 seconds
       researchPollingInterval = setInterval(async () => {
         try {
-          const status = await checkResearchStatus();
+          if (!currentJobId) return;
+          
+          const status = await checkJobStatus(currentJobId);
+          console.log('Polling job status:', status);
+          
+          jobStatus = status;
           
           if (status.completed) {
             console.log('Research completed:', status.result);
             researchResult = status.result as ResearchResult;
+            isRunningResearch = false;
+            
+            if (researchPollingInterval) {
+              clearInterval(researchPollingInterval);
+              researchPollingInterval = null;
+            }
+          } else if (status.error) {
+            console.error('Research failed:', status.error);
+            alert(`Research failed: ${status.error}`);
             isRunningResearch = false;
             
             if (researchPollingInterval) {
@@ -120,7 +134,7 @@
           console.error('Status check error:', error);
           // Continue polling unless it's a critical error
         }
-      }, 5000); // Poll every 5 seconds
+      }, 3000); // Poll every 3 seconds
       
     } catch (error) {
       console.error('Research error:', error);
@@ -134,7 +148,6 @@
   }
 
   onDestroy(() => {
-    subscriber.unsubscribe();
     if (researchPollingInterval) {
       clearInterval(researchPollingInterval);
     }
@@ -207,7 +220,7 @@
   </div>
 
 <!-- Research & Status Unified Section -->
-{#if isRunningResearch || statusUpdates.length > 0 || researchResult}
+{#if isRunningResearch || jobStatus || researchResult}
   <div class="mt-8" transition:slide={{ duration: 400 }}>
     <!-- Unified Research Card -->
     <div class="card bg-base-100 shadow-2xl border border-primary/20">
@@ -236,10 +249,8 @@
               </h2>
               <div class="flex items-center gap-3 mt-1">
                 <p class="text-base-content/70">
-                  {#if redisConnectionError}
-                    Connection issues - status updates may be delayed
-                  {:else if isRunningResearch}
-                    Analyzing {stockSymbol.toUpperCase()} • Real-time updates
+                  {#if isRunningResearch}
+                    Analyzing {stockSymbol.toUpperCase()} • Job ID: {currentJobId || 'N/A'}
                   {:else if researchResult}
                     Comprehensive market analysis complete
                   {:else}
@@ -254,36 +265,34 @@
           </div>
           
           <!-- Process Toggle Button -->
-          {#if statusUpdates.length > 0}
+          {#if jobStatus?.steps && jobStatus.steps.length > 0}
             <div class="flex gap-2">
               <button 
                 class="btn btn-outline btn-secondary"
                 on:click={() => showModal = true}
               >
-                View Process ({statusUpdates.length} steps)
+                View Process ({jobStatus.steps.length} steps)
               </button>
             </div>
           {/if}
         </div>
 
         <!-- Progress indicator for running research -->
-        {#if isRunningResearch}
+        {#if isRunningResearch && jobStatus}
           <div class="mb-8">
             <div class="flex justify-between text-sm text-base-content/60 mb-2">
               <span>Research Progress</span>
-              <span>{statusUpdates.length} steps completed</span>
+              <span>{jobStatus.steps?.length || 0} steps completed</span>
             </div>
-            <progress class="progress progress-primary w-full" value="{statusUpdates.length}" max="24"></progress>
+            <progress class="progress progress-primary w-full" value="{jobStatus.steps?.length || 0}" max="15"></progress>
             
             <!-- Current step indicator -->
-            {#if statusUpdates.length > 0}
+            {#if jobStatus.steps && jobStatus.steps.length > 0}
               <div class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
                 <div class="flex items-center gap-3">
                   <div class="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
                   <div class="font-medium text-base-content">
-                    {statusUpdates[statusUpdates.length - 1].details.flow ? 
-                      statusUpdates[statusUpdates.length - 1].details.flow.replace(/_/g, ' ').replace(/flow/g, '').trim() : 
-                      'Processing'}
+                    {jobStatus.steps[jobStatus.steps.length - 1].step || 'Processing'}
                   </div>
                 </div>
               </div>
@@ -408,7 +417,7 @@
       <div class="stats shadow w-full">
         <div class="stat">
           <div class="stat-title">Total Steps</div>
-          <div class="stat-value text-primary">{statusUpdates.length}</div>
+          <div class="stat-value text-primary">{jobStatus?.steps?.length || 0}</div>
         </div>
         <div class="stat">
           <div class="stat-title">Symbol</div>
@@ -428,34 +437,29 @@
     </div>
     
     <div class="py-4">
-      {#if statusUpdates.length === 0}
+      {#if !jobStatus?.steps || jobStatus.steps.length === 0}
         <div class="text-center py-8 text-base-content/60">
           No process steps recorded yet
         </div>
       {:else}
         <div class="space-y-3 max-h-96 overflow-y-auto">
-          {#each statusUpdates as update (update)}
+          {#each jobStatus.steps as step, index (step.timestamp)}
             <div class="card bg-base-100 shadow-sm border border-base-200">
               <div class="card-body p-4">
                 <div class="flex justify-between items-start">
                   <div class="flex items-start gap-3 flex-1">
-                    <div class="w-3 h-3 rounded-full mt-2 {update.status === 'completed' ? 'bg-success' : update.status === 'starting' ? 'bg-info' : 'bg-secondary'}"></div>
+                    <div class="w-3 h-3 rounded-full mt-2 {step.status === 'completed' ? 'bg-success' : step.status === 'running' ? 'bg-info' : 'bg-secondary'}"></div>
                     <div class="flex-1">
                       <div class="font-medium text-base-content mb-1">
-                        {update.details.flow ? 
-                          update.details.flow.replace(/_/g, ' ').replace(/flow/g, '').trim() : 
-                          'Processing Step'}
+                        {step.step}
                       </div>
                       <div class="text-sm text-base-content/60">
-                        {#if update.details.duration_seconds}
-                          Completed in {update.details.duration_seconds}s
-                        {/if}
-                        • {new Date(update.timestamp || Date.now()).toLocaleString()}
+                        Step {index + 1} • {new Date(step.timestamp).toLocaleString()}
                       </div>
                     </div>
                   </div>
-                  <div class="badge {update.status === 'completed' ? 'badge-success' : update.status === 'starting' ? 'badge-info' : 'badge-secondary'} badge-sm">
-                    {update.status}
+                  <div class="badge {step.status === 'completed' ? 'badge-success' : step.status === 'running' ? 'badge-info' : 'badge-secondary'} badge-sm">
+                    {step.status}
                   </div>
                 </div>
               </div>

@@ -18,7 +18,6 @@ from src.research.management_guidance.management_guidance_models import (
 import logging
 import time
 from typing import List
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.cross_reference_cache_retrieval_task import cross_reference_cache_retrieval_task
 from src.tasks.cross_reference.cross_reference_task import cross_reference_task
 from src.tasks.cross_reference.cross_reference_reporting_task import (
@@ -71,9 +70,6 @@ async def cross_reference_flow(
         return cached_result
     
     logger.info(f"No cached data found, running fresh cross reference analysis for {context.symbol}")
-    await publish_status_update_task(
-        "starting", {"flow": "cross_reference_flow", "symbol": context.symbol}
-    )
 
     cross_reference_forward_pe_completion = await forward_pe_cross_reference(context)
 
@@ -111,15 +107,6 @@ async def cross_reference_flow(
 
     logger.info(
         f"Cross Reference flow completed for {context.symbol} in {int(time.time() - start_time)} seconds"
-    )
-
-    await publish_status_update_task(
-        "completed",
-        {
-            "flow": "cross_reference_flow",
-            "symbol": context.symbol,
-            "duration_seconds": int(time.time() - start_time),
-        },
     )
 
     return cross_referenced_analysis

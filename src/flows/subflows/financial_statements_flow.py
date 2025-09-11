@@ -1,7 +1,6 @@
 from src.tasks.financial_statements.financial_statements_fetch_task import financial_statements_fetch_task
 from src.tasks.financial_statements.financial_statements_analysis_task import financial_statements_analysis_task
 from src.tasks.financial_statements.financial_statements_reporting_task import financial_statements_reporting_task
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.financial_statements_cache_retrieval_task import financial_statements_cache_retrieval_task
 from src.research.financial_statements.financial_statements_models import FinancialStatementsData, FinancialStatementsAnalysis
 import logging
@@ -31,7 +30,6 @@ async def financial_statements_flow(symbol: str, force_recompute: bool = False) 
         return cached_result
     
     logger.info(f"No cached data found, running fresh financial statements analysis for {symbol}")
-    await publish_status_update_task("starting", {"flow": "financial_statements_flow", "symbol": symbol})
     
     # Fetch financial statements data from Alpha Vantage
     financial_data: FinancialStatementsData = await financial_statements_fetch_task(symbol)
@@ -46,6 +44,5 @@ async def financial_statements_flow(symbol: str, force_recompute: bool = False) 
 
     logger.info(f"Financial statements flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
-    await publish_status_update_task("completed", {"flow": "financial_statements_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return financial_analysis

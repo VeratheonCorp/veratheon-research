@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 
-export async function GET({ params }) {
+export async function GET({ params, url }) {
   try {
     const { symbol } = params;
     
@@ -8,29 +8,50 @@ export async function GET({ params }) {
       return json({ error: 'Invalid symbol' }, { status: 400 });
     }
     
-    // Check with FastAPI backend for research status
     const apiUrl = process.env.API_URL || 'http://localhost:8085';
+    const job_id = url.searchParams.get('job_id');
     
     try {
-      const response = await fetch(`${apiUrl}/research/status/${symbol.trim().toUpperCase()}`, {
-        method: 'GET'
-      });
+      let response;
+      
+      if (job_id) {
+        // Check specific job status by job ID
+        response = await fetch(`${apiUrl}/jobs/${job_id}`, {
+          method: 'GET'
+        });
+      } else {
+        // Check most recent job for symbol
+        response = await fetch(`${apiUrl}/jobs/symbol/${symbol.trim().toUpperCase()}`, {
+          method: 'GET'
+        });
+      }
       
       if (response.ok) {
         const result = await response.json();
-        return json(result);
+        
+        // Transform to match expected UI format
+        return json({
+          job_id: result.job_id,
+          symbol: result.symbol,
+          status: result.status,
+          completed: result.status === 'completed',
+          result: result.result,
+          error: result.error,
+          steps: result.steps,
+          created_at: result.created_at,
+          updated_at: result.updated_at
+        });
       } else if (response.status === 404) {
-        // Research not found or not started yet
+        // Job not found
         return json({ 
           completed: false, 
-          message: 'Research not found or still starting',
+          message: 'No research job found',
           symbol: symbol.trim().toUpperCase()
         });
       } else {
         throw new Error(`Backend returned ${response.status}`);
       }
     } catch (fetchError) {
-      // If backend is unreachable or returns error, assume research is still running
       console.error('Status check error:', fetchError);
       return json({ 
         completed: false, 

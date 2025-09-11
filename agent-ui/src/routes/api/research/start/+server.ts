@@ -11,25 +11,28 @@ export async function POST({ request }) {
     const symbolUpper = symbol.trim().toUpperCase();
     const apiUrl = process.env.API_URL || 'http://localhost:8085';
     
-    // Start research in background without waiting - use setTimeout to make it truly async
-    setTimeout(() => {
-      fetch(`${apiUrl}/research`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          symbol: symbolUpper,
-          force_recompute: Boolean(force_recompute)
-        })
-      }).catch(error => {
-        console.error('Background research error:', error);
-      });
-    }, 0);
+    // Call FastAPI backend to start research job
+    const response = await fetch(`${apiUrl}/research`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        symbol: symbolUpper,
+        force_recompute: Boolean(force_recompute)
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backend returned ${response.status}: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
     
     return json({ 
-      success: true, 
-      message: `Research started for ${symbolUpper}`,
+      success: true,
+      job_id: result.job_id,
+      message: result.message,
       symbol: symbolUpper
     });
     

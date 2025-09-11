@@ -1,7 +1,6 @@
 from src.tasks.historical_earnings.historical_earnings_fetch_task import historical_earnings_fetch_task
 from src.tasks.historical_earnings.historical_earnings_analysis_task import historical_earnings_analysis_task
 from src.tasks.historical_earnings.historical_earnings_reporting_task import historical_earnings_reporting_task
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.historical_earnings_cache_retrieval_task import historical_earnings_cache_retrieval_task
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsData, HistoricalEarningsAnalysis
 import logging
@@ -32,7 +31,6 @@ async def historical_earnings_flow(symbol: str, force_recompute: bool = False) -
         return cached_result
     
     logger.info(f"No cached data found, running fresh historical earnings analysis for {symbol}")
-    await publish_status_update_task("starting", {"flow": "historical_earnings_flow", "symbol": symbol})
     
     # Fetch historical earnings data from Alpha Vantage
     historical_data: HistoricalEarningsData = await historical_earnings_fetch_task(symbol)
@@ -47,6 +45,5 @@ async def historical_earnings_flow(symbol: str, force_recompute: bool = False) -
 
     logger.info(f"Historical Earnings flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
-    await publish_status_update_task("completed", {"flow": "historical_earnings_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return historical_analysis  

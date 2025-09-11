@@ -1,6 +1,5 @@
 from src.tasks.global_quote.global_quote_fetch_task import global_quote_fetch_task
 from src.tasks.global_quote.global_quote_reporting_task import global_quote_reporting_task
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.global_quote_cache_retrieval_task import global_quote_cache_retrieval_task
 from src.research.global_quote.global_quote_models import GlobalQuoteData
 import logging
@@ -31,7 +30,6 @@ async def global_quote_flow(symbol: str, force_recompute: bool = False) -> Globa
         return cached_result
     
     logger.info(f"No cached data found, fetching fresh global quote data for {symbol}")
-    await publish_status_update_task("starting", {"flow": "global_quote_flow", "symbol": symbol})
     
     # Fetch global quote data from Alpha Vantage
     quote_data: GlobalQuoteData = await global_quote_fetch_task(symbol)
@@ -41,6 +39,5 @@ async def global_quote_flow(symbol: str, force_recompute: bool = False) -> Globa
 
     logger.info(f"Global Quote flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
-    await publish_status_update_task("completed", {"flow": "global_quote_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return quote_data

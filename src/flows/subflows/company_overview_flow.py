@@ -1,7 +1,6 @@
 from src.tasks.company_overview.company_overview_fetch_task import company_overview_fetch_task
 from src.tasks.company_overview.company_overview_analysis_task import company_overview_analysis_task
 from src.tasks.company_overview.company_overview_reporting_task import company_overview_reporting_task
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.company_overview_cache_retrieval_task import company_overview_cache_retrieval_task
 from src.research.company_overview.company_overview_models import CompanyOverviewData, CompanyOverviewAnalysis
 import logging
@@ -33,7 +32,6 @@ async def company_overview_flow(symbol: str, force_recompute: bool = False) -> C
         return cached_result
     
     logger.info(f"No cached data found, running fresh company overview analysis for {symbol}")
-    await publish_status_update_task("starting", {"flow": "company_overview_flow", "symbol": symbol})
     
     # Fetch company overview data from Alpha Vantage
     company_data: CompanyOverviewData = await company_overview_fetch_task(symbol)
@@ -48,6 +46,5 @@ async def company_overview_flow(symbol: str, force_recompute: bool = False) -> C
 
     logger.info(f"Company Overview flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
-    await publish_status_update_task("completed", {"flow": "company_overview_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return company_analysis

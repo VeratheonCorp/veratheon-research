@@ -2,7 +2,6 @@ from typing import Optional, Dict, Any
 from src.tasks.earnings_projections.earnings_projections_fetch_task import earnings_projections_fetch_task
 from src.tasks.earnings_projections.earnings_projections_analysis_task import earnings_projections_analysis_task
 from src.tasks.earnings_projections.earnings_projections_reporting_task import earnings_projections_reporting_task
-from src.tasks.common.status_update_task import publish_status_update_task
 from src.tasks.cache_retrieval.earnings_projections_cache_retrieval_task import earnings_projections_cache_retrieval_task
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData, EarningsProjectionAnalysis
 import logging
@@ -40,7 +39,6 @@ async def earnings_projections_flow(
         return cached_result
     
     logger.info(f"No cached data found, running fresh earnings projections analysis for {symbol}")
-    await publish_status_update_task("starting", {"flow": "earnings_projections_flow", "symbol": symbol})
     
     # Fetch comprehensive data for earnings projections
     projection_data: EarningsProjectionData = await earnings_projections_fetch_task(
@@ -57,6 +55,5 @@ async def earnings_projections_flow(
 
     logger.info(f"Independent Earnings Projections flow completed for {symbol} in {int(time.time() - start_time)} seconds")
     
-    await publish_status_update_task("completed", {"flow": "earnings_projections_flow", "symbol": symbol, "duration_seconds": int(time.time() - start_time)})
 
     return projections_analysis
