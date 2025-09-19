@@ -9,6 +9,12 @@ class ComprehensiveReport(BaseModel):
     
     # The main comprehensive report as a single readable text block
     comprehensive_analysis: str
+
+
+class KeyInsights(BaseModel):
+    symbol: str
+    company_name: Optional[str] = None
+    report_date: str
     
-    # Critical insights for cross-model calibration
+    # Critical insights derived from the comprehensive report
     critical_insights: str

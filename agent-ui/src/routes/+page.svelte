@@ -326,16 +326,15 @@
 
         <!-- PROMINENT REPORT SECTION -->
         {#if researchResult?.comprehensive_report?.comprehensive_analysis}
-          <!-- Critical Insights Section - Prominent display at top -->
-          {#if researchResult.comprehensive_report.critical_insights}
+          <!-- Key Insights Section - Prominent display at top -->
+          {#if researchResult.key_insights?.critical_insights}
             <div class="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-xl p-8 border-2 border-primary/30 shadow-lg mb-8">
               <div class="flex items-center gap-4 mb-6">
                 <div class="text-primary text-3xl">
-                <div class="text-primary text-3xl">
                   <Lightbulb class="w-8 h-8" />
                 </div>
-                </div>
-                <h3 class="text-2xl font-bold text-primary">Key Insights</h3>
+                <h3 class="text-2xl font-bold text-primary">Key Investment Insights</h3>
+                <div class="badge badge-primary badge-lg">Investment Summary</div>
               </div>
               
               <div class="prose prose-lg max-w-none
@@ -348,22 +347,24 @@
                           prose-code:bg-primary/10 prose-code:px-2 prose-code:py-1 prose-code:rounded
                           prose-blockquote:border-l-4 prose-blockquote:border-primary 
                           prose-blockquote:bg-primary/5 prose-blockquote:p-4 prose-blockquote:rounded-r">
-                {@html renderMarkdown(researchResult.comprehensive_report.critical_insights)}
+                {@html renderMarkdown(researchResult.key_insights.critical_insights)}
               </div>
             </div>
           {/if}
           
           <div class="divider divider-primary"></div>
           
-          <!-- Comprehensive Analysis Section -->
+          <!-- Comprehensive Technical Analysis Section -->
           <div class="mb-6">
             <div class="flex items-center gap-3 mb-4">
               <div class="text-secondary text-2xl">
-              <div class="text-secondary text-2xl">
                 <TrendingUp class="w-7 h-7" />
               </div>
-              </div>
-              <h3 class="text-xl font-bold text-secondary">Detailed Analysis</h3>
+              <h3 class="text-xl font-bold text-secondary">Comprehensive Technical Report</h3>
+              <div class="badge badge-secondary badge-lg">Technical Analysis</div>
+            </div>
+            <div class="text-sm text-base-content/70 mb-4">
+              Exhaustive technical analysis with detailed financial calculations, methodologies, and quantitative findings
             </div>
             
             <div class="prose prose-lg max-w-none 

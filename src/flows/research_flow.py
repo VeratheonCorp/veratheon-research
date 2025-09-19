@@ -8,6 +8,7 @@ from src.flows.subflows.earnings_projections_flow import earnings_projections_fl
 from src.flows.subflows.management_guidance_flow import management_guidance_flow
 from src.flows.subflows.cross_reference_flow import cross_reference_flow
 from src.flows.subflows.comprehensive_report_flow import comprehensive_report_flow
+from src.flows.subflows.key_insights_flow import key_insights_flow
 from src.flows.subflows.company_overview_flow import company_overview_flow
 from src.flows.subflows.global_quote_flow import global_quote_flow
 from src.tasks.common.job_status_task import update_job_status_task
@@ -24,7 +25,7 @@ from src.research.management_guidance.management_guidance_models import Manageme
 from src.research.common.peer_group_agent import peer_group_agent
 from src.research.common.models.peer_group import PeerGroup
 from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion
-from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport
+from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport, KeyInsights
 from src.research.company_overview.company_overview_models import CompanyOverviewAnalysis
 from src.research.global_quote.global_quote_models import GlobalQuoteData
 
@@ -165,13 +166,22 @@ async def main_research_flow(
         all_analyses,
         force_recompute=force_recompute
     )
-    logger.info(f"Comprehensive report:")
-    logger.info(comprehensive_report.model_dump_json(indent=2))
+    logger.info(f"Comprehensive report generated for {symbol}")
+
+    # Generate key insights from comprehensive report
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Extracting key insights", "key_insights_flow")
+    key_insights: KeyInsights = await key_insights_flow(
+        symbol,
+        comprehensive_report,
+        force_recompute=force_recompute
+    )
+    logger.info(f"Key insights generated for {symbol}")
 
     duration_seconds = int(time.time() - start_time)
     logger.info(f"Main research for {symbol} completed successfully! in {duration_seconds} seconds")
     
     return {
         "symbol": symbol,
-        "comprehensive_report": comprehensive_report.model_dump()
+        "comprehensive_report": comprehensive_report.model_dump(),
+        "key_insights": key_insights.model_dump()
     }
