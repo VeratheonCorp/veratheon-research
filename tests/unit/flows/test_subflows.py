@@ -28,14 +28,19 @@ class TestHistoricalEarningsFlow:
     @patch('src.flows.subflows.historical_earnings_flow.historical_earnings_reporting_task')
     @patch('src.flows.subflows.historical_earnings_flow.historical_earnings_analysis_task')
     @patch('src.flows.subflows.historical_earnings_flow.historical_earnings_fetch_task')
+    @patch('src.flows.subflows.historical_earnings_flow.historical_earnings_cache_retrieval_task')
     @pytest.mark.anyio
     async def test_historical_earnings_flow_success(
         self, 
+        mock_cache_task,
         mock_fetch_task,
         mock_analysis_task,
         mock_reporting_task
     ):
         """Test successful historical earnings flow execution."""
+        
+        # Mock cache task to return None (no cached data)
+        mock_cache_task.return_value = None
         
         # Mock fetch task result
         mock_data = HistoricalEarningsData(
@@ -63,8 +68,8 @@ class TestHistoricalEarningsFlow:
         )
         mock_analysis_task.return_value = mock_analysis
         
-        # Mock status update task
-        mock_publish_status_update_task.return_value = True
+        # Mock reporting task
+        mock_reporting_task.return_value = None
         
         # Execute the flow
         result = await historical_earnings_flow("AAPL")
@@ -77,37 +82,36 @@ class TestHistoricalEarningsFlow:
         # Verify tasks were called correctly
         mock_fetch_task.assert_called_once_with("AAPL")
         mock_analysis_task.assert_called_once_with("AAPL", mock_data)
-        
-        # Verify status updates
-        assert mock_publish_status_update_task.call_count == 2
-        start_call = mock_publish_status_update_task.call_args_list[0]
-        assert start_call[0][0] == "starting"
-        assert start_call[0][1]["flow"] == "historical_earnings_flow"
-        assert start_call[0][1]["symbol"] == "AAPL"
+        mock_reporting_task.assert_called_once_with("AAPL", mock_analysis)
 
 
 class TestEarningsProjectionsFlow:
     
-    @patch('src.flows.subflows.earnings_projections_flow.publish_status_update_task')
+    @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_reporting_task')
     @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_analysis_task')
     @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_fetch_task')
+    @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_cache_retrieval_task')
     @pytest.mark.anyio
     async def test_earnings_projections_flow_success(
         self,
+        mock_cache_task,
         mock_fetch_task,
         mock_analysis_task,
-        mock_publish_status_update_task
+        mock_reporting_task
     ):
         """Test successful earnings projections flow execution."""
+        
+        # Mock cache task to return None (no cached data)
+        mock_cache_task.return_value = None
         
         # Mock fetch task result
         mock_data = EarningsProjectionData(
             symbol="AAPL",
-            quarterly_income_statements=[{"fiscalDateEnding": "2023-12-31", "totalRevenue": "50000000"}],
-            annual_income_statements=[{"fiscalDateEnding": "2023-12-31", "totalRevenue": "200000000"}],
-            overview_data={"MarketCapitalization": "3000000000000", "PERatio": "25.0"},
-            historical_earnings_analysis=None,
-            financial_statements_analysis=None
+            quarterly_income_statements=[{"fiscalDateEnding": "2023-12-31", "totalRevenue": "100000000"}],
+            annual_income_statements=[{"fiscalDateEnding": "2023-12-31", "totalRevenue": "400000000"}],
+            overview_data={"Symbol": "AAPL", "Name": "Apple Inc."},
+            historical_earnings_analysis={"pattern": "CONSISTENT_BEATS"},
+            financial_statements_analysis={"trend": "IMPROVING"}
         )
         mock_fetch_task.return_value = mock_data
         
@@ -116,23 +120,19 @@ class TestEarningsProjectionsFlow:
             # Revenue Projection
             projected_revenue=56000000.0,
             revenue_projection_method="HISTORICAL_TREND",
-            revenue_confidence="HIGH",
             revenue_reasoning="Strong historical growth pattern",
             
             # Cost Projections  
             projected_cogs=30000000.0,
             cogs_projection_method="PERCENTAGE_OF_REVENUE",
-            cogs_confidence="HIGH", 
             cogs_reasoning="Stable cost structure",
             projected_gross_profit=26000000.0,
             projected_gross_margin=0.464,
             
             # Operating Expense Projections
             projected_sga=15000000.0,
-            sga_confidence="MEDIUM",
             sga_reasoning="Based on historical trends",
             projected_rd=5000000.0,
-            rd_confidence="HIGH",
             rd_reasoning="Consistent R&D investment",
             projected_total_opex=20000000.0,
             
@@ -157,51 +157,47 @@ class TestEarningsProjectionsFlow:
             key_assumptions=["Revenue growth continues at 8-10%", "Margins remain stable", "No major one-time items"],
             upside_risks=["Better than expected product sales", "Cost efficiencies"],
             downside_risks=["Economic slowdown", "Supply chain disruptions"],
-            overall_confidence="HIGH",
             data_quality_score=85,
             consensus_validation_summary="Our projection is 6% above consensus, driven by stronger revenue outlook",
             long_form_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings",
-            critical_insights="Strong fundamentals indicate higher than consensus earnings potential"
+            critical_insights="Strong fundamentals support above-consensus earnings potential"
         )
         mock_analysis_task.return_value = mock_analysis
         
-        # Mock status update task
-        mock_publish_status_update_task.return_value = True
+        # Mock reporting task
+        mock_reporting_task.return_value = None
         
         # Execute the flow with context
         historical_context = {"pattern": "CONSISTENT_BEATS"}
         financial_context = {"trend": "IMPROVING"}
-        
-        result = await earnings_projections_flow(
-            "AAPL", 
-            historical_context, 
-            financial_context
-        )
+        result = await earnings_projections_flow("AAPL", historical_context, financial_context)
         
         # Verify the result
         assert isinstance(result, EarningsProjectionAnalysis)
         assert result.symbol == "AAPL"
         assert result.next_quarter_projection.projected_eps == 2.65
-        assert result.overall_confidence == "HIGH"
         
         # Verify tasks were called correctly
         mock_fetch_task.assert_called_once_with("AAPL", historical_context, financial_context)
         mock_analysis_task.assert_called_once_with("AAPL", mock_data)
-        
-        # Verify status updates
-        assert mock_publish_status_update_task.call_count == 2
+        mock_reporting_task.assert_called_once_with("AAPL", mock_analysis)
 
-    @patch('src.flows.subflows.earnings_projections_flow.publish_status_update_task')
+    @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_reporting_task')
     @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_analysis_task')
     @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_fetch_task')
+    @patch('src.flows.subflows.earnings_projections_flow.earnings_projections_cache_retrieval_task')
     @pytest.mark.anyio
     async def test_earnings_projections_flow_no_context(
         self,
+        mock_cache_task,
         mock_fetch_task,
         mock_analysis_task,
-        mock_publish_status_update_task
+        mock_reporting_task
     ):
         """Test earnings projections flow without historical context."""
+        
+        # Mock cache task to return None (no cached data)
+        mock_cache_task.return_value = None
         
         # Mock minimal fetch task result
         mock_data = EarningsProjectionData(
@@ -219,23 +215,19 @@ class TestEarningsProjectionsFlow:
             # Revenue Projection
             projected_revenue=55000000.0,
             revenue_projection_method="HISTORICAL_TREND",
-            revenue_confidence="MEDIUM",
             revenue_reasoning="Limited historical data available",
             
             # Cost Projections  
             projected_cogs=30000000.0,
             cogs_projection_method="PERCENTAGE_OF_REVENUE",
-            cogs_confidence="MEDIUM", 
             cogs_reasoning="Basic cost assumptions",
             projected_gross_profit=25000000.0,
             projected_gross_margin=0.45,
             
             # Operating Expense Projections
             projected_sga=15000000.0,
-            sga_confidence="MEDIUM",
             sga_reasoning="Based on basic assumptions",
             projected_rd=5000000.0,
-            rd_confidence="MEDIUM",
             rd_reasoning="Basic R&D assumptions",
             projected_total_opex=20000000.0,
             
@@ -267,8 +259,8 @@ class TestEarningsProjectionsFlow:
         )
         mock_analysis_task.return_value = mock_analysis
         
-        # Mock status update task
-        mock_publish_status_update_task.return_value = True
+        # Mock reporting task
+        mock_reporting_task.return_value = None
         
         # Execute the flow without context
         result = await earnings_projections_flow("AAPL")
@@ -276,25 +268,32 @@ class TestEarningsProjectionsFlow:
         # Verify the result
         assert isinstance(result, EarningsProjectionAnalysis)
         assert result.symbol == "AAPL"
-        assert result.overall_confidence == "MEDIUM"
+        assert result.data_quality_score == 60
         
-        # Verify tasks were called with None context
+        # Verify tasks were called correctly
         mock_fetch_task.assert_called_once_with("AAPL", None, None)
+        mock_analysis_task.assert_called_once_with("AAPL", mock_data)
+        mock_reporting_task.assert_called_once_with("AAPL", mock_analysis)
 
 
 class TestFinancialStatementsFlow:
     
-    @patch('src.flows.subflows.financial_statements_flow.publish_status_update_task')
+    @patch('src.flows.subflows.financial_statements_flow.financial_statements_reporting_task')
     @patch('src.flows.subflows.financial_statements_flow.financial_statements_analysis_task')
     @patch('src.flows.subflows.financial_statements_flow.financial_statements_fetch_task')
+    @patch('src.flows.subflows.financial_statements_flow.financial_statements_cache_retrieval_task')
     @pytest.mark.anyio
     async def test_financial_statements_flow_success(
         self,
+        mock_cache_task,
         mock_fetch_task,
         mock_analysis_task,
-        mock_publish_status_update_task
+        mock_reporting_task
     ):
         """Test successful financial statements flow execution."""
+        
+        # Mock cache task to return None (no cached data)
+        mock_cache_task.return_value = None
         
         # Mock fetch task result
         mock_data = FinancialStatementsData(
@@ -323,8 +322,8 @@ class TestFinancialStatementsFlow:
         )
         mock_analysis_task.return_value = mock_analysis
         
-        # Mock status update task
-        mock_publish_status_update_task.return_value = True
+        # Mock reporting task
+        mock_reporting_task.return_value = None
         
         # Execute the flow
         result = await financial_statements_flow("AAPL")
@@ -337,9 +336,7 @@ class TestFinancialStatementsFlow:
         # Verify tasks were called correctly
         mock_fetch_task.assert_called_once_with("AAPL")
         mock_analysis_task.assert_called_once_with("AAPL", mock_data)
-        
-        # Verify status updates
-        assert mock_publish_status_update_task.call_count == 2
+        mock_reporting_task.assert_called_once_with("AAPL", mock_analysis)
 
 
 class TestManagementGuidanceFlow:
@@ -347,14 +344,19 @@ class TestManagementGuidanceFlow:
     @patch('src.flows.subflows.management_guidance_flow.management_guidance_reporting_task')
     @patch('src.flows.subflows.management_guidance_flow.management_guidance_analysis_task')
     @patch('src.flows.subflows.management_guidance_flow.management_guidance_fetch_task')
+    @patch('src.flows.subflows.management_guidance_flow.management_guidance_cache_retrieval_task')
     @pytest.mark.anyio
     async def test_management_guidance_flow_success(
         self,
+        mock_cache_task,
         mock_fetch_task,
         mock_analysis_task,
         mock_reporting_task
     ):
         """Test successful management guidance flow execution."""
+        
+        # Mock cache task to return None (no cached data)
+        mock_cache_task.return_value = None
         
         # Mock fetch task result
         mock_data = ManagementGuidanceData(
@@ -438,6 +440,4 @@ class TestManagementGuidanceFlow:
             historical_context,
             financial_context
         )
-        
-        # Verify reporting task was called
         mock_reporting_task.assert_called_once_with("AAPL", mock_analysis)

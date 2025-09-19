@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, ANY
 from src.flows.research_flow import main_research_flow
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
 from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
@@ -13,11 +13,14 @@ from src.research.news_sentiment.news_sentiment_models import NewsSentimentSumma
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.common.models.peer_group import PeerGroup
 from src.research.cross_reference.cross_reference_models import CrossReferencedAnalysisCompletion, CrossReferencedAnalysis
+from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport, KeyInsights
 
 
 class TestMainResearchFlow:
     
-    @patch('src.flows.research_flow.publish_status_update_task')
+    @patch('src.flows.research_flow.key_insights_flow')
+    @patch('src.flows.research_flow.comprehensive_report_flow')
+    @patch('src.flows.research_flow.ensure_reporting_directory_exists')
     @patch('src.flows.research_flow.trade_ideas_flow')
     @patch('src.flows.research_flow.cross_reference_flow')
     @patch('src.flows.research_flow.news_sentiment_flow')
@@ -29,11 +32,9 @@ class TestMainResearchFlow:
     @patch('src.flows.research_flow.earnings_projections_flow')
     @patch('src.flows.research_flow.financial_statements_flow')
     @patch('src.flows.research_flow.historical_earnings_flow')
-    @patch('src.flows.research_flow.ensure_reporting_directory_exists')
     @pytest.mark.anyio
     async def test_main_research_flow_success(
         self,
-        mock_ensure_reporting_directory_exists,
         mock_historical_earnings_flow,
         mock_financial_statements_flow,
         mock_earnings_projections_flow,
@@ -45,7 +46,9 @@ class TestMainResearchFlow:
         mock_news_sentiment_flow,
         mock_cross_reference_flow,
         mock_trade_ideas_flow,
-        mock_publish_status_update_task
+        mock_ensure_reporting_directory_exists,
+        mock_comprehensive_report_flow,
+        mock_key_insights_flow
     ):
         """Test successful execution of the complete main research flow."""
         
@@ -89,23 +92,19 @@ class TestMainResearchFlow:
             # Revenue Projection
             projected_revenue=56000000.0,
             revenue_projection_method="HISTORICAL_TREND",
-            revenue_confidence="HIGH",
             revenue_reasoning="Strong historical growth pattern",
             
             # Cost Projections  
             projected_cogs=30000000.0,
             cogs_projection_method="PERCENTAGE_OF_REVENUE",
-            cogs_confidence="HIGH", 
             cogs_reasoning="Stable cost structure",
             projected_gross_profit=26000000.0,
             projected_gross_margin=0.464,
             
             # Operating Expense Projections
             projected_sga=15000000.0,
-            sga_confidence="MEDIUM",
             sga_reasoning="Based on historical trends",
             projected_rd=5000000.0,
-            rd_confidence="HIGH",
             rd_reasoning="Consistent R&D investment",
             projected_total_opex=20000000.0,
             
@@ -236,10 +235,26 @@ class TestMainResearchFlow:
         )
         mock_trade_ideas_flow.return_value = mock_trade_idea
         
+        # Mock comprehensive report and key insights
+        mock_comprehensive_report = ComprehensiveReport(
+            symbol="AAPL",
+            company_name="Apple Inc",
+            report_date="2025-09-19",
+            comprehensive_analysis="Comprehensive analysis of Apple Inc."
+        )
+        mock_comprehensive_report_flow.return_value = mock_comprehensive_report
+        
+        mock_key_insights = KeyInsights(
+            symbol="AAPL",
+            company_name="Apple Inc",
+            report_date="2025-09-19",
+            critical_insights="Apple shows strong performance with positive outlook."
+        )
+        mock_key_insights_flow.return_value = mock_key_insights
+        
         # Mock additional tasks
         mock_ensure_reporting_directory_exists.return_value = None
         mock_peer_group_reporting_task.return_value = None
-        mock_publish_status_update_task.return_value = True
         
         # Execute the main research flow
         result = await main_research_flow("AAPL")
@@ -247,39 +262,42 @@ class TestMainResearchFlow:
         # Verify the result
         assert isinstance(result, dict)
         assert result["symbol"] == "AAPL"
-        assert "trade_idea" in result
-        trade_idea = result["trade_idea"]
-        assert "BUY AAPL" in trade_idea["high_level_trade_idea"]
-        assert trade_idea["symbol"] == "AAPL"
-        assert trade_idea["trade_direction"] == "LONG"
+        assert "comprehensive_report" in result
+        comprehensive_report = result["comprehensive_report"]
+        assert comprehensive_report["symbol"] == "AAPL"
+        assert "key_insights" in result
         
         # Verify all flows were called in the correct order
-        mock_historical_earnings_flow.assert_called_once_with("AAPL")
-        mock_financial_statements_flow.assert_called_once_with("AAPL")
+        mock_historical_earnings_flow.assert_called_once_with("AAPL", force_recompute=False)
+        mock_financial_statements_flow.assert_called_once_with("AAPL", force_recompute=False)
         mock_earnings_projections_flow.assert_called_once_with(
             "AAPL", 
             mock_historical.model_dump(),
-            mock_financial.model_dump()
+            mock_financial.model_dump(),
+            force_recompute=False
         )
         mock_management_guidance_flow.assert_called_once_with(
             "AAPL",
             mock_historical,
-            mock_financial
+            mock_financial,
+            force_recompute=False
         )
         mock_peer_group_agent.assert_called_once_with("AAPL", mock_financial)
-        mock_forward_pe_sanity_check_flow.assert_called_once_with("AAPL")
+        mock_forward_pe_sanity_check_flow.assert_called_once_with("AAPL", force_recompute=False)
         mock_forward_pe_flow.assert_called_once_with(
             "AAPL",
             mock_peers,
             mock_projections,
             mock_guidance,
-            mock_sanity
+            mock_sanity,
+            force_recompute=False
         )
         mock_news_sentiment_flow.assert_called_once_with(
             "AAPL",
             mock_peers,
             mock_projections,
-            mock_guidance
+            mock_guidance,
+            force_recompute=False
         )
         mock_trade_ideas_flow.assert_called_once_with(
             "AAPL",
@@ -288,37 +306,27 @@ class TestMainResearchFlow:
             mock_historical,
             mock_financial,
             mock_projections,
-            mock_guidance
+            mock_guidance,
+            force_recompute=False
         )
-        
-        # Verify status updates were published
-        assert mock_publish_status_update_task.call_count == 2
-        
-        # Check starting status update
-        start_call = mock_publish_status_update_task.call_args_list[0]
-        assert start_call[0][0] == "starting"
-        assert start_call[0][1]["flow"] == "main_research_flow"
-        assert start_call[0][1]["symbol"] == "AAPL"
-        
-        # Check completion status update
-        end_call = mock_publish_status_update_task.call_args_list[1]
-        assert end_call[0][0] == "completed"
-        assert end_call[0][1]["flow"] == "main_research_flow"
-        assert end_call[0][1]["symbol"] == "AAPL"
-        assert "duration_seconds" in end_call[0][1]
+        mock_comprehensive_report_flow.assert_called_once_with(
+            "AAPL",
+            ANY,
+            force_recompute=False
+        )
+        mock_key_insights_flow.assert_called_once_with(
+            "AAPL",
+            mock_comprehensive_report,
+            force_recompute=False
+        )
 
-    @patch('src.flows.research_flow.publish_status_update_task')
     @patch('src.flows.research_flow.historical_earnings_flow')
     @pytest.mark.anyio
     async def test_main_research_flow_early_failure(
         self,
-        mock_historical_earnings_flow,
-        mock_publish_status_update_task
+        mock_historical_earnings_flow
     ):
         """Test main research flow behavior when an early step fails."""
-        
-        # Mock status update task
-        mock_publish_status_update_task.return_value = True
         
         # Mock historical earnings flow to raise an exception
         mock_historical_earnings_flow.side_effect = Exception("Historical earnings data unavailable")
@@ -327,11 +335,5 @@ class TestMainResearchFlow:
         with pytest.raises(Exception, match="Historical earnings data unavailable"):
             await main_research_flow("INVALID")
         
-        # Verify the starting status update was published
-        mock_publish_status_update_task.assert_called_once_with(
-            "starting", 
-            {"flow": "main_research_flow", "symbol": "INVALID"}
-        )
-        
         # Verify historical earnings flow was attempted
-        mock_historical_earnings_flow.assert_called_once_with("INVALID")
+        mock_historical_earnings_flow.assert_called_once_with("INVALID", force_recompute=False)
