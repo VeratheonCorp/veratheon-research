@@ -24,7 +24,19 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = [
-    "."
+    ".",
+    "src"
+]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--disable-warnings",
+    "--tb=short"
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests"
 ]
 
 
