@@ -4,7 +4,6 @@
   import { marked } from 'marked';
   import type { ResearchResult } from '$lib/research-types';
   import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
-  import TradeSection from '$lib/components/TradeSection.svelte';
 
   // Configuration
   const MAX_STEPS = 16;
@@ -238,10 +237,6 @@
     </div>
   </div>
   
-  <!-- Trade Hypothesis Section -->
-  <div class="mb-8">
-    <TradeSection symbol={stockSymbol} companyName="" />
-  </div>
 
   <!-- Research & Status Unified Section -->
   {#if isRunningResearch || jobStatus || researchResult}
