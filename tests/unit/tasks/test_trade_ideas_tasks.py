@@ -55,8 +55,6 @@ class TestTradeIdeasTask:
             risk_factors=["Market volatility", "Economic slowdown"],
             simple_equity_trade_specifics="Long AAPL at $150, target $175, stop loss $140, 3-6 month horizon",
             option_play="Buy AAPL Mar calls, strike $155, delta 0.65, for leveraged exposure",
-            simple_equity_trade_specifics_confidence_score=85,
-            option_play_confidence_score=75,
             risk_hedge="Consider position sizing at 3-5% of portfolio to manage single name risk",
             entry_price_target="$150",
             upside_price_target="$175",
@@ -80,9 +78,8 @@ class TestTradeIdeasTask:
         
         assert isinstance(result, TradeIdea)
         assert "BUY AAPL" in result.high_level_trade_idea
-        assert result.simple_equity_trade_specifics_confidence_score == 85
-        assert result.option_play_confidence_score == 75
         assert "$175" in result.simple_equity_trade_specifics
+        assert result.overall_confidence == "HIGH"
         mock_runner.assert_called_once()
 
     @patch('src.tasks.trade_ideas.trade_ideas_task.Runner.run')
@@ -131,8 +128,6 @@ class TestTradeIdeasTask:
             risk_factors=["Overvaluation", "Market conditions"],
             simple_equity_trade_specifics="Hold current position, consider adding below $140, target $145",
             option_play="Sell covered calls at $155 strike to generate income while waiting",
-            simple_equity_trade_specifics_confidence_score=65,
-            option_play_confidence_score=70,
             risk_hedge="Maintain small allocation (1-2% of portfolio) given valuation concerns",
             entry_price_target="$140",
             upside_price_target="$145",
@@ -148,8 +143,8 @@ class TestTradeIdeasTask:
         
         assert isinstance(result, TradeIdea)
         assert "HOLD AAPL" in result.high_level_trade_idea
-        assert result.simple_equity_trade_specifics_confidence_score == 65
         assert "better entry" in result.reasoning.lower()
+        assert result.overall_confidence == "MEDIUM"
         mock_runner.assert_called_once()
 
     @patch('src.tasks.trade_ideas.trade_ideas_task.Runner.run')
@@ -198,8 +193,6 @@ class TestTradeIdeasTask:
             risk_factors=["Market reversal", "Unexpected positive news"],
             simple_equity_trade_specifics="Sell AAPL at current levels, target $110, stop loss $160",
             option_play="Buy AAPL puts, strike $140, 3-month expiry for hedging/shorting",
-            simple_equity_trade_specifics_confidence_score=80,
-            option_play_confidence_score=75,
             risk_hedge="Reduce or exit position entirely given deteriorating outlook",
             entry_price_target="$150",
             upside_price_target="$110",
@@ -215,6 +208,6 @@ class TestTradeIdeasTask:
         
         assert isinstance(result, TradeIdea)
         assert "SELL AAPL" in result.high_level_trade_idea
-        assert result.simple_equity_trade_specifics_confidence_score == 80
         assert "declining" in result.reasoning.lower()
+        assert result.overall_confidence == "HIGH"
         mock_runner.assert_called_once()

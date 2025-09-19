@@ -123,7 +123,6 @@ class TestEarningsProjectionsAnalysisTask:
             key_assumptions=["Revenue growth continues at 8-10%", "Margins remain stable", "No major one-time items"],
             upside_risks=["Better than expected product sales", "Cost efficiencies"],
             downside_risks=["Economic slowdown", "Supply chain disruptions"],
-            overall_confidence="HIGH",
             data_quality_score=85,
             consensus_validation_summary="Our projection is 6% above consensus, driven by stronger revenue outlook",
             long_form_analysis="Detailed analysis shows strong fundamentals supporting higher than consensus earnings",
@@ -140,5 +139,5 @@ class TestEarningsProjectionsAnalysisTask:
         assert result.symbol == "AAPL"
         assert result.next_quarter_projection.projected_eps == 2.65
         assert result.next_quarter_projection.projected_revenue == 56000000.0
-        assert result.overall_confidence == "HIGH"
+        assert result.data_quality_score == 85
         mock_runner.assert_called_once()

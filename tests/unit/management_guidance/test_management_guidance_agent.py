@@ -70,7 +70,6 @@ class TestManagementGuidanceAgent:
         assert result.symbol == "AAPL"
         assert result.transcript_available == False
         assert result.quarter_analyzed is None
-        assert result.guidance_confidence == "LOW"
         assert result.consensus_validation_signal == "NEUTRAL"
         assert "No earnings call transcript available" in result.key_guidance_summary
     
@@ -82,7 +81,6 @@ class TestManagementGuidanceAgent:
         assert isinstance(result, ManagementGuidanceAnalysis)
         assert result.symbol == "AAPL"
         assert result.transcript_available == False
-        assert result.guidance_confidence == "LOW"
         assert result.consensus_validation_signal == "NEUTRAL"
         assert error_msg in result.key_guidance_summary
         assert error_msg in result.long_form_analysis
@@ -117,7 +115,6 @@ class TestManagementGuidanceAgent:
                 GuidanceIndicator(
                     type="revenue",
                     direction="POSITIVE",
-                    confidence="HIGH",
                     context="Management expects strong iPhone sales next quarter",
                     impact_assessment="Positive impact on Q2 revenue growth"
                 )
@@ -128,7 +125,6 @@ class TestManagementGuidanceAgent:
             revenue_guidance_direction="POSITIVE",
             margin_guidance_direction="NEUTRAL",
             eps_guidance_direction="POSITIVE",
-            guidance_confidence="HIGH",
             consensus_validation_signal="BULLISH",
             key_guidance_summary="Management provided bullish guidance for next quarter with strong revenue outlook",
             long_form_analysis="Overall positive tone with specific revenue growth drivers mentioned",
@@ -158,7 +154,6 @@ class TestManagementGuidanceAgent:
         assert result.quarter_analyzed == "2024Q1"
         assert result.overall_guidance_tone == "OPTIMISTIC"
         assert result.consensus_validation_signal == "BULLISH"
-        assert result.guidance_confidence == "HIGH"
         assert len(result.guidance_indicators) == 1
         assert result.guidance_indicators[0].type == "revenue"
         assert result.guidance_indicators[0].direction == "POSITIVE"
@@ -184,7 +179,6 @@ class TestManagementGuidanceAgent:
         assert isinstance(result, ManagementGuidanceAnalysis)
         assert result.symbol == "AAPL"
         assert result.transcript_available == False
-        assert result.guidance_confidence == "LOW"
         assert "AI processing error" in result.key_guidance_summary
     
     @pytest.mark.anyio
