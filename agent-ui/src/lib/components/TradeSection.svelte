@@ -63,7 +63,12 @@
   <div class="card bg-base-100 shadow-lg border border-base-200">
     <div class="card-body p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="card-title text-xl font-bold text-primary">Trade Actions</h2>
+        <div>
+          <h2 class="card-title text-xl font-bold text-primary">Trade Actions</h2>
+          {#if companyName}
+            <p class="text-sm text-base-content/70">{companyName}</p>
+          {/if}
+        </div>
         {#if symbol}
           <div class="badge badge-lg">{symbol}</div>
         {/if}

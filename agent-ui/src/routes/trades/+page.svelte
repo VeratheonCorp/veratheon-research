@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import TradeSection from '$lib/components/TradeSection.svelte';
   import { DollarSign } from '@lucide/svelte';
+  import TickerSearch from '$lib/components/TickerSearch.svelte';
 
   let symbol = '';
   let companyName = '';
@@ -30,17 +31,19 @@
       <h2 class="card-title text-xl font-bold text-primary mb-4">Select Stock</h2>
       
       <div class="flex flex-wrap gap-4 items-end">
-        <div class="form-control">
+        <div class="form-control w-80">
           <label for="stock-symbol" class="label pb-2">
-            <span class="label-text font-medium text-base-content">Stock Symbol</span>
+            <span class="label-text font-medium text-base-content">Stock Symbol or Company Name</span>
           </label>
-          <input
-            id="stock-symbol"
-            type="text"
-            placeholder="AAPL"
-            class="input input-bordered input-primary w-24 focus:input-primary"
-            bind:value={symbol}
-          />
+          <div class="w-full">
+            <TickerSearch 
+              placeholder="Search for a stock..."
+              on:select={(e) => {
+                symbol = e.detail.symbol;
+                companyName = e.detail.name;
+              }}
+            />
+          </div>
         </div>
         
         <button 
@@ -56,8 +59,12 @@
           }}
         >
           <DollarSign class="w-5 h-5" />
-          Set Symbol
+          Use {symbol ? symbol.toUpperCase() : 'Symbol'}
         </button>
+        
+        {#if companyName}
+          <div class="text-sm text-base-content/70">{companyName}</div>
+        {/if}
       </div>
     </div>
   </div>
