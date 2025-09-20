@@ -20,3 +20,5 @@ reports/
 
 redis_data/
 dump.rdb
+
+output/
