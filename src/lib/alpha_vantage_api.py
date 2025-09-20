@@ -596,3 +596,37 @@ def call_alpha_vantage_earnings_call_transcripts(symbol: str, quarter: str) -> D
     """
     query = f"EARNINGS_CALL_TRANSCRIPT&symbol={symbol}&quarter={quarter}"
     return client.run_query(query)
+
+
+def call_alpha_vantage_symbol_search(keywords: str) -> Dict[str, Any]:
+    """Search for stock symbols based on keywords.
+    
+    This endpoint provides a list of matching stocks based on the search keywords,
+    including symbol, name, type, region, and other metadata.
+
+    Args:
+        keywords: Search keywords (e.g., 'apple', 'microsoft', 'tech')
+
+    Returns:
+        Dict containing:
+            - bestMatches: List of matching stocks with:
+                - 1. symbol: Stock ticker symbol
+                - 2. name: Company name
+                - 3. type: Type of security (e.g., Equity, ETF)
+                - 4. region: Geographic region
+                - 5. marketOpen: Market opening time in local timezone
+                - 6. marketClose: Market closing time in local timezone
+                - 7. timezone: Local timezone
+                - 8. currency: Trading currency
+                - 9. matchScore: Relevance score of the match
+
+    Example:
+        >>> call_alpha_vantage_symbol_search("apple")
+        
+    Note:
+        - Returns up to 10 best matches
+        - Match score ranges from 0.0 to 1.0, with 1.0 being the most relevant
+        - Can search by company name, ticker symbol, or partial matches
+    """
+    query = f"SYMBOL_SEARCH&keywords={keywords}"
+    return client.run_query(query)

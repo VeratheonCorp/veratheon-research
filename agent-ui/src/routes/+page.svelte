@@ -5,6 +5,7 @@
   import type { ResearchResult } from '$lib/research-types';
   import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
   import ReportStatusIndicator from '$lib/components/ReportStatusIndicator.svelte';
+  import TickerSearch from '$lib/components/TickerSearch.svelte';
 
   // Configuration
   const MAX_STEPS = 16;
@@ -184,25 +185,20 @@
         <h2 class="card-title text-xl font-bold text-primary mb-4">Market Research Controls</h2>
         
         <div class="flex flex-wrap gap-6 items-end">
-          <!-- Stock Symbol Input -->
-          <div class="form-control">
+          <!-- Stock Symbol Input with Ticker Search -->
+          <div class="form-control w-80">
             <label for="stock-symbol" class="label pb-2">
-              <span class="label-text font-medium text-base-content">Stock Symbol</span>
+              <span class="label-text font-medium text-base-content">Stock Symbol or Company Name</span>
             </label>
             <div class="flex items-center gap-2">
-              <input
-                id="stock-symbol"
-                type="text"
-                placeholder="AAPL"
-                class="input input-bordered input-primary w-24 focus:input-primary"
-                bind:value={stockSymbol}
-                disabled={isRunningResearch}
-                on:keydown={(e) => {
-                  if (e.key === 'Enter' && !isRunningResearch && stockSymbol.trim()) {
-                    runResearch();
-                  }
-                }}
-              />
+              <div class="w-full">
+                <TickerSearch 
+                  placeholder="Search for a stock..."
+                  on:select={(e) => {
+                    stockSymbol = e.detail.symbol;
+                  }}
+                />
+              </div>
               {#if stockSymbol.trim()}
                 <ReportStatusIndicator symbol={stockSymbol} />
               {/if}

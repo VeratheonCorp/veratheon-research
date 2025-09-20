@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
 from pydantic import BaseModel
 
 # Ensure project root is on the Python path (so imports like src.flows... work)
@@ -18,6 +18,7 @@ load_dotenv()
 # Import after sys.path setup
 from src.flows.research_flow import main_research_flow  # noqa: E402
 from src.lib.job_tracker import get_job_tracker, JobStatus  # noqa: E402
+from src.lib.alpha_vantage_api import call_alpha_vantage_symbol_search  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
@@ -186,4 +187,22 @@ async def check_report_status(symbol: str):
         
     except Exception as e:
         logger.exception(f"Error checking report status for {symbol}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ticker-search")
+async def search_ticker(query: str = Query(..., description="Search query for ticker symbol or company name")):
+    """Search for stock symbols based on keywords.
+    
+    This endpoint searches for stock symbols and company names that match the provided query.
+    It returns a list of matching stocks with relevant information.
+    """
+    try:
+        logger.info(f"Searching for ticker with query: {query}")
+        results = call_alpha_vantage_symbol_search(query)
+        
+        # Return the best matches directly
+        return results
+        
+    except Exception as e:
+        logger.exception(f"Error searching for ticker with query: {query}")
         raise HTTPException(status_code=500, detail=str(e))
