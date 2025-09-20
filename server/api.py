@@ -138,3 +138,52 @@ async def list_jobs(limit: int = 20):
     except Exception as e:
         logger.exception("Error listing jobs")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/report-status/{symbol}")
+async def check_report_status(symbol: str):
+    """Check if a comprehensive report has been run for a stock today."""
+    try:
+        symbol_upper = symbol.upper()
+        job_tracker = get_job_tracker()
+        
+        # Get the most recent job for this symbol
+        job_id = job_tracker.get_job_by_symbol(symbol_upper)
+        
+        if not job_id:
+            return {"has_report": False, "message": f"No report found for {symbol_upper}"}
+        
+        # Get job details
+        job_data = job_tracker.get_job_status(job_id)
+        
+        if not job_data:
+            return {"has_report": False, "message": f"No job data found for {symbol_upper}"}
+        
+        # Check if job is completed and has a result with comprehensive_report
+        has_report = (
+            job_data.get("status") == "completed" and 
+            job_data.get("result") and 
+            job_data.get("result", {}).get("comprehensive_report", {}).get("comprehensive_analysis")
+        )
+        
+        # Check if the report was generated today
+        is_today = False
+        if has_report and job_data.get("completed_at"):
+            from datetime import datetime
+            completed_date = datetime.fromisoformat(job_data["completed_at"])
+            today = datetime.now()
+            is_today = (
+                completed_date.year == today.year and
+                completed_date.month == today.month and
+                completed_date.day == today.day
+            )
+        
+        return {
+            "has_report": has_report and is_today,
+            "completed_at": job_data.get("completed_at") if has_report else None,
+            "symbol": symbol_upper,
+            "job_id": job_id if has_report else None
+        }
+        
+    except Exception as e:
+        logger.exception(f"Error checking report status for {symbol}")
+        raise HTTPException(status_code=500, detail=str(e))

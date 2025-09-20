@@ -9,7 +9,10 @@ export async function POST({ request }) {
     }
     
     const symbolUpper = symbol.trim().toUpperCase();
-    const apiUrl = process.env.API_URL || 'http://localhost:8085';
+    // In Docker Compose, the FastAPI service is named 'api' and runs on port 8085
+    // When running locally, use localhost
+    const apiUrl = process.env.API_URL || 
+                  (process.env.NODE_ENV === 'production' ? 'http://api:8085' : 'http://localhost:8085');
     
     // Call FastAPI backend to start research job
     const response = await fetch(`${apiUrl}/research`, {

@@ -8,7 +8,10 @@ export async function GET({ params, url }) {
       return json({ error: 'Invalid symbol' }, { status: 400 });
     }
     
-    const apiUrl = process.env.API_URL || 'http://localhost:8085';
+    // In Docker Compose, the FastAPI service is named 'api' and runs on port 8085
+    // When running locally, use localhost
+    const apiUrl = process.env.API_URL || 
+                  (process.env.NODE_ENV === 'production' ? 'http://api:8085' : 'http://localhost:8085');
     const job_id = url.searchParams.get('job_id');
     
     try {

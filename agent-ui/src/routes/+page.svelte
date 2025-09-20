@@ -4,6 +4,7 @@
   import { marked } from 'marked';
   import type { ResearchResult } from '$lib/research-types';
   import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
+  import ReportStatusIndicator from '$lib/components/ReportStatusIndicator.svelte';
 
   // Configuration
   const MAX_STEPS = 16;
@@ -27,6 +28,10 @@
   }
 
   let stockSymbol = '';
+  $: if (stockSymbol.trim()) {
+    // This reactive statement will trigger when stockSymbol changes
+    // The ReportStatusIndicator component will handle the actual API call
+  }
   let forceRecompute = false;
   let isRunningResearch = false;
   let researchResult: ResearchResult | null = null;
@@ -184,19 +189,24 @@
             <label for="stock-symbol" class="label pb-2">
               <span class="label-text font-medium text-base-content">Stock Symbol</span>
             </label>
-            <input
-              id="stock-symbol"
-              type="text"
-              placeholder="AAPL"
-              class="input input-bordered input-primary w-24 focus:input-primary"
-              bind:value={stockSymbol}
-              disabled={isRunningResearch}
-              on:keydown={(e) => {
-                if (e.key === 'Enter' && !isRunningResearch && stockSymbol.trim()) {
-                  runResearch();
-                }
-              }}
-            />
+            <div class="flex items-center gap-2">
+              <input
+                id="stock-symbol"
+                type="text"
+                placeholder="AAPL"
+                class="input input-bordered input-primary w-24 focus:input-primary"
+                bind:value={stockSymbol}
+                disabled={isRunningResearch}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' && !isRunningResearch && stockSymbol.trim()) {
+                    runResearch();
+                  }
+                }}
+              />
+              {#if stockSymbol.trim()}
+                <ReportStatusIndicator symbol={stockSymbol} />
+              {/if}
+            </div>
           </div>
 
           <!-- Spacer -->
