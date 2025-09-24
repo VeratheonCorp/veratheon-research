@@ -1,311 +1,247 @@
-# Consensus EPS Validation Report Generation Plan
+# Comprehensive Report Enhancement Plan
 
 ## Current State Analysis
 
-The current comprehensive report generation attempts to synthesize all research components into one unified report via a single-shot LLM call. However, the core value proposition should be **validating consensus EPS estimates** from Alpha Vantage and understanding their broader implications for investment decisions.
+The existing system **already performs comprehensive EPS validation** through its multi-workflow architecture:
 
-**Focus Shift**: From broad market research to targeted EPS consensus validation with clear actionable insights.
+- **Historical Earnings Flow**: Establishes beat/miss patterns vs consensus for baseline understanding
+- **Financial Statements Flow**: Analyzes recent changes for projection accuracy
+- **Earnings Projections Flow**: Creates independent baseline estimates for consensus validation
+- **Management Guidance Flow**: Cross-checks against management guidance from earnings calls
+- **Forward PE Flow**: Uses consensus EPS for valuation analysis and peer comparisons
+- **News Sentiment Flow**: Analyzes sentiment context around earnings expectations
+- **Trade Ideas Flow**: Synthesizes all analyses into actionable insights
+- **Cross Reference Flow**: Cross-validates insights across all analyses
 
-## Proposed EPS-Centric Multi-Agent Architecture
+**The system already IS an EPS validation platform.** The issue is that the final comprehensive report doesn't effectively synthesize the EPS validation insights.
 
-### Phase 1: EPS Foundation Analysis
+## Enhanced Comprehensive Report Approach
 
-**Goal**: Establish baseline understanding of consensus EPS and company fundamentals
+### Phase 1: Enhanced Comprehensive Report Assembly
 
-#### 1.1 Consensus EPS Context Agent
-- **Input**: Alpha Vantage consensus EPS, company overview, current price
-- **Output**: EPS consensus baseline and context
-- **Task**: `consensus_eps_context_task.py`
-- **Agent**: `consensus_eps_context_agent.py`
-- **Model**: `ConsensusEpsContext` with consensus figures, revision trends, analyst coverage
+**Goal**: Improve the existing comprehensive report to better synthesize EPS validation insights from all existing workflows
 
-#### 1.2 Historical EPS Pattern Agent
-- **Input**: Historical earnings, financial statements
-- **Output**: EPS historical pattern analysis
-- **Task**: `historical_eps_pattern_task.py`
-- **Agent**: `historical_eps_pattern_agent.py`
-- **Model**: `HistoricalEpsPattern` with growth trends, volatility, seasonal patterns, quality metrics
+#### 1.1 EPS-Focused Report Structure
+The comprehensive report should be restructured around **EPS validation conclusions**:
 
-### Phase 2: EPS Validation Analysis
+1. **EPS Validation Verdict** - Clear consensus validation conclusion
+2. **Supporting Evidence** - Key insights from each workflow supporting the verdict
+3. **Risk Assessment** - Downside scenarios if EPS consensus is wrong
+4. **Investment Implications** - Direct action items based on EPS validation
+5. **Alternative Scenarios** - Upside/downside cases with probability estimates
 
-**Goal**: Validate consensus EPS through multiple analytical lenses
+#### 1.2 Enhanced Cross-Reference Integration
+The existing cross-reference flow should be enhanced to specifically focus on EPS validation consistency across workflows:
 
-#### 2.1 Bottom-Up EPS Validation Agent
-- **Input**: Financial statements, earnings projections, management guidance
-- **Output**: Independent EPS estimate vs. consensus
-- **Task**: `bottom_up_eps_validation_task.py`
-- **Agent**: `bottom_up_eps_validation_agent.py`
-- **Model**: `BottomUpEpsValidation` with independent estimate, variance from consensus, confidence level
+- **Historical vs Projections**: Does our independent estimate align with historical patterns?
+- **Guidance vs Consensus**: How does management guidance compare to consensus EPS?
+- **Peer vs Individual**: Are consensus expectations reasonable relative to peers?
+- **Sentiment vs Fundamentals**: Does news sentiment support or contradict EPS expectations?
 
-#### 2.2 Peer-Relative EPS Validation Agent
-- **Input**: Peer group data, forward PE analysis, industry trends
-- **Output**: Peer-relative EPS reasonableness assessment
-- **Task**: `peer_relative_eps_validation_task.py`
-- **Agent**: `peer_relative_eps_validation_agent.py`
-- **Model**: `PeerRelativeEpsValidation` with peer comparison, relative growth expectations, industry context
+#### 1.3 Improved Comprehensive Report Agent
+Enhance the existing `comprehensive_report_task.py` to:
+- Lead with clear EPS validation verdict (VALIDATED/TOO_HIGH/TOO_LOW/INSUFFICIENT_DATA)
+- Prioritize EPS-relevant insights from each analysis
+- Provide specific investment actions based on EPS validation outcome
+- Include probability-weighted scenarios for different EPS outcomes
 
-#### 2.3 Market Sentiment EPS Check Agent
-- **Input**: News sentiment, management guidance, recent revisions
-- **Output**: Market sentiment alignment with EPS consensus
-- **Task**: `market_sentiment_eps_check_task.py`
-- **Agent**: `market_sentiment_eps_check_agent.py`
-- **Model**: `MarketSentimentEpsCheck` with sentiment-earnings alignment, revision momentum, guidance consistency
+## Implementation Strategy
 
-### Phase 3: EPS Implications & Decision Framework
+### Leverage Existing Architecture
 
-**Goal**: Translate EPS validation into investment implications
-
-#### 3.1 EPS Validation Synthesis Agent
-- **Input**: All Phase 2 validation outputs
-- **Output**: Consensus EPS validation conclusion
-- **Task**: `eps_validation_synthesis_task.py`
-- **Agent**: `eps_validation_synthesis_agent.py`
-- **Model**: `EpsValidationSynthesis` with validation verdict, key risks, confidence metrics
-
-#### 3.2 Investment Implications Agent
-- **Input**: EPS validation synthesis, current valuation, peer comparisons
-- **Output**: Investment decision framework based on EPS validation
-- **Task**: `investment_implications_task.py`
-- **Agent**: `investment_implications_agent.py`
-- **Model**: `InvestmentImplications` with price targets, risk-reward analysis, position sizing guidance
-
-#### 3.3 Speculation Agent
-- **Input**: All analyses, cross-reference insights, trade ideas
-- **Output**: Speculative scenarios and alternative outcomes
-- **Task**: `speculation_task.py`
-- **Agent**: `speculation_agent.py`
-- **Model**: `SpeculativeAnalysis` with upside scenarios, black swan risks, catalyst speculation
-
-### Phase 4: Final EPS Report Assembly
-
-#### 4.1 EPS Report Assembly Agent
-- **Input**: All section outputs from Phases 1-3
-- **Output**: EPS-focused comprehensive report
-- **Task**: `eps_report_assembly_task.py`
-- **Agent**: `eps_report_assembly_agent.py`
-- **Model**: `EpsValidationReport` with clear EPS verdict, investment thesis, action items
-
-## Implementation Structure
-
-### EPS-Focused Directory Organization
-
-```
-src/
-├── flows/
-│   └── subflows/
-│       └── eps_validation_comprehensive_report_flow.py  # EPS-focused orchestration flow
-├── tasks/
-│   └── eps_validation_report/
-│       ├── phase1/
-│       │   ├── consensus_eps_context_task.py
-│       │   └── historical_eps_pattern_task.py
-│       ├── phase2/
-│       │   ├── bottom_up_eps_validation_task.py
-│       │   ├── peer_relative_eps_validation_task.py
-│       │   └── market_sentiment_eps_check_task.py
-│       ├── phase3/
-│       │   ├── eps_validation_synthesis_task.py
-│       │   ├── investment_implications_task.py
-│       │   └── speculation_task.py
-│       └── phase4/
-│           └── eps_report_assembly_task.py
-├── research/
-│   └── eps_validation_report/
-│       ├── models/
-│       │   └── eps_validation_models.py  # All EPS-focused models
-│       └── agents/
-│           ├── consensus_eps_context_agent.py
-│           ├── historical_eps_pattern_agent.py
-│           ├── bottom_up_eps_validation_agent.py
-│           ├── peer_relative_eps_validation_agent.py
-│           ├── market_sentiment_eps_check_agent.py
-│           ├── eps_validation_synthesis_agent.py
-│           ├── investment_implications_agent.py
-│           ├── speculation_agent.py
-│           └── eps_report_assembly_agent.py
-```
-
-### EPS-Focused Flow Architecture
+**No new workflows needed!** The existing system already provides comprehensive EPS validation:
 
 ```python
-async def eps_validation_comprehensive_report_flow(
-    symbol: str,
-    all_analyses: Dict[str, Any],
-    force_recompute: bool = False
-) -> EpsValidationReport:
-
-    # Phase 1: EPS Foundation
-    consensus_eps_context = await consensus_eps_context_task(symbol, all_analyses)
-    historical_eps_pattern = await historical_eps_pattern_task(symbol, all_analyses)
-
-    # Phase 2: EPS Validation (can run in parallel)
-    bottom_up_validation = await bottom_up_eps_validation_task(symbol, all_analyses, consensus_eps_context)
-    peer_relative_validation = await peer_relative_eps_validation_task(symbol, all_analyses, consensus_eps_context)
-    market_sentiment_check = await market_sentiment_eps_check_task(symbol, all_analyses, consensus_eps_context)
-
-    # Phase 3: EPS Implications
-    eps_synthesis = await eps_validation_synthesis_task(symbol, {
-        "consensus_eps_context": consensus_eps_context,
-        "historical_eps_pattern": historical_eps_pattern,
-        "bottom_up_validation": bottom_up_validation,
-        "peer_relative_validation": peer_relative_validation,
-        "market_sentiment_check": market_sentiment_check
-    })
-
-    investment_implications = await investment_implications_task(symbol, eps_synthesis, all_analyses)
-    speculation_analysis = await speculation_task(symbol, eps_synthesis, all_analyses)
-
-    # Phase 4: Final EPS Report Assembly
-    eps_validation_report = await eps_report_assembly_task(symbol, {
-        "consensus_eps_context": consensus_eps_context,
-        "historical_eps_pattern": historical_eps_pattern,
-        "eps_validation_synthesis": eps_synthesis,
-        "investment_implications": investment_implications,
-        "speculation_analysis": speculation_analysis
-    })
-
-    return eps_validation_report
+# Current main_research_flow already does EPS validation:
+historical_earnings = await historical_earnings_flow(symbol)  # Beat/miss patterns vs consensus
+financial_statements = await financial_statements_flow(symbol)  # Foundation for projections
+earnings_projections = await earnings_projections_flow(symbol, historical_earnings, financial_statements)  # Independent baseline
+management_guidance = await management_guidance_flow(symbol)  # Management vs consensus comparison
+forward_pe = await forward_pe_flow(symbol, peer_group, earnings_projections, management_guidance)  # Consensus EPS valuation
+news_sentiment = await news_sentiment_flow(symbol, earnings_context)  # Sentiment around earnings expectations
+cross_reference = await cross_reference_flow(symbol, all_analyses)  # Cross-validation of EPS insights
+trade_ideas = await trade_ideas_flow(symbol, all_analyses)  # Investment actions based on EPS validation
+comprehensive_report = await comprehensive_report_flow(symbol, all_analyses)  # Final synthesis
 ```
 
-## Benefits of EPS-Focused Approach
+### Enhanced Implementation Plan
 
-### Clarity and Focus
-- **Single Objective**: Clear focus on consensus EPS validation eliminates scope creep
-- **Actionable Insights**: Direct connection between EPS analysis and investment decisions
-- **Reduced Noise**: Eliminates tangential analysis that doesn't support EPS validation
-- **Clear Success Metrics**: Easy to measure quality based on EPS prediction accuracy
+**Build on existing system with new specialized EPS validation workflows:**
 
-### Efficiency Gains
-- **Targeted Analysis**: Only analyzes data relevant to EPS validation
-- **Reduced Token Usage**: Focused agents require fewer tokens per call
-- **Faster Processing**: Streamlined workflow with clear dependencies
-- **Better Caching**: EPS-focused data structures optimize cache hit rates
+#### Phase 1: Add Missing EPS Validation Angles
+The current system has gaps in EPS validation methodology. Add these specialized workflows:
 
-### Enhanced Quality
-- **Specialized Expertise**: Each agent becomes expert in one aspect of EPS validation
-- **Multiple Validation Angles**: Bottom-up, peer-relative, and sentiment-based validation
-- **Speculation Section**: Captures edge cases and alternative scenarios
-- **Investment Integration**: Direct translation from EPS validation to actionable investment decisions
+**1. Bottom-Up EPS Validation Flow** (NEW)
+- **Purpose**: Independent reconstruction of EPS from financial fundamentals
+- **Input**: Financial statements, segment data, margin analysis, CapEx trends
+- **Output**: Bottom-up EPS estimate with variance from consensus
+- **Value**: Validates consensus through fundamental analysis rather than trend projection
 
-## Migration Strategy
+**2. Peer-Relative EPS Validation Flow** (NEW)
+- **Purpose**: Validates EPS expectations relative to industry peers
+- **Input**: Peer group forward PE ratios, industry growth rates, competitive positioning
+- **Output**: Peer-adjusted EPS reasonableness assessment
+- **Value**: Identifies when consensus is too high/low relative to comparable companies
 
-### Step 1: EPS Models and Core Agents
-1. Define EPS validation Pydantic models
-2. Implement Phase 1 agents (consensus context, historical patterns)
-3. Add corresponding tasks with EPS-specific caching
+**3. Market Sentiment EPS Check Flow** (NEW)
+- **Purpose**: Validates EPS consensus against market sentiment and revision trends
+- **Input**: Analyst revision momentum, options flow, earnings whisper numbers
+- **Output**: Sentiment-based EPS validation and revision probability
+- **Value**: Captures market expectations beyond just published consensus
 
-### Step 2: Validation Layer Implementation
-1. Implement Phase 2 validation agents (bottom-up, peer-relative, sentiment)
-2. Test validation accuracy against historical data
-3. Optimize agent prompts for EPS-specific insights
+#### Phase 2: Enhanced Existing Workflows
+**4. Enhanced Forward PE Flow**: Extract and surface consensus EPS data more prominently
+**5. Enhanced Cross Reference Flow**: Add EPS-focused cross-validation logic
+**6. Enhanced Comprehensive Report**: Restructure output to lead with EPS validation verdict
+**7. Add EPS Models**: Create `EpsValidationVerdict` enum and related models for structured output
 
-### Step 3: Decision Framework Integration
-1. Implement Phase 3 agents (synthesis, implications, speculation)
-2. Connect EPS validation to investment decision framework
-3. Add comprehensive testing for investment logic
+## Benefits of Enhancement Approach
 
-### Step 4: EPS Report Assembly
-1. Create EPS-focused report assembly agent
-2. Design clean, actionable report format
-3. A/B test against current comprehensive report
+### Leverages Existing Investment
+- **No Duplication**: Builds on proven workflows rather than recreating them
+- **Faster Implementation**: Enhances existing code rather than building from scratch
+- **Lower Risk**: Maintains stability of working system while improving output quality
+- **Preserves Domain Logic**: Keeps all existing domain expertise and business logic
 
-## Codebase Analysis & Compatibility
+### Enhanced EPS Focus
+- **Clear Validation Verdict**: Surface consensus EPS validation conclusions prominently
+- **Better Synthesis**: Improve how existing analyses are combined for EPS insights
+- **Actionable Output**: Structure reports around specific investment actions
+- **Scenario Analysis**: Add probability-weighted alternative EPS outcomes
 
-### Existing Infrastructure Assessment
+### Maintains System Benefits
+- **Multi-workflow Validation**: Historical patterns, independent projections, peer comparisons, sentiment analysis
+- **Proven Infrastructure**: Caching, error handling, job tracking all work as-is
+- **Test Coverage**: Existing test suite continues to provide coverage
+- **UI Integration**: Current progress tracking and status updates continue to work
 
-The current codebase provides **excellent foundation** for the EPS validation plan:
+## Implementation Steps
 
-**✅ Compatible Patterns:**
-- **Task/Agent Architecture**: Existing pattern (`*_task.py` + `*_agent.py`) perfectly matches our multi-agent approach
-- **Flow Orchestration**: Subflows in `src/flows/subflows/` follow exact pattern needed for EPS phases
-- **Caching System**: Redis cache with `*_cache_retrieval_task.py` pattern ready for EPS-specific caching
-- **Model Structure**: Pydantic models with enum validation (e.g., `EarningsPattern`, `RevenueGrowthTrend`)
-- **Reporting Integration**: Existing `*_reporting_task.py` pattern for output generation
+### Step 1: Add New EPS Validation Models
 
-**✅ EPS Data Already Available:**
-- **Consensus EPS**: `next_quarter_consensus_eps` already extracted from Alpha Vantage Earnings Estimates API
-- **Historical Patterns**: Historical earnings analysis already identifies beat/miss patterns vs consensus
-- **Validation Data**: Financial statements, management guidance, peer comparisons all available
-
-**✅ Infrastructure Ready:**
-- **Job Status Tracking**: `job_status_task.py` for UI progress updates
-- **Error Handling**: Existing error handling patterns in tasks
-- **Testing Framework**: Comprehensive test coverage patterns in `tests/unit/`
-
-## Prework Required for Implementation
-
-### Phase 1: EPS-Focused Models & Enums
-
-**New File**: `src/research/eps_validation_report/models/eps_validation_models.py`
+**Create**: `src/research/eps_validation/models/eps_validation_models.py`
 ```python
-# Add EPS-specific enums and models
 class EpsValidationVerdict(str, Enum):
     CONSENSUS_VALIDATED = "CONSENSUS_VALIDATED"
     CONSENSUS_TOO_HIGH = "CONSENSUS_TOO_HIGH"
     CONSENSUS_TOO_LOW = "CONSENSUS_TOO_LOW"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
 
-class ConsensusEpsContext(BaseModel):
+class BottomUpEpsValidation(BaseModel):
+    independent_eps_estimate: float
     consensus_eps: float
-    analyst_count: int
-    revision_momentum: str  # UP/DOWN/STABLE
-    confidence_level: str   # HIGH/MEDIUM/LOW
+    variance_percentage: float
+    confidence_level: str
+    key_assumptions: List[str]
+    validation_verdict: EpsValidationVerdict
 
-# ... other EPS-focused models
+class PeerRelativeEpsValidation(BaseModel):
+    peer_group_avg_forward_pe: float
+    implied_eps_from_peers: float
+    consensus_eps: float
+    relative_variance: float
+    peer_comparison_verdict: EpsValidationVerdict
+
+class MarketSentimentEpsCheck(BaseModel):
+    revision_momentum: str  # UPWARD/DOWNWARD/STABLE
+    sentiment_eps_alignment: str  # BULLISH/BEARISH/NEUTRAL
+    whisper_vs_consensus: Optional[float]
+    sentiment_validation_verdict: EpsValidationVerdict
 ```
 
-### Phase 2: Enhanced Consensus EPS Extraction
+### Step 2: Implement New EPS Validation Workflows
 
-**Modify**: `src/research/forward_pe/forward_pe_fetch_earnings_util.py`
-- Extract **full consensus context** (analyst count, revisions, confidence)
-- Add **consensus EPS history** for trend analysis
-- Separate consensus data into dedicated utility function
+**New Directory Structure:**
+```
+src/flows/subflows/
+├── bottom_up_eps_validation_flow.py
+├── peer_relative_eps_validation_flow.py
+└── market_sentiment_eps_check_flow.py
 
-### Phase 3: EPS Cache Infrastructure
+src/tasks/eps_validation/
+├── bottom_up_eps_validation_task.py
+├── peer_relative_eps_validation_task.py
+└── market_sentiment_eps_check_task.py
 
-**New Files**:
-- `src/tasks/cache_retrieval/eps_validation_*_cache_retrieval_task.py` (7 files)
-- Cache keys: `eps_validation_context`, `eps_validation_synthesis`, etc.
+src/research/eps_validation/
+├── bottom_up_eps_validation_agent.py
+├── peer_relative_eps_validation_agent.py
+└── market_sentiment_eps_check_agent.py
+```
 
-### Phase 4: Job Status Integration
+### Step 3: Enhanced Cross Reference Analysis
+- Modify cross-reference agent to include new EPS validation workflows
+- Add EPS validation consistency scoring across all validation methods
+- Surface consensus vs multiple independent estimate comparisons
 
-**Modify**: `src/lib/job_tracker.py`
-- Add EPS validation status types: `"consensus_eps_context"`, `"bottom_up_validation"`, etc.
-- Update UI status messages for EPS-focused flow
+### Step 4: Enhanced Comprehensive Report with EPS Synthesis
+- Create `eps_validation_synthesis_flow.py` to combine all EPS validation results
+- Restructure comprehensive report to lead with multi-method EPS validation verdict
+- Add investment recommendations based on EPS validation consensus
 
-### Phase 5: Test Infrastructure
+### Step 5: Integration with Main Research Flow
+Update `main_research_flow` to include new workflows:
+```python
+# After existing workflows...
+bottom_up_validation = await bottom_up_eps_validation_flow(symbol, financial_statements, earnings_projections)
+peer_relative_validation = await peer_relative_eps_validation_flow(symbol, peer_group, forward_pe)
+sentiment_eps_check = await market_sentiment_eps_check_flow(symbol, news_sentiment, consensus_data)
 
-**New Directory**: `tests/unit/eps_validation_report/`
-- Mock consensus EPS data for testing
-- Test fixtures for EPS validation scenarios
-- Integration tests for multi-phase EPS flow
+# Enhanced synthesis
+eps_validation_synthesis = await eps_validation_synthesis_flow(symbol, {
+    "earnings_projections": earnings_projections,
+    "bottom_up_validation": bottom_up_validation,
+    "peer_relative_validation": peer_relative_validation,
+    "sentiment_eps_check": sentiment_eps_check
+})
+```
 
-### Phase 6: Configuration Support
+## Enhanced EPS Validation System
 
-**Modify**: `CLAUDE.md`
-- Add EPS validation flow commands
-- Document new environment variables if needed
-- Update architecture documentation
+### New Capabilities Added
 
-## Implementation Compatibility Score: 95%
+**Building on existing 8 workflows, add 3 specialized EPS validation methods:**
 
-**Why High Compatibility:**
-- **Existing patterns perfectly match** our multi-agent EPS approach
-- **Data infrastructure ready** - consensus EPS already available
-- **Caching, testing, error handling** - all reusable
-- **UI integration ready** - job tracking and progress updates work out-of-box
+1. **Bottom-Up EPS Reconstruction**: Validates consensus through fundamental financial analysis
+2. **Peer-Relative EPS Benchmarking**: Validates consensus against industry comparables
+3. **Market Sentiment EPS Alignment**: Validates consensus against revision trends and sentiment
 
-**Missing Components (5%):**
-- EPS-specific Pydantic models and enums
-- Enhanced consensus EPS extraction with full context
-- EPS-focused cache retrieval tasks
+### Complete EPS Validation Matrix
+
+**Existing EPS-Related Workflows:**
+- Historical Earnings: Beat/miss patterns vs consensus
+- Earnings Projections: Independent trend-based projections
+- Management Guidance: Management vs consensus comparison
+- Forward PE: Valuation using consensus EPS
+
+**New EPS Validation Workflows:**
+- Bottom-Up Validation: Fundamental reconstruction approach
+- Peer-Relative Validation: Industry comparison approach
+- Sentiment EPS Check: Market sentiment approach
+
+**Enhanced Synthesis:**
+- EPS Validation Synthesis: Multi-method consensus validation
+- Enhanced Comprehensive Report: EPS-focused final output
+
+### Implementation Effort
+
+**New Components:** ~1-2 weeks
+- 3 new workflows with tasks, agents, models
+- EPS validation synthesis workflow
+- Enhanced comprehensive report structure
+
+**Integration:** ~3-5 days
+- Cache retrieval tasks for new workflows
+- Job status tracking integration
+- Test coverage for new components
+
+**Total: ~3 weeks for comprehensive multi-method EPS validation system**
 
 ## Expected Outcomes
 
-- **60-80% more focused insights** by eliminating non-EPS analysis
-- **40-50% reduction in token usage** through targeted, smaller agents
-- **Clearer investment decisions** with direct EPS-to-action connection
-- **Better EPS prediction accuracy** through multiple validation approaches
-- **Enhanced user experience** with focused, actionable EPS insights
-- **Dedicated speculation section** for alternative scenarios and edge cases
-- **Seamless integration** with existing codebase patterns and infrastructure
+- **5 independent EPS validation methods** providing robust consensus validation
+- **Clear multi-method EPS verdict** (validated/too_high/too_low/insufficient_data)
+- **Specific variance analysis** showing which methods agree/disagree with consensus
+- **Enhanced investment confidence** through multiple validation approaches
+- **Comprehensive EPS-focused reporting** with clear actionable insights
+- **Maintains existing system stability** while adding powerful new capabilities
