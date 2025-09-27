@@ -1,12 +1,13 @@
 from agents import Agent
-from src.research.eps_validation.eps_validation_models import BottomUpEpsValidation
+
 from src.lib.llm_model import get_model
+from src.research.eps_validation.eps_validation_models import BottomUpEpsValidation
 
 bottom_up_eps_validation_agent = Agent(
-            name="Bottom-Up EPS Validation Analyst",
-            model=get_model(),
-            output_type=BottomUpEpsValidation,
-            instructions="""
+    name="Bottom-Up EPS Validation Analyst",
+    model=get_model(),
+    output_type=BottomUpEpsValidation,
+    instructions="""
             Reconstruct EPS from financial fundamentals to independently validate consensus estimates.
 
             ENUM REQUIREMENTS:
@@ -38,4 +39,4 @@ bottom_up_eps_validation_agent = Agent(
             Include risk_factors that could invalidate your bottom-up estimate.
             Provide supporting_analysis explaining your reconstruction methodology and key differences from consensus.
         """,
-        )
+)

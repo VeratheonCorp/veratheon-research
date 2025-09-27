@@ -1,13 +1,28 @@
-from typing import Optional
-from src.research.eps_validation.eps_validation_models import BottomUpEpsValidation, ConfidenceLevel, EpsValidationVerdict
-from src.research.eps_validation.bottom_up_eps_validation_agent import bottom_up_eps_validation_agent
-from src.research.financial_statements.financial_statements_models import FinancialStatementsData, FinancialStatementsAnalysis
-from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData, EarningsProjectionAnalysis
-from agents import Runner, RunResult
 import json
 import logging
+from typing import Optional
+
+from agents import Runner, RunResult
+
+from src.research.earnings_projections.earnings_projections_models import (
+    EarningsProjectionAnalysis,
+    EarningsProjectionData,
+)
+from src.research.eps_validation.bottom_up_eps_validation_agent import (
+    bottom_up_eps_validation_agent,
+)
+from src.research.eps_validation.eps_validation_models import (
+    BottomUpEpsValidation,
+    ConfidenceLevel,
+    EpsValidationVerdict,
+)
+from src.research.financial_statements.financial_statements_models import (
+    FinancialStatementsAnalysis,
+    FinancialStatementsData,
+)
 
 logger = logging.getLogger(__name__)
+
 
 async def bottom_up_eps_validation_task(
     symbol: str,
@@ -15,7 +30,7 @@ async def bottom_up_eps_validation_task(
     financial_statements_analysis: Optional[FinancialStatementsAnalysis] = None,
     earnings_projections_data: Optional[EarningsProjectionData] = None,
     earnings_projections_analysis: Optional[EarningsProjectionAnalysis] = None,
-    consensus_eps: Optional[float] = None
+    consensus_eps: Optional[float] = None,
 ) -> BottomUpEpsValidation:
     """
     Task to orchestrate bottom-up EPS validation using financial fundamentals.
@@ -42,10 +57,15 @@ async def bottom_up_eps_validation_task(
             consensus_eps=consensus_eps or 0.0,
             variance_percentage=0.0,
             confidence_level=ConfidenceLevel.LOW,
-            key_assumptions=["Insufficient financial data for bottom-up reconstruction"],
+            key_assumptions=[
+                "Insufficient financial data for bottom-up reconstruction"
+            ],
             validation_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
             supporting_analysis="Cannot perform bottom-up EPS validation due to missing financial statements data",
-            risk_factors=["Missing fundamental data", "Unable to validate consensus estimates"]
+            risk_factors=[
+                "Missing fundamental data",
+                "Unable to validate consensus estimates",
+            ],
         )
 
     # Handle missing earnings projection data
@@ -54,9 +74,16 @@ async def bottom_up_eps_validation_task(
 
     # Handle missing consensus EPS
     if consensus_eps is None:
-        if earnings_projections_analysis and earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate:
-            consensus_eps = earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate
-            logger.info(f"Using consensus EPS from earnings projections: ${consensus_eps:.2f}")
+        if (
+            earnings_projections_analysis
+            and earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate
+        ):
+            consensus_eps = (
+                earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate
+            )
+            logger.info(
+                f"Using consensus EPS from earnings projections: ${consensus_eps:.2f}"
+            )
         else:
             logger.warning(f"No consensus EPS available for {symbol}")
             consensus_eps = 0.0
@@ -94,25 +121,30 @@ async def bottom_up_eps_validation_task(
     try:
         # Run the bottom-up EPS validation agent
         result: RunResult = await Runner.run(
-            bottom_up_eps_validation_agent,
-            input=input_data
+            bottom_up_eps_validation_agent, input=input_data
         )
 
         validation_result: BottomUpEpsValidation = result.final_output
 
         # Log key validation metrics
-        logger.info(f"Bottom-up EPS validation completed for {symbol}: "
-                   f"Independent EPS: ${validation_result.independent_eps_estimate:.2f}, "
-                   f"Consensus EPS: ${validation_result.consensus_eps:.2f}, "
-                   f"Variance: {validation_result.variance_percentage:.1f}%, "
-                   f"Verdict: {validation_result.validation_verdict}")
+        logger.info(
+            f"Bottom-up EPS validation completed for {symbol}: "
+            f"Independent EPS: ${validation_result.independent_eps_estimate:.2f}, "
+            f"Consensus EPS: ${validation_result.consensus_eps:.2f}, "
+            f"Variance: {validation_result.variance_percentage:.1f}%, "
+            f"Verdict: {validation_result.validation_verdict}"
+        )
 
         # Log confidence level and key assumptions
-        logger.info(f"Validation confidence: {validation_result.confidence_level}, "
-                   f"Key assumptions: {len(validation_result.key_assumptions)} factors")
+        logger.info(
+            f"Validation confidence: {validation_result.confidence_level}, "
+            f"Key assumptions: {len(validation_result.key_assumptions)} factors"
+        )
 
         # Log the full validation result as JSON for development visibility
-        logger.debug(f"Bottom-up EPS validation result for {symbol}: {json.dumps(validation_result.model_dump(), indent=2)}")
+        logger.debug(
+            f"Bottom-up EPS validation result for {symbol}: {json.dumps(validation_result.model_dump(), indent=2)}"
+        )
 
         return validation_result
 
@@ -129,5 +161,8 @@ async def bottom_up_eps_validation_task(
             key_assumptions=[f"Error during validation: {str(e)}"],
             validation_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
             supporting_analysis=f"Bottom-up EPS validation failed due to error: {str(e)}",
-            risk_factors=["Validation process error", "Unable to complete fundamental analysis"]
+            risk_factors=[
+                "Validation process error",
+                "Unable to complete fundamental analysis",
+            ],
         )

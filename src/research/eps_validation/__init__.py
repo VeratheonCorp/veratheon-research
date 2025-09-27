@@ -6,18 +6,15 @@ comprehensive research system. It provides bottom-up, peer-relative, and sentime
 validation approaches for consensus EPS estimates.
 """
 
+from .eps_validation_models import BottomUpEpsValidation  # Enums; Models
 from .eps_validation_models import (
-    # Enums
-    EpsValidationVerdict,
-    RevisionMomentum,
     ConfidenceLevel,
-    SentimentAlignment,
-
-    # Models
-    BottomUpEpsValidation,
-    PeerRelativeEpsValidation,
-    MarketSentimentEpsCheck,
     EpsValidationSynthesis,
+    EpsValidationVerdict,
+    MarketSentimentEpsCheck,
+    PeerRelativeEpsValidation,
+    RevisionMomentum,
+    SentimentAlignment,
 )
 
 __all__ = [
@@ -26,7 +23,6 @@ __all__ = [
     "RevisionMomentum",
     "ConfidenceLevel",
     "SentimentAlignment",
-
     # Models
     "BottomUpEpsValidation",
     "PeerRelativeEpsValidation",

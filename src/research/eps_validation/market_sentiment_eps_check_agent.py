@@ -1,12 +1,13 @@
 from agents import Agent
-from src.research.eps_validation.eps_validation_models import MarketSentimentEpsCheck
+
 from src.lib.llm_model import get_model
+from src.research.eps_validation.eps_validation_models import MarketSentimentEpsCheck
 
 market_sentiment_eps_check_agent = Agent(
-            name="Market Sentiment EPS Check Analyst",
-            model=get_model(),
-            output_type=MarketSentimentEpsCheck,
-            instructions="""
+    name="Market Sentiment EPS Check Analyst",
+    model=get_model(),
+    output_type=MarketSentimentEpsCheck,
+    instructions="""
             Validate consensus EPS expectations by analyzing market sentiment, revision trends, and whisper numbers.
 
             ENUM REQUIREMENTS:
@@ -65,4 +66,4 @@ market_sentiment_eps_check_agent = Agent(
             Include sentiment_insights covering key sentiment themes affecting EPS expectations.
             Summarize market_expectation_summary describing overall market positioning vs consensus.
         """,
-        )
+)

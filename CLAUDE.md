@@ -41,6 +41,12 @@ uv run pytest --cov=src
 uv sync
 ```
 
+**Pre-commit hooks** (automatically runs EPS validation tests and formatting):
+```bash
+pre-commit install      # Install pre-commit hooks
+pre-commit run --all    # Run all hooks manually
+```
+
 **UI Development** (SvelteKit frontend in `agent-ui/`):
 ```bash
 cd agent-ui
@@ -114,7 +120,7 @@ The agent performs comprehensive stock research through these sequential steps:
 
 ### Enhanced EPS Validation System
 
-The system employs a **comprehensive 5-method EPS validation approach** to provide robust consensus validation:
+The system employs a **comprehensive 6-method EPS validation approach** to provide robust consensus validation:
 
 #### EPS Validation Methods
 
@@ -147,6 +153,11 @@ The system employs a **comprehensive 5-method EPS validation approach** to provi
    - Revision momentum trends and analyst sentiment analysis
    - Whisper numbers vs. consensus expectations
    - Market expectation alignment with published estimates
+
+7. **Technical EPS Validation** (`src/research/eps_validation/technical_eps_validation_agent.py`):
+   - Price momentum and volume pattern analysis
+   - Technical indicator-based EPS estimation
+   - Chart pattern validation of consensus expectations
 
 #### EPS Validation Verdicts
 
@@ -207,18 +218,21 @@ Investment Implication: Monitor for additional data points before adjusting mode
 - `bottom_up_eps_validation_agent.py`: Fundamental reconstruction specialist
 - `peer_relative_eps_validation_agent.py`: Industry comparison specialist
 - `market_sentiment_eps_check_agent.py`: Sentiment and momentum specialist
+- `technical_eps_validation_agent.py`: Technical analysis specialist
 - `eps_validation_synthesis_agent.py`: Multi-method synthesis specialist
 
 **Tasks** (`src/tasks/eps_validation/`):
 - `bottom_up_eps_validation_task.py`: Orchestrates fundamental validation
 - `peer_relative_eps_validation_task.py`: Orchestrates peer comparison
 - `market_sentiment_eps_check_task.py`: Orchestrates sentiment analysis
+- `technical_eps_validation_task.py`: Orchestrates technical analysis
 - `eps_validation_synthesis_task.py`: Orchestrates synthesis across methods
 
 **Flows** (`src/flows/subflows/`):
 - `bottom_up_eps_validation_flow.py`: Async flow with caching and status tracking
 - `peer_relative_eps_validation_flow.py`: Async flow with caching and status tracking
 - `market_sentiment_eps_check_flow.py`: Async flow with caching and status tracking
+- `technical_eps_validation_flow.py`: Async flow with caching and status tracking
 - `eps_validation_synthesis_flow.py`: Async flow with caching and status tracking
 
 **Cache Integration** (`src/tasks/cache_retrieval/`):

@@ -1,21 +1,35 @@
-from typing import Optional, Any
-from src.research.eps_validation.eps_validation_models import MarketSentimentEpsCheck, RevisionMomentum, SentimentAlignment, EpsValidationVerdict
-from src.research.eps_validation.market_sentiment_eps_check_agent import market_sentiment_eps_check_agent
-from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
-from src.research.earnings_projections.earnings_projections_models import EarningsProjectionAnalysis
-from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
-from agents import Runner, RunResult
 import json
 import logging
+from typing import Any, Optional
+
+from agents import Runner, RunResult
+
+from src.research.earnings_projections.earnings_projections_models import (
+    EarningsProjectionAnalysis,
+)
+from src.research.eps_validation.eps_validation_models import (
+    EpsValidationVerdict,
+    MarketSentimentEpsCheck,
+    RevisionMomentum,
+    SentimentAlignment,
+)
+from src.research.eps_validation.market_sentiment_eps_check_agent import (
+    market_sentiment_eps_check_agent,
+)
+from src.research.management_guidance.management_guidance_models import (
+    ManagementGuidanceAnalysis,
+)
+from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
 
 logger = logging.getLogger(__name__)
+
 
 async def market_sentiment_eps_check_task(
     symbol: str,
     news_sentiment_analysis: Optional[NewsSentimentSummary] = None,
     earnings_projections_analysis: Optional[EarningsProjectionAnalysis] = None,
     management_guidance_analysis: Optional[ManagementGuidanceAnalysis] = None,
-    consensus_eps: Optional[float] = None
+    consensus_eps: Optional[float] = None,
 ) -> MarketSentimentEpsCheck:
     """
     Task to orchestrate sentiment EPS validation using market sentiment and revision analysis.
@@ -42,15 +56,25 @@ async def market_sentiment_eps_check_task(
             whisper_vs_consensus=None,
             sentiment_validation_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
             revision_analysis="Cannot perform sentiment EPS validation due to missing news sentiment data",
-            sentiment_insights=["Missing news sentiment data", "Unable to assess market sentiment alignment"],
-            market_expectation_summary="Insufficient sentiment data to assess market expectations vs consensus"
+            sentiment_insights=[
+                "Missing news sentiment data",
+                "Unable to assess market sentiment alignment",
+            ],
+            market_expectation_summary="Insufficient sentiment data to assess market expectations vs consensus",
         )
 
     # Handle missing consensus EPS
     if consensus_eps is None:
-        if earnings_projections_analysis and earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate:
-            consensus_eps = earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate
-            logger.info(f"Using consensus EPS from earnings projections: ${consensus_eps:.2f}")
+        if (
+            earnings_projections_analysis
+            and earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate
+        ):
+            consensus_eps = (
+                earnings_projections_analysis.next_quarter_projection.consensus_eps_estimate
+            )
+            logger.info(
+                f"Using consensus EPS from earnings projections: ${consensus_eps:.2f}"
+            )
         else:
             logger.warning(f"No consensus EPS available for {symbol}")
             consensus_eps = 0.0
@@ -82,33 +106,42 @@ async def market_sentiment_eps_check_task(
     try:
         # Run the market sentiment EPS check agent
         result: RunResult = await Runner.run(
-            market_sentiment_eps_check_agent,
-            input=input_data
+            market_sentiment_eps_check_agent, input=input_data
         )
 
         validation_result: MarketSentimentEpsCheck = result.final_output
 
         # Log key sentiment validation metrics
-        logger.info(f"Market sentiment EPS check completed for {symbol}: "
-                   f"Revision momentum: {validation_result.revision_momentum}, "
-                   f"Sentiment alignment: {validation_result.sentiment_eps_alignment}, "
-                   f"Validation verdict: {validation_result.sentiment_validation_verdict}")
+        logger.info(
+            f"Market sentiment EPS check completed for {symbol}: "
+            f"Revision momentum: {validation_result.revision_momentum}, "
+            f"Sentiment alignment: {validation_result.sentiment_eps_alignment}, "
+            f"Validation verdict: {validation_result.sentiment_validation_verdict}"
+        )
 
         # Log whisper vs consensus if available
         if validation_result.whisper_vs_consensus is not None:
-            logger.info(f"Whisper vs consensus variance: {validation_result.whisper_vs_consensus:.1f}%")
+            logger.info(
+                f"Whisper vs consensus variance: {validation_result.whisper_vs_consensus:.1f}%"
+            )
 
         # Log sentiment insights count
-        logger.info(f"Sentiment insights identified: {len(validation_result.sentiment_insights)} factors")
+        logger.info(
+            f"Sentiment insights identified: {len(validation_result.sentiment_insights)} factors"
+        )
 
         # Log news sentiment context if available
         if news_sentiment_analysis:
-            logger.info(f"News sentiment trend: {news_sentiment_analysis.sentiment_trend}, "
-                       f"Volume: {news_sentiment_analysis.news_volume}, "
-                       f"Confidence: {news_sentiment_analysis.sentiment_confidence}")
+            logger.info(
+                f"News sentiment trend: {news_sentiment_analysis.sentiment_trend}, "
+                f"Volume: {news_sentiment_analysis.news_volume}, "
+                f"Confidence: {news_sentiment_analysis.sentiment_confidence}"
+            )
 
         # Log the full validation result as JSON for development visibility
-        logger.debug(f"Market sentiment EPS check result for {symbol}: {json.dumps(validation_result.model_dump(), indent=2)}")
+        logger.debug(
+            f"Market sentiment EPS check result for {symbol}: {json.dumps(validation_result.model_dump(), indent=2)}"
+        )
 
         return validation_result
 
@@ -123,6 +156,9 @@ async def market_sentiment_eps_check_task(
             whisper_vs_consensus=None,
             sentiment_validation_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
             revision_analysis=f"Market sentiment EPS check failed due to error: {str(e)}",
-            sentiment_insights=[f"Validation process error: {str(e)}", "Unable to complete sentiment analysis"],
-            market_expectation_summary="Sentiment validation error prevented market expectation analysis"
+            sentiment_insights=[
+                f"Validation process error: {str(e)}",
+                "Unable to complete sentiment analysis",
+            ],
+            market_expectation_summary="Sentiment validation error prevented market expectation analysis",
         )

@@ -1,12 +1,13 @@
 from agents import Agent
-from src.research.eps_validation.eps_validation_models import PeerRelativeEpsValidation
+
 from src.lib.llm_model import get_model
+from src.research.eps_validation.eps_validation_models import PeerRelativeEpsValidation
 
 peer_relative_eps_validation_agent = Agent(
-            name="Peer-Relative EPS Validation Analyst",
-            model=get_model(),
-            output_type=PeerRelativeEpsValidation,
-            instructions="""
+    name="Peer-Relative EPS Validation Analyst",
+    model=get_model(),
+    output_type=PeerRelativeEpsValidation,
+    instructions="""
             Validate consensus EPS expectations using peer group forward P/E ratios and industry comparisons.
 
             ENUM REQUIREMENTS:
@@ -50,4 +51,4 @@ peer_relative_eps_validation_agent = Agent(
             Include industry_context describing sector-wide factors affecting EPS expectations.
             Consider whether the company deserves a premium/discount to peer group multiples.
         """,
-        )
+)

@@ -6,7 +6,7 @@ Provides cache invalidation and TTL configuration specifically for EPS validatio
 
 from src.lib.redis_cache import get_redis_cache
 import logging
-from typing import List
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +16,8 @@ EPS_VALIDATION_TTL_CONFIG = {
     "peer_relative_eps_validation": 7200,   # 2 hours - depends on peer group PE ratios
     "market_sentiment_eps_check": 3600,     # 1 hour - sentiment data changes more frequently
     "eps_validation_synthesis": 7200,       # 2 hours - synthesis of above components
+    # TEMPLATE: Add new validation methods here
+    "technical_eps_validation": 1800,       # 30 minutes - technical data changes frequently
 }
 
 def get_eps_validation_ttl(validation_type: str) -> int:
@@ -30,7 +32,7 @@ def get_eps_validation_ttl(validation_type: str) -> int:
     """
     return EPS_VALIDATION_TTL_CONFIG.get(validation_type, 7200)
 
-def invalidate_eps_validation_cache(symbol: str, validation_types: List[str] = None) -> int:
+def invalidate_eps_validation_cache(symbol: str, validation_types: Optional[List[str]] = None) -> int:
     """
     Invalidate EPS validation cache entries for a symbol.
 
@@ -81,7 +83,7 @@ def invalidate_all_eps_validation_cache() -> int:
     logger.info(f"Total EPS validation cache entries invalidated: {total_invalidated}")
     return total_invalidated
 
-def get_eps_validation_cache_info(symbol: str = None) -> dict:
+def get_eps_validation_cache_info(symbol: Optional[str] = None) -> dict:
     """
     Get cache information for EPS validation components.
 

@@ -1,12 +1,13 @@
 from agents import Agent
-from src.research.eps_validation.eps_validation_models import EpsValidationSynthesis
+
 from src.lib.llm_model import get_model
+from src.research.eps_validation.eps_validation_models import EpsValidationSynthesis
 
 eps_validation_synthesis_agent = Agent(
-            name="EPS Validation Synthesis Analyst",
-            model=get_model(),
-            output_type=EpsValidationSynthesis,
-            instructions="""
+    name="EPS Validation Synthesis Analyst",
+    model=get_model(),
+    output_type=EpsValidationSynthesis,
+    instructions="""
             Synthesize results from multiple EPS validation methods to provide a comprehensive, multi-method consensus validation verdict.
 
             ENUM REQUIREMENTS:
@@ -57,4 +58,4 @@ eps_validation_synthesis_agent = Agent(
 
             Focus on providing actionable insights that help investors understand the reliability of consensus EPS estimates and potential investment implications.
         """,
-        )
+)

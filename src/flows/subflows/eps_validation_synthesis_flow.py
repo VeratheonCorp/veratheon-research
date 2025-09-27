@@ -1,19 +1,35 @@
-from src.tasks.eps_validation.eps_validation_synthesis_task import eps_validation_synthesis_task
-from src.tasks.cache_retrieval.eps_validation_synthesis_cache_retrieval_task import eps_validation_synthesis_cache_retrieval_task
-from src.tasks.common.job_status_task import update_job_status_task
-from src.research.eps_validation.eps_validation_models import EpsValidationSynthesis
-from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
-from src.research.earnings_projections.earnings_projections_models import EarningsProjectionAnalysis
-from src.research.management_guidance.management_guidance_models import ManagementGuidanceAnalysis
-from src.research.eps_validation.eps_validation_models import BottomUpEpsValidation, PeerRelativeEpsValidation, MarketSentimentEpsCheck
-from src.lib.job_tracker import JobStatus
-from src.lib.redis_cache import get_redis_cache
-from src.lib.eps_validation_cache_utils import get_eps_validation_ttl
-from typing import Optional
 import logging
 import time
+from typing import Optional
+
+from src.lib.eps_validation_cache_utils import get_eps_validation_ttl
+from src.lib.job_tracker import JobStatus
+from src.lib.redis_cache import get_redis_cache
+from src.research.earnings_projections.earnings_projections_models import (
+    EarningsProjectionAnalysis,
+)
+from src.research.eps_validation.eps_validation_models import (
+    BottomUpEpsValidation,
+    EpsValidationSynthesis,
+    MarketSentimentEpsCheck,
+    PeerRelativeEpsValidation,
+)
+from src.research.historical_earnings.historical_earnings_models import (
+    HistoricalEarningsAnalysis,
+)
+from src.research.management_guidance.management_guidance_models import (
+    ManagementGuidanceAnalysis,
+)
+from src.tasks.cache_retrieval.eps_validation_synthesis_cache_retrieval_task import (
+    eps_validation_synthesis_cache_retrieval_task,
+)
+from src.tasks.common.job_status_task import update_job_status_task
+from src.tasks.eps_validation.eps_validation_synthesis_task import (
+    eps_validation_synthesis_task,
+)
 
 logger = logging.getLogger(__name__)
+
 
 async def eps_validation_synthesis_flow(
     symbol: str,
@@ -25,7 +41,7 @@ async def eps_validation_synthesis_flow(
     peer_relative_eps_validation: Optional[PeerRelativeEpsValidation] = None,
     market_sentiment_eps_check: Optional[MarketSentimentEpsCheck] = None,
     consensus_eps: Optional[float] = None,
-    job_id: Optional[str] = None
+    job_id: Optional[str] = None,
 ) -> EpsValidationSynthesis:
     """
     Flow orchestrating EPS validation synthesis across all validation methods.
@@ -52,13 +68,25 @@ async def eps_validation_synthesis_flow(
     logger.info(f"EPS validation synthesis flow started for {symbol}")
 
     # Update job status
-    await update_job_status_task(job_id, JobStatus.RUNNING, "Running EPS validation synthesis analysis", "eps_validation_synthesis_flow")
+    await update_job_status_task(
+        job_id,
+        JobStatus.RUNNING,
+        "Running EPS validation synthesis analysis",
+        "eps_validation_synthesis_flow",
+    )
 
     # Try to get cached result first
-    cached_result = await eps_validation_synthesis_cache_retrieval_task(symbol, force_recompute)
+    cached_result = await eps_validation_synthesis_cache_retrieval_task(
+        symbol, force_recompute
+    )
     if cached_result is not None:
         logger.info(f"Returning cached EPS validation synthesis for {symbol}")
-        await update_job_status_task(job_id, JobStatus.RUNNING, "EPS validation synthesis completed (cached)", "eps_validation_synthesis_flow")
+        await update_job_status_task(
+            job_id,
+            JobStatus.RUNNING,
+            "EPS validation synthesis completed (cached)",
+            "eps_validation_synthesis_flow",
+        )
         return cached_result
 
     logger.info(f"Running fresh EPS validation synthesis analysis for {symbol}")
@@ -72,7 +100,7 @@ async def eps_validation_synthesis_flow(
         bottom_up_eps_validation=bottom_up_eps_validation,
         peer_relative_eps_validation=peer_relative_eps_validation,
         market_sentiment_eps_check=market_sentiment_eps_check,
-        consensus_eps=consensus_eps
+        consensus_eps=consensus_eps,
     )
 
     # Cache the result for future use
@@ -82,9 +110,15 @@ async def eps_validation_synthesis_flow(
 
     # Update job status with completion
     verdict_message = f"EPS validation synthesis completed - {synthesis_result.overall_verdict.value} (confidence: {synthesis_result.confidence_score:.2f})"
-    await update_job_status_task(job_id, JobStatus.RUNNING, verdict_message, "eps_validation_synthesis_flow")
+    await update_job_status_task(
+        job_id, JobStatus.RUNNING, verdict_message, "eps_validation_synthesis_flow"
+    )
 
-    logger.info(f"EPS validation synthesis flow completed for {symbol} in {int(time.time() - start_time)} seconds")
-    logger.info(f"Overall verdict: {synthesis_result.overall_verdict.value}, Confidence: {synthesis_result.confidence_score:.2f}")
+    logger.info(
+        f"EPS validation synthesis flow completed for {symbol} in {int(time.time() - start_time)} seconds"
+    )
+    logger.info(
+        f"Overall verdict: {synthesis_result.overall_verdict.value}, Confidence: {synthesis_result.confidence_score:.2f}"
+    )
 
     return synthesis_result
