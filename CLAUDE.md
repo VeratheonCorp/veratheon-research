@@ -41,12 +41,6 @@ uv run pytest --cov=src
 uv sync
 ```
 
-**Pre-commit hooks** (automatically runs EPS validation tests and formatting):
-```bash
-pre-commit install      # Install pre-commit hooks
-pre-commit run --all    # Run all hooks manually
-```
-
 **UI Development** (SvelteKit frontend in `agent-ui/`):
 ```bash
 cd agent-ui
