@@ -11,6 +11,10 @@ from src.flows.subflows.comprehensive_report_flow import comprehensive_report_fl
 from src.flows.subflows.key_insights_flow import key_insights_flow
 from src.flows.subflows.company_overview_flow import company_overview_flow
 from src.flows.subflows.global_quote_flow import global_quote_flow
+from src.flows.subflows.bottom_up_eps_validation_flow import bottom_up_eps_validation_flow
+from src.flows.subflows.peer_relative_eps_validation_flow import peer_relative_eps_validation_flow
+from src.flows.subflows.market_sentiment_eps_check_flow import market_sentiment_eps_check_flow
+from src.flows.subflows.eps_validation_synthesis_flow import eps_validation_synthesis_flow
 from src.tasks.common.job_status_task import update_job_status_task
 from src.lib.job_tracker import JobStatus
 from src.tasks.common.peer_group_reporting_task import peer_group_reporting_task
@@ -28,6 +32,7 @@ from src.research.cross_reference.cross_reference_models import CrossReferencedA
 from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport, KeyInsights
 from src.research.company_overview.company_overview_models import CompanyOverviewAnalysis
 from src.research.global_quote.global_quote_models import GlobalQuoteData
+from src.research.eps_validation.eps_validation_models import BottomUpEpsValidation, PeerRelativeEpsValidation, MarketSentimentEpsCheck, EpsValidationSynthesis
 
 import logging
 import time
@@ -110,22 +115,70 @@ async def main_research_flow(
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing news sentiment", "news_sentiment_flow")
     news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(
-        symbol, 
-        peer_group, 
-        earnings_projections_analysis, 
+        symbol,
+        peer_group,
+        earnings_projections_analysis,
         management_guidance_analysis,
         force_recompute=force_recompute
     )
 
+    # EPS Validation flows - Multi-method consensus validation
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Running bottom-up EPS validation", "bottom_up_eps_validation_flow")
+    bottom_up_eps_validation: BottomUpEpsValidation = await bottom_up_eps_validation_flow(
+        symbol,
+        financial_statements_analysis=financial_statements_analysis,
+        earnings_projections_analysis=earnings_projections_analysis,
+        consensus_eps=getattr(earnings_projections_analysis, 'consensus_eps_estimate', None),
+        force_recompute=force_recompute,
+        job_id=job_id
+    )
+
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Running peer-relative EPS validation", "peer_relative_eps_validation_flow")
+    peer_relative_eps_validation: PeerRelativeEpsValidation = await peer_relative_eps_validation_flow(
+        symbol,
+        force_recompute=force_recompute,
+        current_stock_price=getattr(global_quote_data, 'price', None),
+        peer_group=peer_group,
+        consensus_eps=getattr(earnings_projections_analysis, 'consensus_eps_estimate', None),
+        job_id=job_id
+    )
+
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Running market sentiment EPS check", "market_sentiment_eps_check_flow")
+    market_sentiment_eps_check: MarketSentimentEpsCheck = await market_sentiment_eps_check_flow(
+        symbol,
+        force_recompute=force_recompute,
+        news_sentiment_analysis=news_sentiment_flow_result,
+        consensus_eps=getattr(earnings_projections_analysis, 'consensus_eps_estimate', None),
+        job_id=job_id
+    )
+
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Synthesizing EPS validation results", "eps_validation_synthesis_flow")
+    eps_validation_synthesis: EpsValidationSynthesis = await eps_validation_synthesis_flow(
+        symbol,
+        historical_earnings_analysis=historical_earnings_analysis,
+        earnings_projections_analysis=earnings_projections_analysis,
+        management_guidance_analysis=management_guidance_analysis,
+        bottom_up_eps_validation=bottom_up_eps_validation,
+        peer_relative_eps_validation=peer_relative_eps_validation,
+        market_sentiment_eps_check=market_sentiment_eps_check,
+        consensus_eps=getattr(earnings_projections_analysis, 'consensus_eps_estimate', None),
+        force_recompute=force_recompute,
+        job_id=job_id
+    )
+
     await update_job_status_task(job_id, JobStatus.RUNNING, "Cross-referencing analysis", "cross_reference_flow")
     cross_reference_flow_result: List[CrossReferencedAnalysisCompletion] = await cross_reference_flow(
-        symbol, 
-        forward_pe_flow_result, 
+        symbol,
+        forward_pe_flow_result,
         news_sentiment_flow_result,
         historical_earnings_analysis,
         financial_statements_analysis,
         earnings_projections_analysis,
         management_guidance_analysis,
+        bottom_up_eps_validation=bottom_up_eps_validation,
+        peer_relative_eps_validation=peer_relative_eps_validation,
+        market_sentiment_eps_check=market_sentiment_eps_check,
+        eps_validation_synthesis=eps_validation_synthesis,
         force_recompute=force_recompute
     )
 
@@ -155,6 +208,10 @@ async def main_research_flow(
         "forward_pe_sanity_check": forward_pe_sanity_check.model_dump(),
         "forward_pe_valuation": forward_pe_flow_result.model_dump(),
         "news_sentiment_summary": news_sentiment_flow_result.model_dump(),
+        "bottom_up_eps_validation": bottom_up_eps_validation.model_dump(),
+        "peer_relative_eps_validation": peer_relative_eps_validation.model_dump(),
+        "market_sentiment_eps_check": market_sentiment_eps_check.model_dump(),
+        "eps_validation_synthesis": eps_validation_synthesis.model_dump(),
         "cross_reference": [item.model_dump() for item in cross_reference_flow_result],
         "trade_idea": trade_ideas_flow_result.model_dump()
     }

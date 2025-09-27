@@ -36,7 +36,8 @@ addopts = [
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
-    "slow: Slow running tests"
+    "slow: Slow running tests",
+    "asyncio: Async tests"
 ]
 
 
@@ -44,5 +45,6 @@ markers = [
 dev = [
     "coverage>=7.9.2",
     "pytest>=8.4.1",
+    "pytest-asyncio>=1.2.0",
     "pytest-cov>=6.2.1",
 ]

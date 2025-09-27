@@ -8,7 +8,7 @@
   import TickerSearch from '$lib/components/TickerSearch.svelte';
 
   // Configuration
-  const MAX_STEPS = 16;
+  const MAX_STEPS = 29;
 
   interface JobStep {
     step: string;

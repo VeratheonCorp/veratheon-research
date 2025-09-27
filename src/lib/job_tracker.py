@@ -16,6 +16,32 @@ class JobStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
+    # EPS Validation specific statuses
+    BOTTOM_UP_EPS_VALIDATION = "bottom_up_eps_validation"
+    PEER_RELATIVE_EPS_VALIDATION = "peer_relative_eps_validation"
+    MARKET_SENTIMENT_EPS_CHECK = "market_sentiment_eps_check"
+    EPS_VALIDATION_SYNTHESIS = "eps_validation_synthesis"
+
+# User-friendly status messages for UI display
+EPS_VALIDATION_STATUS_MESSAGES = {
+    JobStatus.BOTTOM_UP_EPS_VALIDATION: "Performing bottom-up EPS validation analysis",
+    JobStatus.PEER_RELATIVE_EPS_VALIDATION: "Validating EPS using peer group comparisons",
+    JobStatus.MARKET_SENTIMENT_EPS_CHECK: "Analyzing market sentiment for EPS validation",
+    JobStatus.EPS_VALIDATION_SYNTHESIS: "Synthesizing EPS validation results",
+}
+
+def get_user_friendly_status_message(status: JobStatus) -> str:
+    """
+    Get user-friendly status message for EPS validation statuses.
+
+    Args:
+        status: JobStatus enum value
+
+    Returns:
+        User-friendly message string, or the status value if no mapping exists
+    """
+    return EPS_VALIDATION_STATUS_MESSAGES.get(status, str(status))
+
 class JobTracker:
     """Redis-based job tracking system using UUIDs."""
     
