@@ -247,7 +247,6 @@ Required in `.env` file:
 - `LOCAL_OLLAMA_URL`/`NORD_OLLAMA_URL`: Ollama server URLs (when using Ollama models)
 
 Optional in `.env` file:
-- `USE_EARNINGS_ESTIMATES_API`: Set to "false" to use the legacy Earnings Calendar API instead of the new Earnings Estimates API for consensus EPS data (default: true)
 - `HOST`: Server host (default: 0.0.0.0)
 - `PORT`: Server port (default: 8085)  
 - `REDIS_URL`: Redis connection URL (default: redis://redis:6379/0)

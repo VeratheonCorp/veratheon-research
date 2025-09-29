@@ -6,9 +6,6 @@ class RawEarnings(BaseModel):
     annual_earnings: List
     quarterly_earnings: List
 
-class RawEarningsCalendar(BaseModel):
-    symbol: str
-    earnings_calendar: List
 
 class EarningsEstimate(BaseModel):
     """Model for individual earnings estimate from Earnings Estimates API."""

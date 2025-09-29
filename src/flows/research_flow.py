@@ -137,7 +137,7 @@ async def main_research_flow(
     peer_relative_eps_validation: PeerRelativeEpsValidation = await peer_relative_eps_validation_flow(
         symbol,
         force_recompute=force_recompute,
-        current_stock_price=getattr(global_quote_data, 'price', None),
+        current_stock_price=float(global_quote_data.price) if global_quote_data.price else None,
         peer_group=peer_group,
         consensus_eps=getattr(earnings_projections_analysis, 'consensus_eps_estimate', None),
         job_id=job_id

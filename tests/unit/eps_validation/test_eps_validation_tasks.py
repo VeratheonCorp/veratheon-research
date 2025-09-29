@@ -118,17 +118,15 @@ class TestEpsValidationTasks:
         mock_runner.return_value = mock_runner_instance
 
         # Mock peer group data
-        mock_peer_data = {
-            "peer_group": [
-                {"symbol": "MSFT", "forward_pe": 28.5},
-                {"symbol": "GOOGL", "forward_pe": 22.1}
-            ],
-            "avg_forward_pe": 25.3
-        }
+        from src.research.common.models.peer_group import PeerGroup
+        mock_peer_data = PeerGroup(
+            original_symbol="AAPL",
+            peer_group=["MSFT", "GOOGL"]
+        )
 
         result = await peer_relative_eps_validation_task(
             symbol="AAPL",
-            peer_group_data=mock_peer_data,
+            peer_group=mock_peer_data,
             current_stock_price=175.80,
             consensus_eps=6.82
         )

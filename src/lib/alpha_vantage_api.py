@@ -478,58 +478,6 @@ def call_alpha_vantage_bbands(
     return client.run_query(query)
 
 
-def call_alpha_vantage_earnings_calendar(symbol: str, horizon: str = "3month") -> Dict[str, Any]:
-    """Retrieve the earnings calendar for a specific company.
-    
-    This endpoint provides upcoming earnings announcement dates, fiscal quarter end,
-    and EPS estimate for the next earnings announcement.
-
-    Args:
-        symbol: The stock symbol (e.g., 'AAPL' for Apple Inc.)
-        horizon: Time horizon for the earnings calendar. Options:
-                '3month' (default), '6month', '12month'
-
-    Returns:
-        Dict containing:
-            - symbol: The stock symbol
-            - name: Company name
-            - reportDate: Expected earnings report date (YYYY-MM-DD)
-            - fiscalDateEnding: End date of the fiscal quarter (YYYY-MM-DD)
-            - estimate: Estimated EPS for the upcoming earnings
-            - currency: Reporting currency
-
-    Example:
-        >>> call_alpha_vantage_earnings_calendar("AAPL", horizon="3month")
-        
-    Note:
-        - Data is typically available 1-2 weeks before the earnings date
-        - The estimate field represents the consensus EPS estimate from analysts
-        - The report date is subject to change
-        - The API returns a CSV string, which is then converted to a JSON object
-    """
-    query = f"EARNINGS_CALENDAR&symbol={symbol}"
-    if horizon:
-        query = f"{query}&horizon={horizon}"
-    csv_data = client.run_query(query)
-
-    # Convert the CSV to a JSON object
-    json_data = []
-    for row in csv_data.splitlines()[1:]:
-        columns = row.split(",")
-        try:
-            json_data.append({
-                "symbol": columns[0],
-                "name": columns[1],
-                "reportDate": columns[2],
-                "fiscalDateEnding": columns[3],
-                "estimate": float(columns[4]),
-                "currency": columns[5]
-            })
-        except ValueError as e:
-            print(f"Skipping row due to value error in estimate: {row}")
-            print(f"Error: {e}")
-
-    return {"earnings_calendar": json_data}
 
 
 def call_alpha_vantage_earnings_estimates(symbol: str) -> Dict[str, Any]:
