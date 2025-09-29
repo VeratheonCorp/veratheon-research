@@ -28,7 +28,7 @@ class ForwardPEEarningsSummary(BaseModel):
     overview: Dict[str, Any]
     current_price: str
     quarterly_earnings: List
-    next_quarter_consensus_eps: str
+    consensus_eps_next_quarter: str
 
 class ForwardPeValuation(BaseModel):
     symbol: str

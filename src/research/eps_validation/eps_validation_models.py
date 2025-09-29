@@ -34,13 +34,13 @@ class SentimentAlignment(str, enum.Enum):
 
 class BottomUpEpsValidation(BaseModel):
     symbol: str = Field(..., description="Stock symbol being validated")
-    independent_eps_estimate: float = Field(
+    bottom_up_eps_estimate: float = Field(
         ..., description="Bottom-up reconstructed EPS estimate"
     )
     consensus_eps: float = Field(..., description="Wall Street consensus EPS estimate")
     variance_percentage: float = Field(
         ...,
-        description="Percentage difference between independent and consensus estimates",
+        description="Percentage difference between bottom-up and consensus estimates",
     )
     confidence_level: ConfidenceLevel = Field(
         ..., description="Confidence in the bottom-up estimate"
@@ -65,7 +65,7 @@ class PeerRelativeEpsValidation(BaseModel):
         ..., description="Average forward P/E ratio of peer group"
     )
     current_stock_price: float = Field(..., description="Current stock price")
-    implied_eps_from_peers: float = Field(
+    peer_implied_eps_estimate: float = Field(
         ..., description="Implied EPS using peer group forward P/E"
     )
     consensus_eps: float = Field(..., description="Wall Street consensus EPS estimate")
@@ -124,10 +124,10 @@ class TechnicalEpsValidation(BaseModel):
     volume_trend_indicator: str = Field(
         ..., description="Volume trend analysis (INCREASING/DECREASING/STABLE)"
     )
-    technical_consensus_eps: float = Field(
-        ..., description="Consensus EPS estimate for comparison"
+    consensus_eps: float = Field(
+        ..., description="Wall Street consensus EPS estimate for comparison"
     )
-    implied_eps_from_technicals: float = Field(
+    technical_implied_eps_estimate: float = Field(
         ..., description="EPS estimate implied by technical indicators"
     )
     technical_variance_percentage: float = Field(

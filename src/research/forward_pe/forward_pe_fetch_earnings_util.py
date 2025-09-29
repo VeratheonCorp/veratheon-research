@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from src.lib.alpha_vantage_api import call_alpha_vantage_earnings, call_alpha_vantage_earnings_estimates, call_alpha_vantage_global_quote, call_alpha_vantage_overview
+from src.lib.fiscal_year_utils import log_fiscal_decision
 from src.research.forward_pe.forward_pe_models import ForwardPEEarningsSummary
 from src.research.common.models.earnings import RawEarnings, RawGlobalQuote
 
@@ -9,22 +10,32 @@ log = logging.getLogger(__name__)
 def get_quarterly_eps_data_for_symbol(symbol: str) -> ForwardPEEarningsSummary:
     """
     Calls Alpha Vantage APIs for the specified symbol and returns all necessary data for forward PE analysis.
-    Uses Earnings Estimates API for consensus EPS data.
+    Uses fiscal year timing to ensure consensus EPS alignment with analysis timeframe.
 
     Args:
         symbol: Stock symbol to research
     Returns:
         ForwardPEEarningsSummary containing the earnings data
     """
+    # Get fiscal year timing for proper data alignment
+    fiscal_info = log_fiscal_decision(symbol)
+
     raw_earnings: RawEarnings = call_alpha_vantage_earnings(symbol)
     raw_global_quote: RawGlobalQuote = call_alpha_vantage_global_quote(symbol)
     current_price = raw_global_quote['Global Quote']['05. price']
     overview = call_alpha_vantage_overview(symbol)
     clean_overview_of_useless_data(overview)
 
-    # Truncate quarterly earnings first
-    # Always return 9 quarters of data
-    quarters = 9
+    # Adjust quarters based on fiscal timing
+    if fiscal_info.use_annual_data:
+        # Near fiscal year end - focus on annual consistency
+        quarters = 4  # Last 4 quarters for annual view
+        log.info(f"Using annual-focused earnings data for {symbol} (near fiscal year end)")
+    else:
+        # Mid-year - use more quarterly data for trends
+        quarters = 9  # More quarters for trend analysis
+        log.info(f"Using quarterly-focused earnings data for {symbol} (mid fiscal year)")
+
     if raw_earnings['quarterlyEarnings']:
         raw_earnings['quarterlyEarnings'] = raw_earnings['quarterlyEarnings'][:quarters]
 
@@ -36,7 +47,7 @@ def get_quarterly_eps_data_for_symbol(symbol: str) -> ForwardPEEarningsSummary:
         symbol=symbol,
         overview=overview,
         quarterly_earnings=raw_earnings['quarterlyEarnings'],
-        next_quarter_consensus_eps=str(next_quarter_consensus_eps),
+        consensus_eps_next_quarter=str(next_quarter_consensus_eps),
         current_price=current_price
     )
 
@@ -115,7 +126,7 @@ def get_quarterly_eps_data_for_symbols(symbols: List[str]) -> List[ForwardPEEarn
                 symbol=symbol,
                 overview=overview,
                 quarterly_earnings=raw_earnings['quarterlyEarnings'],
-                next_quarter_consensus_eps=str(next_quarter_consensus_eps),
+                consensus_eps_next_quarter=str(next_quarter_consensus_eps),
                 current_price=current_price
             )
 

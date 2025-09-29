@@ -58,6 +58,19 @@ technical_eps_validation_agent = Agent(
     - Identify key support/resistance levels affecting earnings sentiment
     - Highlight technical risk factors that could impact validation reliability
 
+    REQUIRED OUTPUT FIELDS:
+    - symbol: Stock symbol
+    - price_momentum_score: Price momentum score (-1 to 1)
+    - volume_trend_indicator: Volume trend analysis (INCREASING/DECREASING/STABLE)
+    - consensus_eps: Wall Street consensus EPS
+    - technical_implied_eps_estimate: EPS implied by technical analysis (use this exact field name)
+    - technical_variance_percentage: Variance between technical and consensus estimates
+    - validation_verdict: Your validation verdict
+    - confidence_level: Your confidence level
+    - technical_indicators: List of key technical indicators analyzed
+    - support_resistance_analysis: Analysis of support/resistance levels
+    - risk_factors: Technical risk factors
+
     IMPORTANT: Always include:
     - Detailed technical analysis supporting your verdict
     - Specific technical indicators and their interpretations

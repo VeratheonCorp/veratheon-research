@@ -1,19 +1,21 @@
 import logging
 from typing import Dict, Any, List, Optional, Tuple
 from src.lib.alpha_vantage_api import call_alpha_vantage_income_statement, call_alpha_vantage_overview, call_alpha_vantage_earnings_estimates
+from src.lib.fiscal_year_utils import get_fiscal_year_info, get_appropriate_financial_data, log_fiscal_decision
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionData
 
 log = logging.getLogger(__name__)
 
 
 def get_earnings_projection_data_for_symbol(
-    symbol: str, 
+    symbol: str,
     historical_earnings_analysis: Optional[Dict[str, Any]] = None,
     financial_statements_analysis: Optional[Dict[str, Any]] = None
 ) -> EarningsProjectionData:
     """
     Fetches comprehensive data needed for earnings projections.
-    
+    Uses fiscal year timing to determine whether to focus on quarterly or annual data.
+
     Args:
         symbol: Stock symbol to research
         historical_earnings_analysis: Optional historical earnings analysis results
@@ -22,13 +24,24 @@ def get_earnings_projection_data_for_symbol(
         EarningsProjectionData containing all necessary data for projections
     """
     try:
-        # Get income statements (quarterly focus for projections)
+        # Determine fiscal year timing and data selection strategy
+        fiscal_info = log_fiscal_decision(symbol)
+
+        # Get income statements
         income_statement = call_alpha_vantage_income_statement(symbol)
         overview = call_alpha_vantage_overview(symbol)
-        
-        # Focus on recent quarters for better projection accuracy
-        quarterly_statements = income_statement.get('quarterlyReports', [])[:8]  # Last 8 quarters
-        annual_statements = income_statement.get('annualReports', [])[:3]  # Last 3 years
+
+        # Select appropriate data based on fiscal timing
+        if fiscal_info.use_annual_data:
+            # Near fiscal year end - focus on annual data for stability
+            quarterly_statements = income_statement.get('quarterlyReports', [])[:4]  # Last 4 quarters
+            annual_statements = income_statement.get('annualReports', [])[:4]  # Last 4 years
+            log.info(f"Using annual-focused data for {symbol} (near fiscal year end)")
+        else:
+            # Mid-year - focus on quarterly data for timeliness
+            quarterly_statements = income_statement.get('quarterlyReports', [])[:8]  # Last 8 quarters
+            annual_statements = income_statement.get('annualReports', [])[:3]  # Last 3 years
+            log.info(f"Using quarterly-focused data for {symbol} (mid fiscal year)")
         
         projection_data = EarningsProjectionData(
             symbol=symbol,

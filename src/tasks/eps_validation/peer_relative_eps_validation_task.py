@@ -4,6 +4,9 @@ from typing import List, Optional
 
 from agents import Runner, RunResult
 
+# Import the filtering function from bottom_up task
+from src.tasks.eps_validation.bottom_up_eps_validation_task import remove_historical_eps_estimates
+
 from src.research.common.models.peer_group import PeerGroup
 from src.research.eps_validation.eps_validation_models import (
     EpsValidationVerdict,
@@ -46,7 +49,7 @@ async def peer_relative_eps_validation_task(
             symbol=symbol,
             peer_group_avg_forward_pe=0.0,
             current_stock_price=current_stock_price or 0.0,
-            implied_eps_from_peers=0.0,
+            peer_implied_eps_estimate=0.0,
             consensus_eps=consensus_eps or 0.0,
             relative_variance=0.0,
             peer_comparison_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
@@ -78,7 +81,7 @@ async def peer_relative_eps_validation_task(
                 symbol=symbol,
                 peer_group_avg_forward_pe=0.0,
                 current_stock_price=0.0,
-                implied_eps_from_peers=0.0,
+                peer_implied_eps_estimate=0.0,
                 consensus_eps=consensus_eps or 0.0,
                 relative_variance=0.0,
                 peer_comparison_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
@@ -92,9 +95,9 @@ async def peer_relative_eps_validation_task(
             target_data = next(
                 (data for data in peer_earnings_data if data.symbol == symbol), None
             )
-            if target_data and target_data.next_quarter_consensus_eps:
+            if target_data and target_data.consensus_eps_next_quarter:
                 try:
-                    consensus_eps = float(target_data.next_quarter_consensus_eps)
+                    consensus_eps = float(target_data.consensus_eps_next_quarter)
                     logger.info(
                         f"Using consensus EPS from earnings data: ${consensus_eps:.2f}"
                     )
@@ -114,18 +117,20 @@ async def peer_relative_eps_validation_task(
     consensus_eps: {consensus_eps}
     """
 
-    # Add peer group information
+    # Add peer group information (clean any EPS estimates)
     if peer_group:
+        cleaned_peer_group = remove_historical_eps_estimates(peer_group)
         input_data += f"""
-    peer_group: {peer_group.model_dump_json()}
+    peer_group: {json.dumps(cleaned_peer_group)}
     """
 
-    # Add peer earnings data if available
+    # Add peer earnings data if available (clean any historical EPS estimates)
     if peer_earnings_data:
-        # Convert to JSON for the agent
+        # Convert to JSON and clean historical EPS data
         peer_data_json = [data.model_dump() for data in peer_earnings_data]
+        cleaned_peer_data = remove_historical_eps_estimates(peer_data_json)
         input_data += f"""
-    peer_earnings_data: {json.dumps(peer_data_json, indent=2)}
+    peer_earnings_data: {json.dumps(cleaned_peer_data, indent=2)}
     """
 
     try:
@@ -140,7 +145,7 @@ async def peer_relative_eps_validation_task(
         logger.info(
             f"Peer-relative EPS validation completed for {symbol}: "
             f"Peer avg forward P/E: {validation_result.peer_group_avg_forward_pe:.2f}, "
-            f"Implied EPS: ${validation_result.implied_eps_from_peers:.2f}, "
+            f"Implied EPS: ${validation_result.peer_implied_eps_estimate:.2f}, "
             f"Consensus EPS: ${validation_result.consensus_eps:.2f}, "
             f"Variance: {validation_result.relative_variance:.1f}%, "
             f"Verdict: {validation_result.peer_comparison_verdict}"
@@ -167,7 +172,7 @@ async def peer_relative_eps_validation_task(
             symbol=symbol,
             peer_group_avg_forward_pe=0.0,
             current_stock_price=current_stock_price,
-            implied_eps_from_peers=0.0,
+            peer_implied_eps_estimate=0.0,
             consensus_eps=consensus_eps,
             relative_variance=0.0,
             peer_comparison_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,

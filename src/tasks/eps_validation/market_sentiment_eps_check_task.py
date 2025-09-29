@@ -4,6 +4,9 @@ from typing import Any, Optional
 
 from agents import Runner, RunResult
 
+# Import the filtering function from bottom_up task
+from src.tasks.eps_validation.bottom_up_eps_validation_task import remove_historical_eps_estimates
+
 from src.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionAnalysis,
 )
@@ -85,22 +88,25 @@ async def market_sentiment_eps_check_task(
     consensus_eps: {consensus_eps}
     """
 
-    # Add news sentiment analysis
+    # Add news sentiment analysis (clean any EPS estimates)
     if news_sentiment_analysis:
+        cleaned_sentiment_analysis = remove_historical_eps_estimates(news_sentiment_analysis)
         input_data += f"""
-    news_sentiment_analysis: {news_sentiment_analysis.model_dump_json()}
+    news_sentiment_analysis: {json.dumps(cleaned_sentiment_analysis)}
     """
 
-    # Add earnings projections analysis if available for revision context
+    # Add earnings projections analysis if available for revision context (clean EPS estimates)
     if earnings_projections_analysis:
+        cleaned_earnings_analysis = remove_historical_eps_estimates(earnings_projections_analysis)
         input_data += f"""
-    earnings_projections_analysis: {earnings_projections_analysis.model_dump_json()}
+    earnings_projections_analysis: {json.dumps(cleaned_earnings_analysis)}
     """
 
-    # Add management guidance analysis if available for whisper number context
+    # Add management guidance analysis if available for whisper number context (clean EPS estimates)
     if management_guidance_analysis:
+        cleaned_guidance_analysis = remove_historical_eps_estimates(management_guidance_analysis)
         input_data += f"""
-    management_guidance_analysis: {management_guidance_analysis.model_dump_json()}
+    management_guidance_analysis: {json.dumps(cleaned_guidance_analysis)}
     """
 
     try:

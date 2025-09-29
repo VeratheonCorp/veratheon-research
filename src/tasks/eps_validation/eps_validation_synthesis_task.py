@@ -4,6 +4,9 @@ from typing import Optional
 
 from agents import Runner, RunResult
 
+# Import the filtering function from bottom_up task
+from src.tasks.eps_validation.bottom_up_eps_validation_task import remove_historical_eps_estimates
+
 from src.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionAnalysis,
 )
@@ -143,43 +146,46 @@ async def eps_validation_synthesis_task(
     available_validation_methods: {available_methods}
     """
 
-    # Add historical earnings analysis if available
+    # Add historical earnings analysis if available (clean any EPS estimates)
     if historical_earnings_analysis:
+        cleaned_historical_analysis = remove_historical_eps_estimates(historical_earnings_analysis)
         input_data += f"""
-    historical_earnings_analysis: {historical_earnings_analysis.model_dump_json()}
+    historical_earnings_analysis: {json.dumps(cleaned_historical_analysis)}
     """
 
-    # Add earnings projections analysis if available
+    # Add earnings projections analysis if available (clean any EPS estimates)
     if earnings_projections_analysis:
+        cleaned_earnings_analysis = remove_historical_eps_estimates(earnings_projections_analysis)
         input_data += f"""
-    earnings_projections_analysis: {earnings_projections_analysis.model_dump_json()}
+    earnings_projections_analysis: {json.dumps(cleaned_earnings_analysis)}
     """
 
-    # Add management guidance analysis if available
+    # Add management guidance analysis if available (clean any EPS estimates)
     if management_guidance_analysis:
+        cleaned_guidance_analysis = remove_historical_eps_estimates(management_guidance_analysis)
         input_data += f"""
-    management_guidance_analysis: {management_guidance_analysis.model_dump_json()}
+    management_guidance_analysis: {json.dumps(cleaned_guidance_analysis)}
     """
 
-    # Add bottom-up EPS validation if available
+    # Add bottom-up EPS validation if available (validation results are already clean)
     if bottom_up_eps_validation:
         input_data += f"""
     bottom_up_eps_validation: {bottom_up_eps_validation.model_dump_json()}
     """
 
-    # Add peer-relative EPS validation if available
+    # Add peer-relative EPS validation if available (validation results are already clean)
     if peer_relative_eps_validation:
         input_data += f"""
     peer_relative_eps_validation: {peer_relative_eps_validation.model_dump_json()}
     """
 
-    # Add market sentiment EPS check if available
+    # Add market sentiment EPS check if available (validation results are already clean)
     if market_sentiment_eps_check:
         input_data += f"""
     market_sentiment_eps_check: {market_sentiment_eps_check.model_dump_json()}
     """
 
-    # TEMPLATE: Add new validation method if available
+    # TEMPLATE: Add new validation method if available (validation results are already clean)
     if technical_eps_validation:
         input_data += f"""
     technical_eps_validation: {technical_eps_validation.model_dump_json()}

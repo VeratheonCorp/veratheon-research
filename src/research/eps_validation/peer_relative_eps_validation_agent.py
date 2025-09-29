@@ -47,6 +47,17 @@ peer_relative_eps_validation_agent = Agent(
             - Balance sheet strength and financial flexibility
             - Management quality and strategic positioning
 
+            REQUIRED OUTPUT FIELDS:
+            - symbol: Stock symbol
+            - peer_group_avg_forward_pe: Average forward P/E of peer group
+            - current_stock_price: Current stock price
+            - peer_implied_eps_estimate: EPS implied by peer group P/E (use this exact field name)
+            - consensus_eps: Wall Street consensus EPS
+            - relative_variance: Percentage difference between peer-implied and consensus EPS
+            - peer_comparison_verdict: Your validation verdict
+            - peer_analysis: Explanation of company's position vs peer group
+            - industry_context: Sector-wide factors affecting EPS expectations
+
             Provide peer_analysis explaining company's position vs peer group.
             Include industry_context describing sector-wide factors affecting EPS expectations.
             Consider whether the company deserves a premium/discount to peer group multiples.

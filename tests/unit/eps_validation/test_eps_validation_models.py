@@ -19,7 +19,7 @@ class TestEpsValidationModels:
         validation = consensus_validated_bottom_up
 
         assert validation.symbol == "AAPL"
-        assert validation.independent_eps_estimate == 6.85
+        assert validation.bottom_up_eps_estimate == 6.85
         assert validation.consensus_eps == 6.82
         assert validation.variance_percentage == 0.44
         assert validation.confidence_level == ConfidenceLevel.HIGH
@@ -42,7 +42,7 @@ class TestEpsValidationModels:
         assert validation.symbol == "AAPL"
         assert validation.peer_group_avg_forward_pe == 25.3
         assert validation.current_stock_price == 175.80
-        assert validation.implied_eps_from_peers == 6.95
+        assert validation.peer_implied_eps_estimate == 6.95
         assert validation.consensus_eps == 6.82
         assert validation.relative_variance == 1.91
         assert validation.peer_comparison_verdict == EpsValidationVerdict.CONSENSUS_VALIDATED
@@ -53,7 +53,7 @@ class TestEpsValidationModels:
             symbol="TEST",
             peer_group_avg_forward_pe=20.0,
             current_stock_price=100.0,
-            implied_eps_from_peers=5.0,  # 100 / 20
+            peer_implied_eps_estimate=5.0,  # 100 / 20
             consensus_eps=4.5,
             relative_variance=11.11,  # (5.0 - 4.5) / 4.5 * 100
             peer_comparison_verdict=EpsValidationVerdict.CONSENSUS_TOO_LOW,
@@ -63,7 +63,7 @@ class TestEpsValidationModels:
 
         # Verify the implied EPS calculation is consistent
         calculated_implied_eps = validation.current_stock_price / validation.peer_group_avg_forward_pe
-        assert abs(calculated_implied_eps - validation.implied_eps_from_peers) < 0.01
+        assert abs(calculated_implied_eps - validation.peer_implied_eps_estimate) < 0.01
 
     def test_market_sentiment_eps_check_creation(self, upward_momentum_sentiment):
         """Test that MarketSentimentEpsCheck model can be created with valid data."""
