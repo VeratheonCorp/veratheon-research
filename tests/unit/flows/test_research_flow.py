@@ -320,20 +320,34 @@ class TestMainResearchFlow:
             force_recompute=False
         )
 
+    @patch('src.flows.research_flow.ensure_reporting_directory_exists')
+    @patch('src.flows.research_flow.update_job_status_task')
+    @patch('src.flows.research_flow.company_overview_flow')
+    @patch('src.flows.research_flow.global_quote_flow')
     @patch('src.flows.research_flow.historical_earnings_flow')
     @pytest.mark.anyio
     async def test_main_research_flow_early_failure(
         self,
-        mock_historical_earnings_flow
+        mock_historical_earnings_flow,
+        mock_global_quote_flow,
+        mock_company_overview_flow,
+        mock_update_job_status,
+        mock_ensure_reporting_dir
     ):
         """Test main research flow behavior when an early step fails."""
-        
+
+        # Mock successful early steps
+        mock_ensure_reporting_dir.return_value = None
+        mock_update_job_status.return_value = None
+        mock_company_overview_flow.return_value = AsyncMock()
+        mock_global_quote_flow.return_value = AsyncMock()
+
         # Mock historical earnings flow to raise an exception
         mock_historical_earnings_flow.side_effect = Exception("Historical earnings data unavailable")
-        
+
         # Execute the main research flow and expect it to fail
         with pytest.raises(Exception, match="Historical earnings data unavailable"):
             await main_research_flow("INVALID")
-        
+
         # Verify historical earnings flow was attempted
         mock_historical_earnings_flow.assert_called_once_with("INVALID", force_recompute=False)

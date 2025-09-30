@@ -29,14 +29,14 @@ class TestForwardPEFetchEarningsTask:
                 overview={"MarketCapitalization": "3000000000000"},
                 current_price="150.00",
                 quarterly_earnings=[{"fiscalDateEnding": "2023-12-31", "reportedEPS": "2.50"}],
-                next_quarter_consensus_eps="2.65"
+                consensus_eps_next_quarter="2.65"
             ),
             ForwardPEEarningsSummary(
                 symbol="MSFT",
                 overview={"MarketCapitalization": "2500000000000"},
                 current_price="300.00",
                 quarterly_earnings=[{"fiscalDateEnding": "2023-12-31", "reportedEPS": "3.00"}],
-                next_quarter_consensus_eps="3.10"
+                consensus_eps_next_quarter="3.10"
             )
         ]
         mock_get_data.return_value = mock_earnings_list
@@ -58,7 +58,7 @@ class TestForwardPEFetchEarningsTask:
             overview={"MarketCapitalization": "3000000000000"},
             current_price="150.00",
             quarterly_earnings=[{"fiscalDateEnding": "2023-12-31", "reportedEPS": "2.50"}],
-            next_quarter_consensus_eps="2.65"
+            consensus_eps_next_quarter="2.65"
         )
         mock_get_data.return_value = mock_earnings
         
@@ -67,7 +67,7 @@ class TestForwardPEFetchEarningsTask:
         assert isinstance(result, ForwardPEEarningsSummary)
         assert result.symbol == "AAPL"
         assert result.current_price == "150.00"
-        assert result.next_quarter_consensus_eps == "2.65"
+        assert result.consensus_eps_next_quarter == "2.65"
         mock_get_data.assert_called_once_with("AAPL")
 
 
@@ -83,7 +83,7 @@ class TestForwardPESanityCheckTask:
             overview={"MarketCapitalization": "3000000000000"},
             current_price="150.00",
             quarterly_earnings=[{"fiscalDateEnding": "2023-12-31", "reportedEPS": "2.50"}],
-            next_quarter_consensus_eps="2.65"
+            consensus_eps_next_quarter="2.65"
         )
         
         # Mock the agent response
@@ -141,7 +141,7 @@ class TestForwardPEAnalysisTask:
             overview={"MarketCapitalization": "3000000000000"},
             current_price="150.00",
             quarterly_earnings=[{"fiscalDateEnding": "2023-12-31", "reportedEPS": "2.50"}],
-            next_quarter_consensus_eps="2.65"
+            consensus_eps_next_quarter="2.65"
         )
         
         # Mock the agent response
@@ -183,7 +183,7 @@ class TestForwardPEAnalysisTask:
             overview={"MarketCapitalization": "3000000000000"},
             current_price="150.00",
             quarterly_earnings=[{"fiscalDateEnding": "2023-12-31", "reportedEPS": "2.50"}],
-            next_quarter_consensus_eps="2.65"
+            consensus_eps_next_quarter="2.65"
         )
         
         mock_valuation = ForwardPeValuation(
