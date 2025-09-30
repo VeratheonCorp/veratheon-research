@@ -15,12 +15,6 @@ from src.research.earnings_projections.earnings_projections_models import (
 from src.research.management_guidance.management_guidance_models import (
     ManagementGuidanceAnalysis,
 )
-from src.research.eps_validation.eps_validation_models import (
-    PeerRelativeEpsValidation,
-    MarketSentimentEpsCheck,
-    EpsValidationSynthesis,
-    TechnicalEpsValidation,
-)
 import logging
 import time
 from typing import List
@@ -43,10 +37,6 @@ class CrossReferenceContext:
     financial_statements_analysis: FinancialStatementsAnalysis
     earnings_projections_analysis: EarningsProjectionAnalysis
     management_guidance_analysis: ManagementGuidanceAnalysis
-    peer_relative_eps_validation: PeerRelativeEpsValidation = None
-    market_sentiment_eps_check: MarketSentimentEpsCheck = None
-    technical_eps_validation: TechnicalEpsValidation = None
-    eps_validation_synthesis: EpsValidationSynthesis = None
 
 
 async def cross_reference_flow(
@@ -57,10 +47,6 @@ async def cross_reference_flow(
     financial_statements_analysis: FinancialStatementsAnalysis,
     earnings_projections_analysis: EarningsProjectionAnalysis,
     management_guidance_analysis: ManagementGuidanceAnalysis,
-    peer_relative_eps_validation: PeerRelativeEpsValidation = None,
-    market_sentiment_eps_check: MarketSentimentEpsCheck = None,
-    technical_eps_validation: TechnicalEpsValidation = None,
-    eps_validation_synthesis: EpsValidationSynthesis = None,
     force_recompute: bool = False,
 ) -> List[CrossReferencedAnalysisCompletion]:
 
@@ -72,10 +58,6 @@ async def cross_reference_flow(
         financial_statements_analysis=financial_statements_analysis,
         earnings_projections_analysis=earnings_projections_analysis,
         management_guidance_analysis=management_guidance_analysis,
-        peer_relative_eps_validation=peer_relative_eps_validation,
-        market_sentiment_eps_check=market_sentiment_eps_check,
-        technical_eps_validation=technical_eps_validation,
-        eps_validation_synthesis=eps_validation_synthesis,
     )
 
     start_time = time.time()
@@ -120,13 +102,6 @@ async def cross_reference_flow(
         cross_reference_management_guidance_completion,
     ]
 
-    # Add EPS validation cross references if data is available
-    if context.eps_validation_synthesis:
-        eps_validation_synthesis_cross_reference_completion = (
-            await eps_validation_synthesis_cross_reference(context)
-        )
-        cross_referenced_analysis.append(eps_validation_synthesis_cross_reference_completion)
-
     # Generate reporting output
     await cross_reference_reporting_task(symbol, cross_referenced_analysis)
 
@@ -146,9 +121,6 @@ async def forward_pe_cross_reference(context: CrossReferenceContext):
         context.management_guidance_analysis,
     ]
 
-    # Add EPS validation data if available
-    if context.eps_validation_synthesis:
-        data_points.append(context.eps_validation_synthesis)
 
     cross_reference_forward_pe_completion: CrossReferencedAnalysisCompletion = (
         await cross_reference_task(
@@ -170,9 +142,6 @@ async def news_sentiment_cross_reference(context: CrossReferenceContext):
         context.management_guidance_analysis,
     ]
 
-    # Add EPS validation data if available
-    if context.eps_validation_synthesis:
-        data_points.append(context.eps_validation_synthesis)
 
     cross_reference_news_sentiment_completion: CrossReferencedAnalysisCompletion = (
         await cross_reference_task(
@@ -194,9 +163,6 @@ async def historical_earnings_cross_reference(context: CrossReferenceContext):
         context.management_guidance_analysis,
     ]
 
-    # Add EPS validation data if available
-    if context.eps_validation_synthesis:
-        data_points.append(context.eps_validation_synthesis)
 
     cross_reference_historical_earnings_completion: (
         CrossReferencedAnalysisCompletion
@@ -218,9 +184,6 @@ async def financial_statements_cross_reference(context: CrossReferenceContext):
         context.management_guidance_analysis,
     ]
 
-    # Add EPS validation data if available
-    if context.eps_validation_synthesis:
-        data_points.append(context.eps_validation_synthesis)
 
     cross_reference_financial_statements_completion: (
         CrossReferencedAnalysisCompletion
@@ -242,9 +205,6 @@ async def earnings_projections_cross_reference(context: CrossReferenceContext):
         context.management_guidance_analysis,
     ]
 
-    # Add EPS validation data if available
-    if context.eps_validation_synthesis:
-        data_points.append(context.eps_validation_synthesis)
 
     cross_reference_earnings_projections_completion: (
         CrossReferencedAnalysisCompletion
@@ -266,9 +226,6 @@ async def management_guidance_cross_reference(context: CrossReferenceContext):
         context.earnings_projections_analysis,
     ]
 
-    # Add EPS validation data if available
-    if context.eps_validation_synthesis:
-        data_points.append(context.eps_validation_synthesis)
 
     cross_reference_management_guidance_completion: (
         CrossReferencedAnalysisCompletion
@@ -281,31 +238,3 @@ async def management_guidance_cross_reference(context: CrossReferenceContext):
     return cross_reference_management_guidance_completion
 
 
-async def eps_validation_synthesis_cross_reference(context: CrossReferenceContext):
-    """Cross-reference EPS validation synthesis against all other analyses"""
-    data_points = [
-        context.forward_pe_flow_result,
-        context.news_sentiment_flow_result,
-        context.historical_earnings_analysis,
-        context.financial_statements_analysis,
-        context.earnings_projections_analysis,
-        context.management_guidance_analysis,
-    ]
-
-    # Add individual EPS validation results if available
-    if context.peer_relative_eps_validation:
-        data_points.append(context.peer_relative_eps_validation)
-    if context.market_sentiment_eps_check:
-        data_points.append(context.market_sentiment_eps_check)
-    if context.technical_eps_validation:
-        data_points.append(context.technical_eps_validation)
-
-    cross_reference_eps_validation_synthesis_completion: (
-        CrossReferencedAnalysisCompletion
-    ) = await cross_reference_task(
-        symbol=context.symbol,
-        original_analysis_type="eps_validation_synthesis",
-        original_analysis=context.eps_validation_synthesis,
-        data_points=data_points,
-    )
-    return cross_reference_eps_validation_synthesis_completion
