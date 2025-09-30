@@ -4,9 +4,7 @@ from typing import Any, Optional
 
 from agents import Runner, RunResult
 
-# Import the filtering function from bottom_up task
-from src.tasks.eps_validation.bottom_up_eps_validation_task import remove_historical_eps_estimates
-
+from src.lib.eps_validation_data_cleaning import remove_historical_eps_estimates
 from src.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionAnalysis,
 )

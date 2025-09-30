@@ -32,18 +32,6 @@ class SentimentAlignment(str, enum.Enum):
     CONFLICTED = "CONFLICTED"
 
 
-class BottomUpEpsValidation(BaseModel):
-    symbol: str
-    bottom_up_eps_estimate: float
-    consensus_eps: float
-    variance_percentage: float
-    confidence_level: ConfidenceLevel
-    key_assumptions: List[str]
-    validation_verdict: EpsValidationVerdict
-    supporting_analysis: str
-    risk_factors: List[str] = []
-
-
 class PeerRelativeEpsValidation(BaseModel):
     symbol: str
     peer_group_avg_forward_pe: float

@@ -2,11 +2,10 @@
 EPS Validation Research Module
 
 This module contains specialized EPS validation methods that complement the existing
-comprehensive research system. It provides bottom-up, peer-relative, and sentiment-based
+comprehensive research system. It provides peer-relative, sentiment-based, and technical
 validation approaches for consensus EPS estimates.
 """
 
-from .eps_validation_models import BottomUpEpsValidation  # Enums; Models
 from .eps_validation_models import (
     ConfidenceLevel,
     EpsValidationSynthesis,
@@ -15,6 +14,7 @@ from .eps_validation_models import (
     PeerRelativeEpsValidation,
     RevisionMomentum,
     SentimentAlignment,
+    TechnicalEpsValidation,
 )
 
 __all__ = [
@@ -24,8 +24,8 @@ __all__ = [
     "ConfidenceLevel",
     "SentimentAlignment",
     # Models
-    "BottomUpEpsValidation",
     "PeerRelativeEpsValidation",
     "MarketSentimentEpsCheck",
+    "TechnicalEpsValidation",
     "EpsValidationSynthesis",
 ]

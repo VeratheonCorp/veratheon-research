@@ -84,7 +84,7 @@ This is a **market research agent** for stock analysis using async flows with Op
 2. **Data Flow Architecture**:
    - Main flow: `src/flows/research_flow.py:main_research_flow()`
    - Core subflows: Historical earnings, financial statements, earnings projections, management guidance, forward PE analysis, news sentiment, trade ideas
-   - **EPS Validation subflows**: Bottom-up EPS validation, peer-relative EPS validation, market sentiment EPS check, EPS validation synthesis
+   - **EPS Validation subflows**: Peer-relative EPS validation, market sentiment EPS check, technical EPS validation, EPS validation synthesis
    - Uses Alpha Vantage API for financial data (`src/lib/`)
 
 3. **Model Management**:
@@ -108,7 +108,7 @@ The agent performs comprehensive stock research through these sequential steps:
 6. **Forward PE Sanity Check**: Validates earnings data quality
 7. **Forward PE Analysis**: Calculates valuation metrics (enhanced with projections and guidance)
 8. **News Sentiment Analysis**: Analyzes recent news sentiment (enhanced with earnings context)
-9. **EPS Validation Analysis**: Multi-method consensus validation using 5 independent approaches
+9. **EPS Validation Analysis**: Multi-method consensus validation using 6 independent approaches
 10. **Cross-Reference Analysis**: Cross-validates insights across all previous analyses
 11. **Trade Ideas Generation**: Synthesizes all analyses into actionable insights
 
@@ -126,29 +126,24 @@ The system employs a **comprehensive 6-method EPS validation approach** to provi
 2. **Independent Earnings Projections** (`src/research/earnings_projections/`):
    - Forward-looking fundamental analysis
    - Independent EPS reconstruction from financial drivers
-   - Bottom-up validation against Wall Street consensus
+   - Validation against Wall Street consensus
 
 3. **Management Guidance Analysis** (`src/research/management_guidance/`):
    - Company-provided expectations and commentary
    - Management track record and guidance reliability
    - Insider perspective on earnings potential
 
-4. **Bottom-Up EPS Validation** (`src/research/eps_validation/bottom_up_eps_validation_agent.py`):
-   - Fundamental reconstruction from revenue, margins, tax rates, and share count
-   - Independent calculation methodology separate from consensus
-   - High-confidence validation when data quality is strong
-
-5. **Peer-Relative EPS Validation** (`src/research/eps_validation/peer_relative_eps_validation_agent.py`):
+4. **Peer-Relative EPS Validation** (`src/research/eps_validation/peer_relative_eps_validation_agent.py`):
    - Industry comparison using peer group forward P/E ratios
    - Implied EPS calculation from current stock price and peer valuations
    - Contextual validation considering company's relative positioning
 
-6. **Market Sentiment EPS Check** (`src/research/eps_validation/market_sentiment_eps_check_agent.py`):
+5. **Market Sentiment EPS Check** (`src/research/eps_validation/market_sentiment_eps_check_agent.py`):
    - Revision momentum trends and analyst sentiment analysis
    - Whisper numbers vs. consensus expectations
    - Market expectation alignment with published estimates
 
-7. **Technical EPS Validation** (`src/research/eps_validation/technical_eps_validation_agent.py`):
+6. **Technical EPS Validation** (`src/research/eps_validation/technical_eps_validation_agent.py`):
    - Price momentum and volume pattern analysis
    - Technical indicator-based EPS estimation
    - Chart pattern validation of consensus expectations
@@ -175,27 +170,27 @@ The **EPS Validation Synthesis Agent** (`src/research/eps_validation/eps_validat
 
 **High Confidence Validation** (Score: 0.85-1.0):
 ```
-Bottom-Up: CONSENSUS_VALIDATED (+2.1%)
 Peer-Relative: CONSENSUS_VALIDATED (+1.7%)
 Market Sentiment: CONSENSUS_VALIDATED (stable momentum)
+Technical: CONSENSUS_VALIDATED (bullish momentum)
 Overall Verdict: CONSENSUS_VALIDATED
 Investment Implication: Strong confidence in consensus reliability
 ```
 
 **Consensus Overoptimism** (Score: 0.70-0.85):
 ```
-Bottom-Up: CONSENSUS_TOO_HIGH (-18.5%)
 Peer-Relative: CONSENSUS_TOO_HIGH (-12.3%)
 Market Sentiment: CONSENSUS_VALIDATED (mixed signals)
+Technical: CONSENSUS_TOO_HIGH (bearish divergence)
 Overall Verdict: CONSENSUS_TOO_HIGH
 Investment Implication: Consider 15-20% haircut to consensus estimates
 ```
 
 **Mixed Signals** (Score: 0.40-0.60):
 ```
-Bottom-Up: CONSENSUS_TOO_LOW (+15.2%)
 Peer-Relative: CONSENSUS_TOO_HIGH (-8.7%)
 Market Sentiment: CONSENSUS_VALIDATED (neutral)
+Technical: CONSENSUS_TOO_LOW (strong momentum)
 Overall Verdict: CONSENSUS_VALIDATED (low confidence)
 Investment Implication: Monitor for additional data points before adjusting models
 ```
@@ -203,27 +198,24 @@ Investment Implication: Monitor for additional data points before adjusting mode
 #### EPS Validation Components
 
 **Models** (`src/research/eps_validation/eps_validation_models.py`):
-- `BottomUpEpsValidation`: Independent fundamental reconstruction results
 - `PeerRelativeEpsValidation`: Peer comparison analysis results
 - `MarketSentimentEpsCheck`: Sentiment and revision momentum analysis
+- `TechnicalEpsValidation`: Technical analysis validation results
 - `EpsValidationSynthesis`: Multi-method synthesis with overall verdict
 
 **Agents** (`src/research/eps_validation/`):
-- `bottom_up_eps_validation_agent.py`: Fundamental reconstruction specialist
 - `peer_relative_eps_validation_agent.py`: Industry comparison specialist
 - `market_sentiment_eps_check_agent.py`: Sentiment and momentum specialist
 - `technical_eps_validation_agent.py`: Technical analysis specialist
 - `eps_validation_synthesis_agent.py`: Multi-method synthesis specialist
 
 **Tasks** (`src/tasks/eps_validation/`):
-- `bottom_up_eps_validation_task.py`: Orchestrates fundamental validation
 - `peer_relative_eps_validation_task.py`: Orchestrates peer comparison
 - `market_sentiment_eps_check_task.py`: Orchestrates sentiment analysis
 - `technical_eps_validation_task.py`: Orchestrates technical analysis
 - `eps_validation_synthesis_task.py`: Orchestrates synthesis across methods
 
 **Flows** (`src/flows/subflows/`):
-- `bottom_up_eps_validation_flow.py`: Async flow with caching and status tracking
 - `peer_relative_eps_validation_flow.py`: Async flow with caching and status tracking
 - `market_sentiment_eps_check_flow.py`: Async flow with caching and status tracking
 - `technical_eps_validation_flow.py`: Async flow with caching and status tracking

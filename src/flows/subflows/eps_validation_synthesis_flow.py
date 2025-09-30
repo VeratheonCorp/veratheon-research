@@ -9,10 +9,10 @@ from src.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionAnalysis,
 )
 from src.research.eps_validation.eps_validation_models import (
-    BottomUpEpsValidation,
     EpsValidationSynthesis,
     MarketSentimentEpsCheck,
     PeerRelativeEpsValidation,
+    TechnicalEpsValidation,
 )
 from src.research.historical_earnings.historical_earnings_models import (
     HistoricalEarningsAnalysis,
@@ -37,9 +37,9 @@ async def eps_validation_synthesis_flow(
     historical_earnings_analysis: Optional[HistoricalEarningsAnalysis] = None,
     earnings_projections_analysis: Optional[EarningsProjectionAnalysis] = None,
     management_guidance_analysis: Optional[ManagementGuidanceAnalysis] = None,
-    bottom_up_eps_validation: Optional[BottomUpEpsValidation] = None,
     peer_relative_eps_validation: Optional[PeerRelativeEpsValidation] = None,
     market_sentiment_eps_check: Optional[MarketSentimentEpsCheck] = None,
+    technical_eps_validation: Optional[TechnicalEpsValidation] = None,
     consensus_eps: Optional[float] = None,
     job_id: Optional[str] = None,
 ) -> EpsValidationSynthesis:
@@ -55,9 +55,9 @@ async def eps_validation_synthesis_flow(
         historical_earnings_analysis: Historical earnings patterns analysis
         earnings_projections_analysis: Independent earnings projections analysis
         management_guidance_analysis: Management guidance analysis
-        bottom_up_eps_validation: Bottom-up EPS validation results
         peer_relative_eps_validation: Peer-relative EPS validation results
         market_sentiment_eps_check: Market sentiment EPS check results
+        technical_eps_validation: Technical EPS validation results
         consensus_eps: Wall Street consensus EPS estimate for reference
         job_id: Optional job ID for status tracking
     Returns:
@@ -97,9 +97,9 @@ async def eps_validation_synthesis_flow(
         historical_earnings_analysis=historical_earnings_analysis,
         earnings_projections_analysis=earnings_projections_analysis,
         management_guidance_analysis=management_guidance_analysis,
-        bottom_up_eps_validation=bottom_up_eps_validation,
         peer_relative_eps_validation=peer_relative_eps_validation,
         market_sentiment_eps_check=market_sentiment_eps_check,
+        technical_eps_validation=technical_eps_validation,
         consensus_eps=consensus_eps,
     )
 

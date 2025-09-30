@@ -16,10 +16,10 @@ from src.research.management_guidance.management_guidance_models import (
     ManagementGuidanceAnalysis,
 )
 from src.research.eps_validation.eps_validation_models import (
-    BottomUpEpsValidation,
     PeerRelativeEpsValidation,
     MarketSentimentEpsCheck,
     EpsValidationSynthesis,
+    TechnicalEpsValidation,
 )
 import logging
 import time
@@ -43,9 +43,9 @@ class CrossReferenceContext:
     financial_statements_analysis: FinancialStatementsAnalysis
     earnings_projections_analysis: EarningsProjectionAnalysis
     management_guidance_analysis: ManagementGuidanceAnalysis
-    bottom_up_eps_validation: BottomUpEpsValidation = None
     peer_relative_eps_validation: PeerRelativeEpsValidation = None
     market_sentiment_eps_check: MarketSentimentEpsCheck = None
+    technical_eps_validation: TechnicalEpsValidation = None
     eps_validation_synthesis: EpsValidationSynthesis = None
 
 
@@ -57,9 +57,9 @@ async def cross_reference_flow(
     financial_statements_analysis: FinancialStatementsAnalysis,
     earnings_projections_analysis: EarningsProjectionAnalysis,
     management_guidance_analysis: ManagementGuidanceAnalysis,
-    bottom_up_eps_validation: BottomUpEpsValidation = None,
     peer_relative_eps_validation: PeerRelativeEpsValidation = None,
     market_sentiment_eps_check: MarketSentimentEpsCheck = None,
+    technical_eps_validation: TechnicalEpsValidation = None,
     eps_validation_synthesis: EpsValidationSynthesis = None,
     force_recompute: bool = False,
 ) -> List[CrossReferencedAnalysisCompletion]:
@@ -72,9 +72,9 @@ async def cross_reference_flow(
         financial_statements_analysis=financial_statements_analysis,
         earnings_projections_analysis=earnings_projections_analysis,
         management_guidance_analysis=management_guidance_analysis,
-        bottom_up_eps_validation=bottom_up_eps_validation,
         peer_relative_eps_validation=peer_relative_eps_validation,
         market_sentiment_eps_check=market_sentiment_eps_check,
+        technical_eps_validation=technical_eps_validation,
         eps_validation_synthesis=eps_validation_synthesis,
     )
 
@@ -293,12 +293,12 @@ async def eps_validation_synthesis_cross_reference(context: CrossReferenceContex
     ]
 
     # Add individual EPS validation results if available
-    if context.bottom_up_eps_validation:
-        data_points.append(context.bottom_up_eps_validation)
     if context.peer_relative_eps_validation:
         data_points.append(context.peer_relative_eps_validation)
     if context.market_sentiment_eps_check:
         data_points.append(context.market_sentiment_eps_check)
+    if context.technical_eps_validation:
+        data_points.append(context.technical_eps_validation)
 
     cross_reference_eps_validation_synthesis_completion: (
         CrossReferencedAnalysisCompletion

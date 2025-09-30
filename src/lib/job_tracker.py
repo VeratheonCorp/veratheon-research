@@ -17,16 +17,16 @@ class JobStatus(str, Enum):
     CANCELLED = "cancelled"
 
     # EPS Validation specific statuses
-    BOTTOM_UP_EPS_VALIDATION = "bottom_up_eps_validation"
     PEER_RELATIVE_EPS_VALIDATION = "peer_relative_eps_validation"
     MARKET_SENTIMENT_EPS_CHECK = "market_sentiment_eps_check"
+    TECHNICAL_EPS_VALIDATION = "technical_eps_validation"
     EPS_VALIDATION_SYNTHESIS = "eps_validation_synthesis"
 
 # User-friendly status messages for UI display
 EPS_VALIDATION_STATUS_MESSAGES = {
-    JobStatus.BOTTOM_UP_EPS_VALIDATION: "Performing bottom-up EPS validation analysis",
     JobStatus.PEER_RELATIVE_EPS_VALIDATION: "Validating EPS using peer group comparisons",
     JobStatus.MARKET_SENTIMENT_EPS_CHECK: "Analyzing market sentiment for EPS validation",
+    JobStatus.TECHNICAL_EPS_VALIDATION: "Performing technical analysis for EPS validation",
     JobStatus.EPS_VALIDATION_SYNTHESIS: "Synthesizing EPS validation results",
 }
 

@@ -4,19 +4,16 @@ from typing import Optional
 
 from agents import Runner, RunResult
 
-# Import the filtering function from bottom_up task
-from src.tasks.eps_validation.bottom_up_eps_validation_task import remove_historical_eps_estimates
-
+from src.lib.eps_validation_data_cleaning import remove_historical_eps_estimates
 from src.research.earnings_projections.earnings_projections_models import (
     EarningsProjectionAnalysis,
 )
 from src.research.eps_validation.eps_validation_models import (
-    BottomUpEpsValidation,
     EpsValidationSynthesis,
     EpsValidationVerdict,
     MarketSentimentEpsCheck,
     PeerRelativeEpsValidation,
-    TechnicalEpsValidation,  # TEMPLATE: Add new validation model
+    TechnicalEpsValidation,
 )
 from src.research.eps_validation.eps_validation_synthesis_agent import (
     eps_validation_synthesis_agent,
@@ -36,10 +33,8 @@ async def eps_validation_synthesis_task(
     historical_earnings_analysis: Optional[HistoricalEarningsAnalysis] = None,
     earnings_projections_analysis: Optional[EarningsProjectionAnalysis] = None,
     management_guidance_analysis: Optional[ManagementGuidanceAnalysis] = None,
-    bottom_up_eps_validation: Optional[BottomUpEpsValidation] = None,
     peer_relative_eps_validation: Optional[PeerRelativeEpsValidation] = None,
     market_sentiment_eps_check: Optional[MarketSentimentEpsCheck] = None,
-    # TEMPLATE: Add new validation method parameter
     technical_eps_validation: Optional[TechnicalEpsValidation] = None,
     consensus_eps: Optional[float] = None,
 ) -> EpsValidationSynthesis:
@@ -51,9 +46,9 @@ async def eps_validation_synthesis_task(
         historical_earnings_analysis: Historical earnings patterns analysis
         earnings_projections_analysis: Independent earnings projections analysis
         management_guidance_analysis: Management guidance analysis
-        bottom_up_eps_validation: Bottom-up EPS validation results
         peer_relative_eps_validation: Peer-relative EPS validation results
         market_sentiment_eps_check: Market sentiment EPS check results
+        technical_eps_validation: Technical EPS validation results
         consensus_eps: Wall Street consensus EPS estimate for reference
     Returns:
         EpsValidationSynthesis containing comprehensive multi-method validation verdict
@@ -69,13 +64,10 @@ async def eps_validation_synthesis_task(
         available_methods.append("earnings_projections")
     if management_guidance_analysis:
         available_methods.append("management_guidance")
-    if bottom_up_eps_validation:
-        available_methods.append("bottom_up")
     if peer_relative_eps_validation:
         available_methods.append("peer_relative")
     if market_sentiment_eps_check:
         available_methods.append("market_sentiment")
-    # TEMPLATE: Add new validation method tracking
     if technical_eps_validation:
         available_methods.append("technical")
 
@@ -91,12 +83,12 @@ async def eps_validation_synthesis_task(
 
         # If we have at least one method, try to extract its verdict for basic synthesis
         single_verdict = EpsValidationVerdict.INSUFFICIENT_DATA
-        if bottom_up_eps_validation:
-            single_verdict = bottom_up_eps_validation.validation_verdict
-        elif peer_relative_eps_validation:
+        if peer_relative_eps_validation:
             single_verdict = peer_relative_eps_validation.peer_comparison_verdict
         elif market_sentiment_eps_check:
             single_verdict = market_sentiment_eps_check.sentiment_validation_verdict
+        elif technical_eps_validation:
+            single_verdict = technical_eps_validation.validation_verdict
 
         return EpsValidationSynthesis(
             symbol=symbol,
@@ -124,11 +116,6 @@ async def eps_validation_synthesis_task(
             )
             logger.info(
                 f"Using consensus EPS from earnings projections: ${consensus_eps:.2f}"
-            )
-        elif bottom_up_eps_validation:
-            consensus_eps = bottom_up_eps_validation.consensus_eps
-            logger.info(
-                f"Using consensus EPS from bottom-up validation: ${consensus_eps:.2f}"
             )
         elif peer_relative_eps_validation:
             consensus_eps = peer_relative_eps_validation.consensus_eps
@@ -167,12 +154,6 @@ async def eps_validation_synthesis_task(
     management_guidance_analysis: {json.dumps(cleaned_guidance_analysis)}
     """
 
-    # Add bottom-up EPS validation if available (validation results are already clean)
-    if bottom_up_eps_validation:
-        input_data += f"""
-    bottom_up_eps_validation: {bottom_up_eps_validation.model_dump_json()}
-    """
-
     # Add peer-relative EPS validation if available (validation results are already clean)
     if peer_relative_eps_validation:
         input_data += f"""
@@ -185,7 +166,7 @@ async def eps_validation_synthesis_task(
     market_sentiment_eps_check: {market_sentiment_eps_check.model_dump_json()}
     """
 
-    # TEMPLATE: Add new validation method if available (validation results are already clean)
+    # Add technical EPS validation if available (validation results are already clean)
     if technical_eps_validation:
         input_data += f"""
     technical_eps_validation: {technical_eps_validation.model_dump_json()}

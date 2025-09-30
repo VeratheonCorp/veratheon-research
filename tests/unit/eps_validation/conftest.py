@@ -1,10 +1,9 @@
 import pytest
 from src.research.eps_validation.eps_validation_models import (
-    BottomUpEpsValidation,
     PeerRelativeEpsValidation,
     MarketSentimentEpsCheck,
     EpsValidationSynthesis,
-    TechnicalEpsValidation,  # TEMPLATE: Add new validation model
+    TechnicalEpsValidation,
     EpsValidationVerdict,
     RevisionMomentum,
     ConfidenceLevel,
@@ -16,82 +15,6 @@ from src.research.eps_validation.eps_validation_models import (
 def sample_symbol():
     """Sample stock symbol for testing."""
     return "AAPL"
-
-
-@pytest.fixture
-def consensus_validated_bottom_up():
-    """Bottom-up EPS validation with consensus validated verdict."""
-    return BottomUpEpsValidation(
-        symbol="AAPL",
-        bottom_up_eps_estimate=6.85,
-        consensus_eps=6.82,
-        variance_percentage=0.44,
-        confidence_level=ConfidenceLevel.HIGH,
-        key_assumptions=[
-            "Revenue growth of 5% YoY",
-            "Operating margin expansion to 30.2%",
-            "Share count reduction of 3%"
-        ],
-        validation_verdict=EpsValidationVerdict.CONSENSUS_VALIDATED,
-        supporting_analysis="Bottom-up reconstruction validates consensus EPS within acceptable variance",
-        risk_factors=["iPhone demand uncertainty", "Supply chain disruptions"]
-    )
-
-
-@pytest.fixture
-def consensus_too_high_bottom_up():
-    """Bottom-up EPS validation with consensus too high verdict."""
-    return BottomUpEpsValidation(
-        symbol="TSLA",
-        bottom_up_eps_estimate=2.45,
-        consensus_eps=3.12,
-        variance_percentage=-21.47,
-        confidence_level=ConfidenceLevel.MEDIUM,
-        key_assumptions=[
-            "Vehicle deliveries growth of 15%",
-            "Margin compression due to price cuts",
-            "Increased R&D spending on FSD"
-        ],
-        validation_verdict=EpsValidationVerdict.CONSENSUS_TOO_HIGH,
-        supporting_analysis="Bottom-up analysis suggests consensus is overly optimistic on margins",
-        risk_factors=["Competitive pressure", "Regulatory challenges", "Execution risk"]
-    )
-
-
-@pytest.fixture
-def consensus_too_low_bottom_up():
-    """Bottom-up EPS validation with consensus too low verdict."""
-    return BottomUpEpsValidation(
-        symbol="NVDA",
-        bottom_up_eps_estimate=12.85,
-        consensus_eps=10.45,
-        variance_percentage=22.97,
-        confidence_level=ConfidenceLevel.HIGH,
-        key_assumptions=[
-            "Data center revenue growth of 40%",
-            "AI chip demand exceeding expectations",
-            "Margin expansion from premium pricing"
-        ],
-        validation_verdict=EpsValidationVerdict.CONSENSUS_TOO_LOW,
-        supporting_analysis="AI revolution driving stronger than expected demand and pricing power",
-        risk_factors=["Cyclical downturn risk", "Competition from custom chips"]
-    )
-
-
-@pytest.fixture
-def insufficient_data_bottom_up():
-    """Bottom-up EPS validation with insufficient data verdict."""
-    return BottomUpEpsValidation(
-        symbol="NEWCO",
-        bottom_up_eps_estimate=0.0,
-        consensus_eps=1.25,
-        variance_percentage=0.0,
-        confidence_level=ConfidenceLevel.LOW,
-        key_assumptions=["Limited financial history", "Emerging business model"],
-        validation_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
-        supporting_analysis="Insufficient historical data for reliable bottom-up reconstruction",
-        risk_factors=["Business model uncertainty", "Limited track record"]
-    )
 
 
 @pytest.fixture
@@ -242,9 +165,9 @@ def consensus_validated_synthesis():
         overall_verdict=EpsValidationVerdict.CONSENSUS_VALIDATED,
         confidence_score=0.85,
         method_agreement={
-            "bottom_up": EpsValidationVerdict.CONSENSUS_VALIDATED,
             "peer_relative": EpsValidationVerdict.CONSENSUS_VALIDATED,
-            "market_sentiment": EpsValidationVerdict.CONSENSUS_VALIDATED
+            "market_sentiment": EpsValidationVerdict.CONSENSUS_VALIDATED,
+            "technical": EpsValidationVerdict.CONSENSUS_VALIDATED
         },
         key_risks=["Macro economic headwinds", "Supply chain disruptions"],
         supporting_evidence=[
@@ -266,9 +189,9 @@ def consensus_too_high_synthesis():
         overall_verdict=EpsValidationVerdict.CONSENSUS_TOO_HIGH,
         confidence_score=0.72,
         method_agreement={
-            "bottom_up": EpsValidationVerdict.CONSENSUS_TOO_HIGH,
             "peer_relative": EpsValidationVerdict.CONSENSUS_TOO_HIGH,
-            "market_sentiment": EpsValidationVerdict.CONSENSUS_VALIDATED
+            "market_sentiment": EpsValidationVerdict.CONSENSUS_VALIDATED,
+            "technical": EpsValidationVerdict.CONSENSUS_TOO_HIGH
         },
         key_risks=["Margin compression from competition", "Execution challenges", "Regulatory headwinds"],
         supporting_evidence=[
@@ -290,9 +213,9 @@ def mixed_verdict_synthesis():
         overall_verdict=EpsValidationVerdict.CONSENSUS_VALIDATED,
         confidence_score=0.58,
         method_agreement={
-            "bottom_up": EpsValidationVerdict.CONSENSUS_TOO_LOW,
             "peer_relative": EpsValidationVerdict.CONSENSUS_TOO_HIGH,
-            "market_sentiment": EpsValidationVerdict.CONSENSUS_VALIDATED
+            "market_sentiment": EpsValidationVerdict.CONSENSUS_VALIDATED,
+            "technical": EpsValidationVerdict.CONSENSUS_TOO_LOW
         },
         key_risks=["AWS growth uncertainty", "E-commerce margin pressure", "Capital allocation decisions"],
         supporting_evidence=[
@@ -314,9 +237,9 @@ def consensus_too_low_synthesis():
         overall_verdict=EpsValidationVerdict.CONSENSUS_TOO_LOW,
         confidence_score=0.78,
         method_agreement={
-            "bottom_up": EpsValidationVerdict.CONSENSUS_TOO_LOW,
             "peer_relative": EpsValidationVerdict.CONSENSUS_TOO_LOW,
-            "market_sentiment": EpsValidationVerdict.CONSENSUS_TOO_LOW
+            "market_sentiment": EpsValidationVerdict.CONSENSUS_TOO_LOW,
+            "technical": EpsValidationVerdict.CONSENSUS_TOO_LOW
         },
         key_risks=["AI bubble concerns", "Cyclical semiconductor downturn"],
         supporting_evidence=[
@@ -338,9 +261,9 @@ def insufficient_data_synthesis():
         overall_verdict=EpsValidationVerdict.INSUFFICIENT_DATA,
         confidence_score=0.25,
         method_agreement={
-            "bottom_up": EpsValidationVerdict.INSUFFICIENT_DATA,
             "peer_relative": EpsValidationVerdict.INSUFFICIENT_DATA,
-            "market_sentiment": EpsValidationVerdict.INSUFFICIENT_DATA
+            "market_sentiment": EpsValidationVerdict.INSUFFICIENT_DATA,
+            "technical": EpsValidationVerdict.INSUFFICIENT_DATA
         },
         key_risks=["Business model uncertainty", "Limited operating history", "Regulatory unknowns"],
         supporting_evidence=[

@@ -12,12 +12,10 @@ logger = logging.getLogger(__name__)
 
 # EPS validation specific TTL configurations (in seconds)
 EPS_VALIDATION_TTL_CONFIG = {
-    "bottom_up_eps_validation": 7200,      # 2 hours - depends on financial data freshness
     "peer_relative_eps_validation": 7200,   # 2 hours - depends on peer group PE ratios
     "market_sentiment_eps_check": 3600,     # 1 hour - sentiment data changes more frequently
-    "eps_validation_synthesis": 7200,       # 2 hours - synthesis of above components
-    # TEMPLATE: Add new validation methods here
     "technical_eps_validation": 1800,       # 30 minutes - technical data changes frequently
+    "eps_validation_synthesis": 7200,       # 2 hours - synthesis of above components
 }
 
 def get_eps_validation_ttl(validation_type: str) -> int:
@@ -25,7 +23,7 @@ def get_eps_validation_ttl(validation_type: str) -> int:
     Get TTL configuration for specific EPS validation type.
 
     Args:
-        validation_type: Type of EPS validation (e.g., 'bottom_up_eps_validation')
+        validation_type: Type of EPS validation (e.g., 'peer_relative_eps_validation')
 
     Returns:
         TTL in seconds, defaults to 2 hours if type not found
