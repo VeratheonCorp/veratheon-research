@@ -8,58 +8,28 @@ peer_relative_eps_validation_agent = Agent(
     model=get_model(),
     output_type=PeerRelativeEpsValidation,
     instructions="""
-            Validate consensus EPS expectations using peer group forward P/E ratios and industry comparisons.
+            Validate consensus EPS using peer group forward P/E ratios and industry comparisons.
 
-            ENUM REQUIREMENTS:
-            - peer_comparison_verdict: EpsValidationVerdict (CONSENSUS_VALIDATED, CONSENSUS_TOO_HIGH, CONSENSUS_TOO_LOW, INSUFFICIENT_DATA)
+            ENUM:
+            - peer_comparison_verdict: CONSENSUS_VALIDATED/CONSENSUS_TOO_HIGH/CONSENSUS_TOO_LOW/INSUFFICIENT_DATA
 
-            ANALYSIS METHODOLOGY:
+            METHODOLOGY:
             1. Calculate peer group average forward P/E ratio
-            2. Apply peer average P/E to current stock price to get implied EPS
-            3. Compare implied EPS to Wall Street consensus EPS
-            4. Assess reasonableness considering company's relative positioning
+            2. Apply peer P/E to current stock price to derive implied EPS
+            3. Compare implied EPS to consensus EPS
+            4. Assess company's relative positioning vs peers
 
-            PEER COMPARISON FACTORS:
-            - Business model similarity (SaaS vs hardware vs services mix)
-            - Growth stage and maturity (high growth vs mature vs declining)
-            - Market position (leader vs challenger vs niche player)
-            - Geographic exposure (domestic vs international revenue mix)
-            - Capital intensity and margin profile differences
-            - Recent performance trends relative to peers
+            VALIDATION THRESHOLDS:
+            - Within ±5%: CONSENSUS_VALIDATED
+            - 5-15% variance: Consider company-specific factors
+            - >15% variance: CONSENSUS_TOO_HIGH or CONSENSUS_TOO_LOW
+            - Poor peer comparability: INSUFFICIENT_DATA
 
-            VALIDATION CRITERIA:
-            - Within ±5% of peer-implied EPS: Likely CONSENSUS_VALIDATED
-            - 5-15% variance: Consider company-specific factors and positioning
-            - >15% variance: Likely CONSENSUS_TOO_HIGH or CONSENSUS_TOO_LOW
-            - Insufficient peer data or poor comparability: INSUFFICIENT_DATA
+            KEY FACTORS:
+            - Business model similarity, growth stage, market position
+            - Industry trends and sector-wide factors
+            - Company premium/discount to peers based on fundamentals
 
-            INDUSTRY CONTEXT ANALYSIS:
-            - Sector-wide growth expectations and cycles
-            - Industry-specific headwinds or tailwinds
-            - Regulatory environment changes affecting sector
-            - Technology disruption or competitive dynamics
-            - Economic sensitivity and cyclical patterns
-
-            RELATIVE POSITIONING ASSESSMENT:
-            - Premium/discount to peers justified by fundamentals
-            - Market share trends and competitive advantages
-            - Execution track record vs peer group
-            - Balance sheet strength and financial flexibility
-            - Management quality and strategic positioning
-
-            REQUIRED OUTPUT FIELDS:
-            - symbol: Stock symbol
-            - peer_group_avg_forward_pe: Average forward P/E of peer group
-            - current_stock_price: Current stock price
-            - peer_implied_eps_estimate: EPS implied by peer group P/E (use this exact field name)
-            - consensus_eps: Wall Street consensus EPS
-            - relative_variance: Percentage difference between peer-implied and consensus EPS
-            - peer_comparison_verdict: Your validation verdict
-            - peer_analysis: Explanation of company's position vs peer group
-            - industry_context: Sector-wide factors affecting EPS expectations
-
-            Provide peer_analysis explaining company's position vs peer group.
-            Include industry_context describing sector-wide factors affecting EPS expectations.
-            Consider whether the company deserves a premium/discount to peer group multiples.
+            Provide peer_analysis and industry_context explaining positioning vs peer group.
         """,
 )
