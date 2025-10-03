@@ -1,5 +1,5 @@
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
-from src.lib.supabase_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 import json
 import logging
 from datetime import datetime
@@ -21,7 +21,7 @@ async def forward_pe_valuation_reporting_task(
     logger.info(f"Forward PE Valuation Reporting for {symbol}")
     
     # Cache the analysis in Redis (24 hour TTL for reports)
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cache.cache_report("forward_pe_valuation", symbol, forward_pe_valuation, ttl=86400)
     
     # Create filename with timestamp
@@ -49,7 +49,7 @@ async def forward_pe_sanity_check_reporting_task(
     logger.info(f"Forward PE Sanity Check Reporting for {symbol}")
     
     # Cache the analysis in Redis (24 hour TTL for reports)
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cache.cache_report("forward_pe_sanity_check", symbol, forward_pe_sanity_check, ttl=86400)
     
     # Create filename with timestamp

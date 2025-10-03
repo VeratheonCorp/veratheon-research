@@ -1,4 +1,4 @@
-from src.lib.supabase_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 from src.research.comprehensive_report.comprehensive_report_models import KeyInsights
 import logging
 
@@ -16,7 +16,7 @@ async def key_insights_reporting_task(symbol: str, key_insights: KeyInsights) ->
     """
     logger.info(f"Caching key insights results for {symbol}")
     
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     success = cache.cache_report(
         "key_insights", 
         symbol, 

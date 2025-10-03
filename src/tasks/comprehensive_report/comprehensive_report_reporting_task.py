@@ -1,4 +1,4 @@
-from src.lib.supabase_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 from src.lib.supabase_rag import get_supabase_rag
 from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport
 from datetime import datetime
@@ -19,7 +19,7 @@ async def comprehensive_report_reporting_task(symbol: str, comprehensive_report:
     logger.info(f"Caching comprehensive report results for {symbol}")
 
     # Cache the report in research_cache table
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cache_success = cache.cache_report(
         "comprehensive_report",
         symbol,

@@ -1,5 +1,5 @@
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
-from src.lib.supabase_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 import json
 import logging
 from datetime import datetime
@@ -21,7 +21,7 @@ async def news_sentiment_reporting_task(
     logger.info(f"News Sentiment Reporting for {symbol}")
     
     # Cache the analysis in Redis (24 hour TTL for reports)
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cache.cache_report("news_sentiment", symbol, news_sentiment_summary, ttl=86400)
     
     # Create filename with timestamp

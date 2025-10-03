@@ -1,5 +1,5 @@
 from src.research.trade_ideas.trade_idea_models import TradeIdea
-from src.lib.supabase_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 import json
 import logging
 from datetime import datetime
@@ -21,7 +21,7 @@ async def trade_ideas_reporting_task(
     logger.info(f"Trade Ideas Reporting for {symbol}")
     
     # Cache the analysis in Redis (24 hour TTL for reports)
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cache.cache_report("trade_ideas", symbol, trade_idea, ttl=86400)
     
     # Create filename with timestamp

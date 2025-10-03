@@ -1,4 +1,4 @@
-from src.lib.redis_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
 import logging
 from typing import Optional
@@ -25,7 +25,7 @@ async def financial_statements_cache_retrieval_task(symbol: str, force_recompute
         
     logger.info(f"Checking cache for financial statements analysis: {symbol}")
     
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cached_report = cache.get_cached_report("financial_statements", symbol)
     
     if cached_report:

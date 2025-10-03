@@ -1,4 +1,4 @@
-from src.lib.redis_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
 import logging
 from typing import Optional
@@ -25,7 +25,7 @@ async def historical_earnings_cache_retrieval_task(symbol: str, force_recompute:
         
     logger.info(f"Checking cache for historical earnings analysis: {symbol}")
     
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cached_report = cache.get_cached_report("historical_earnings", symbol)
     
     if cached_report:

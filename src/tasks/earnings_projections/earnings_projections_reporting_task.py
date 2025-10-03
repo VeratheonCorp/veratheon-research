@@ -1,5 +1,5 @@
 from src.research.earnings_projections.earnings_projections_models import EarningsProjectionAnalysis
-from src.lib.supabase_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 import json
 import logging
 from datetime import datetime
@@ -21,7 +21,7 @@ async def earnings_projections_reporting_task(
     logger.info(f"Earnings Projections Reporting for {symbol}")
     
     # Cache the analysis in Redis (24 hour TTL for reports)
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cache.cache_report("earnings_projections", symbol, earnings_projections_analysis, ttl=86400)
     
     # Create filename with timestamp

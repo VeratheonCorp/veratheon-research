@@ -1,4 +1,4 @@
-from src.lib.redis_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 from src.research.comprehensive_report.comprehensive_report_models import ComprehensiveReport
 from typing import Optional, Dict, Any
 import logging
@@ -30,7 +30,7 @@ async def comprehensive_report_cache_retrieval_task(
         
     logger.info(f"Checking cache for comprehensive report: {symbol}")
     
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cached_report = cache.get_cached_report("comprehensive_report", symbol)
     
     if cached_report:

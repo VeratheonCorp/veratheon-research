@@ -1,4 +1,4 @@
-from src.lib.redis_cache import get_redis_cache
+from src.lib.supabase_cache import get_supabase_cache
 from src.research.trade_ideas.trade_idea_models import TradeIdea
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation
 from src.research.news_sentiment.news_sentiment_models import NewsSentimentSummary
@@ -46,7 +46,7 @@ async def trade_ideas_cache_retrieval_task(
         
     logger.info(f"Checking cache for trade ideas analysis: {symbol}")
     
-    cache = get_redis_cache()
+    cache = get_supabase_cache()
     cached_report = cache.get_cached_report("trade_ideas", symbol)
     
     if cached_report:
