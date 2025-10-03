@@ -16,10 +16,12 @@ uv run python run.py
 uv run python server.py
 ```
 
-**Run with Docker Compose** (includes API, UI, and Redis):
+**Run with Docker Compose** (includes API and UI):
 ```bash
 docker-compose up
 ```
+
+**Note**: Supabase should be running separately (see Supabase setup below)
 
 **Run tests**:
 ```bash
@@ -62,7 +64,6 @@ npm run check      # Svelte type checking
 - **Vitest**: Testing framework with browser testing via Playwright
 - **ESLint + Prettier**: Code linting and formatting with Svelte support
 - **Marked**: Markdown parsing for analysis content rendering
-- **Redis**: Client library for state management integration
 
 **UI Structure**:
 - `src/routes/+page.svelte`: Main research interface
@@ -94,7 +95,7 @@ This is a **market research agent** for stock analysis using async flows with Op
 4. **Full-Stack Application**:
    - **Backend**: FastAPI server (`server.py`) with `/health` and `/research` endpoints
    - **Frontend**: SvelteKit UI (`agent-ui/`) with Tailwind CSS and DaisyUI
-   - **Infrastructure**: Docker Compose with Redis for caching/state management
+   - **Infrastructure**: Docker Compose for API/UI, Supabase for caching/state management/RAG
 
 ### Research Pipeline
 
@@ -120,14 +121,35 @@ Required in `.env` file:
 
 Optional in `.env` file:
 - `HOST`: Server host (default: 0.0.0.0)
-- `PORT`: Server port (default: 8085)  
-- `REDIS_URL`: Redis connection URL (default: redis://redis:6379/0)
+- `PORT`: Server port (default: 8085)
+- `SUPABASE_URL`: Supabase project URL (e.g., http://127.0.0.1:54321 for local)
+- `SUPABASE_ANON_KEY`: Supabase anonymous/publishable key
+- `SUPABASE_SERVICE_KEY`: Supabase service role key (for server-side operations)
+
+### Supabase Setup
+
+The application uses Supabase for:
+- **Job Tracking**: `research_jobs` table tracks research job status and metadata
+- **Caching**: `research_cache` table caches analysis results with TTL via `expires_at`
+- **RAG (Retrieval Augmented Generation)**: `research_docs` table stores research reports with vector embeddings
+- **User History**: `user_research_history` table tracks user research activity
+- **System Logs**: `system_logs` table for centralized error tracking
+
+Required Supabase tables:
+- `research_jobs` (bigint id, symbol, status, metadata jsonb, timestamps)
+- `research_cache` (bigint id, cache_key unique, symbol, report_type, data jsonb, expires_at)
+- `research_docs` (bigint id, content, title, embedding vector, metadata jsonb, token_count)
+- `user_research_history` (bigint id, user_id, symbol, job_id, metadata jsonb)
+- `system_logs` (bigint id, log_level, component, message, job_id, symbol, stack_trace)
+
+For local development, run Supabase in a separate directory and use `supabase status` to get connection details.
 
 ### Testing Strategy
 
 - Uses `pytest` with path configuration in `pyproject.toml`
 - Test files in `tests/` directory with unit tests in `tests/unit/`
 - Mocks external API calls to avoid hitting real APIs during tests
+- Supabase client is automatically mocked in all tests via `conftest.py` fixtures
 
 ## Development Guidelines
 

@@ -2,6 +2,7 @@
 import sys
 import logging
 from pathlib import Path
+from datetime import datetime
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
@@ -74,7 +75,7 @@ async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks
             symbol=symbol_upper,
             metadata={
                 "force_recompute": req.force_recompute,
-                "requested_at": job_tracker.client.time()[0]  # Redis timestamp
+                "requested_at": datetime.now().isoformat()
             }
         )
         
