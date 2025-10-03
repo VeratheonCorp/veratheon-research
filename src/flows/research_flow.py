@@ -12,7 +12,7 @@ from src.flows.subflows.key_insights_flow import key_insights_flow
 from src.flows.subflows.company_overview_flow import company_overview_flow
 from src.flows.subflows.global_quote_flow import global_quote_flow
 from src.tasks.common.job_status_task import update_job_status_task
-from src.lib.supabase_job_tracker import JobStatus, get_job_tracker
+from src.lib.supabase_job_tracker import JobStatus
 from src.tasks.common.peer_group_reporting_task import peer_group_reporting_task
 from src.tasks.common.reporting_directory_setup_task import ensure_reporting_directory_exists
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
@@ -61,27 +61,22 @@ async def main_research_flow(
     await update_job_status_task(job_id, JobStatus.RUNNING, "Starting main research flow", "main_research_flow", symbol)
 
     # Company overview provides foundational business context
-    job_tracker = get_job_tracker()
-    co_subjob = job_tracker.create_job(
-        job_type="research_subflow",
-        symbol=symbol,
-        main_job_id=job_id,
-        is_sub_job=True,
-        job_name="company_overview_flow"
-    )
-    job_tracker.update_job_status(co_subjob["sub_job_id"], JobStatus.RUNNING, step="Analyzing company overview", use_sub_job_id=True)
+    await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing company overview", "company_overview_flow", symbol)
     company_overview_analysis: CompanyOverviewAnalysis = await company_overview_flow(symbol, force_recompute=force_recompute)
-    job_tracker.update_job_status(co_subjob["sub_job_id"], JobStatus.COMPLETED, step="Company overview complete", use_sub_job_id=True)
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Company overview complete", "company_overview_flow", symbol)
 
     # Global quote provides current price data
     await update_job_status_task(job_id, JobStatus.RUNNING, "Fetching current market data", "global_quote_flow", symbol)
     global_quote_data: GlobalQuoteData = await global_quote_flow(symbol, force_recompute=force_recompute)
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Current market data fetched", "global_quote_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing historical earnings", "historical_earnings_flow", symbol)
     historical_earnings_analysis: HistoricalEarningsAnalysis = await historical_earnings_flow(symbol, force_recompute=force_recompute)
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Historical earnings analysis complete", "historical_earnings_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing financial statements", "financial_statements_flow", symbol)
     financial_statements_analysis: FinancialStatementsAnalysis = await financial_statements_flow(symbol, force_recompute=force_recompute)
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Financial statements analysis complete", "financial_statements_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Generating earnings projections", "earnings_projections_flow", symbol)
     earnings_projections_analysis: EarningsProjectionAnalysis = await earnings_projections_flow(
@@ -90,6 +85,7 @@ async def main_research_flow(
         financial_statements_analysis.model_dump(),
         force_recompute=force_recompute
     )
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Earnings projections complete", "earnings_projections_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing management guidance", "management_guidance_flow", symbol)
     management_guidance_analysis: ManagementGuidanceAnalysis = await management_guidance_flow(
@@ -98,14 +94,17 @@ async def main_research_flow(
         financial_statements_analysis,
         force_recompute=force_recompute
     )
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Management guidance analysis complete", "management_guidance_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Identifying peer group", "peer_group_analysis", symbol)
     peer_group: PeerGroup = await peer_group_agent(symbol, financial_statements_analysis)
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Peer group identification complete", "peer_group_analysis", symbol)
 
     await peer_group_reporting_task(symbol, peer_group)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Performing forward PE sanity check", "forward_pe_sanity_check_flow", symbol)
     forward_pe_sanity_check: ForwardPeSanityCheck = await forward_pe_sanity_check_flow(symbol, force_recompute=force_recompute)
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Forward PE sanity check complete", "forward_pe_sanity_check_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Calculating forward PE analysis", "forward_pe_flow", symbol)
     forward_pe_flow_result: ForwardPeValuation = await forward_pe_flow(
@@ -116,6 +115,7 @@ async def main_research_flow(
         forward_pe_sanity_check,
         force_recompute=force_recompute
     )
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Forward PE analysis complete", "forward_pe_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Analyzing news sentiment", "news_sentiment_flow", symbol)
     news_sentiment_flow_result: NewsSentimentSummary = await news_sentiment_flow(
@@ -125,6 +125,7 @@ async def main_research_flow(
         management_guidance_analysis,
         force_recompute=force_recompute
     )
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "News sentiment analysis complete", "news_sentiment_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Cross-referencing analysis", "cross_reference_flow", symbol)
     cross_reference_flow_result: List[CrossReferencedAnalysisCompletion] = await cross_reference_flow(
@@ -137,6 +138,7 @@ async def main_research_flow(
         management_guidance_analysis,
         force_recompute=force_recompute
     )
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Cross-reference analysis complete", "cross_reference_flow", symbol)
 
     await update_job_status_task(job_id, JobStatus.RUNNING, "Generating trade ideas", "trade_ideas_flow", symbol)
     trade_ideas_flow_result: TradeIdea = await trade_ideas_flow(
@@ -149,6 +151,7 @@ async def main_research_flow(
         management_guidance_analysis,
         force_recompute=force_recompute
     )
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Trade ideas generation complete", "trade_ideas_flow", symbol)
 
     # Collect all analyses for comprehensive report
     all_analyses = {
@@ -176,6 +179,7 @@ async def main_research_flow(
         force_recompute=force_recompute
     )
     logger.info(f"Comprehensive report generated for {symbol}")
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Comprehensive report generation complete", "comprehensive_report_flow", symbol)
 
     # Generate key insights from comprehensive report
     await update_job_status_task(job_id, JobStatus.RUNNING, "Extracting key insights", "key_insights_flow", symbol)
@@ -185,6 +189,7 @@ async def main_research_flow(
         force_recompute=force_recompute
     )
     logger.info(f"Key insights generated for {symbol}")
+    await update_job_status_task(job_id, JobStatus.COMPLETED, "Key insights extraction complete", "key_insights_flow", symbol)
 
     duration_seconds = int(time.time() - start_time)
     logger.info(f"Main research for {symbol} completed successfully! in {duration_seconds} seconds")
