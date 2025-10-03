@@ -17,7 +17,7 @@ load_dotenv()
 
 # Import after sys.path setup
 from src.flows.research_flow import main_research_flow  # noqa: E402
-from src.lib.job_tracker import get_job_tracker, JobStatus  # noqa: E402
+from src.lib.supabase_job_tracker import get_job_tracker, JobStatus  # noqa: E402
 from src.lib.alpha_vantage_api import call_alpha_vantage_symbol_search  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)

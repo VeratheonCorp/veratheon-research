@@ -1,4 +1,4 @@
-from src.lib.redis_cache import get_redis_cache
+from src.lib.supabase_cache import get_redis_cache
 from src.research.comprehensive_report.comprehensive_report_models import KeyInsights
 import logging
 

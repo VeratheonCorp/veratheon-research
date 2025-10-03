@@ -1,5 +1,5 @@
 from src.research.financial_statements.financial_statements_models import FinancialStatementsAnalysis
-from src.lib.redis_cache import get_redis_cache
+from src.lib.supabase_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime

@@ -1,5 +1,5 @@
 from src.research.historical_earnings.historical_earnings_models import HistoricalEarningsAnalysis
-from src.lib.redis_cache import get_redis_cache
+from src.lib.supabase_cache import get_redis_cache
 import json
 import logging
 from datetime import datetime
