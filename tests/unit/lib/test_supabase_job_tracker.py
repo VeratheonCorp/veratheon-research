@@ -29,12 +29,20 @@ class TestJobTracker:
         """Test creating a new job."""
         tracker, mock_client, mock_response = tracker_with_mock
 
-        # Mock successful insert
-        mock_response.data = [{"id": 123}]
+        # Mock successful insert with UUID fields
+        import uuid
+        main_job_id = str(uuid.uuid4())
+        mock_response.data = [{
+            "id": 123,
+            "main_job_id": main_job_id,
+            "sub_job_id": None
+        }]
 
-        job_id = tracker.create_job("research", "AAPL", metadata={"user": "test"})
+        result = tracker.create_job("research", "AAPL", metadata={"user": "test"})
 
-        assert job_id == "123"
+        assert result["main_job_id"] == main_job_id
+        assert result["id"] == "123"
+        assert result["sub_job_id"] is None
         mock_client.table.assert_called_with("research_jobs")
         # Verify insert was called
         assert mock_client.table.return_value.insert.called
@@ -121,8 +129,12 @@ class TestJobTracker:
         tracker, mock_client, mock_response = tracker_with_mock
 
         # Mock job data
+        import uuid
+        main_job_id = str(uuid.uuid4())
         mock_response.data = [{
             "id": 123,
+            "main_job_id": main_job_id,
+            "sub_job_id": None,
             "symbol": "AAPL",
             "status": "running",
             "created_at": "2025-01-01T00:00:00",
@@ -130,11 +142,12 @@ class TestJobTracker:
             "metadata": {"job_type": "research", "steps": ["step1", "step2"]}
         }]
 
-        status = tracker.get_job_status("123")
+        status = tracker.get_job_status(main_job_id, use_main_job_id=True)
 
         assert status is not None
         assert status["status"] == "running"
         assert status["symbol"] == "AAPL"
+        assert status["main_job_id"] == main_job_id
 
     def test_get_job_status_not_found(self, tracker_with_mock):
         """Test getting status for non-existent job."""

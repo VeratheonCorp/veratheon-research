@@ -20,6 +20,9 @@
 
   interface JobStatus {
     job_id?: string;
+    main_job_id?: string;
+    sub_job_id?: string;
+    job_name?: string;
     symbol?: string;
     status?: string;
     completed?: boolean;
@@ -28,6 +31,16 @@
     steps?: JobStep[];
     created_at?: string;
     updated_at?: string;
+  }
+
+  interface SubJob {
+    id: number;
+    job_name: string;
+    status: string;
+    sub_job_id: string;
+    created_at: string;
+    updated_at: string;
+    metadata?: any;
   }
 
   let stockSymbol = '';
@@ -40,6 +53,7 @@
   let researchResult: ResearchResult | null = null;
   let currentJobId: string | null = null;
   let jobStatus: JobStatus | null = null;
+  let subJobs: SubJob[] = [];  // Track all subjobs
   let showModal = false;
 
   function renderMarkdown(text: string) {
@@ -115,6 +129,7 @@
     // Clear old data for new research run
     researchResult = null;
     jobStatus = null;
+    subJobs = [];
     currentJobId = null;
 
     isRunningResearch = true;
@@ -143,30 +158,87 @@
           .on(
             'postgres_changes',
             {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'research_jobs',
+              filter: `main_job_id=eq.${currentJobId}`
+            },
+            (payload) => {
+              console.log('Realtime job INSERT:', payload);
+              const newJob = payload.new;
+
+              // Add new subjob to list
+              if (newJob.sub_job_id) {
+                subJobs = [...subJobs, {
+                  id: newJob.id,
+                  job_name: newJob.job_name,
+                  status: newJob.status,
+                  sub_job_id: newJob.sub_job_id,
+                  created_at: newJob.created_at,
+                  updated_at: newJob.updated_at,
+                  metadata: newJob.metadata
+                }];
+              } else {
+                // This is the main job
+                jobStatus = {
+                  job_id: newJob.id,
+                  main_job_id: newJob.main_job_id,
+                  job_name: newJob.job_name,
+                  symbol: newJob.symbol,
+                  status: newJob.status,
+                  completed: newJob.status === 'completed',
+                  error: newJob.error,
+                  steps: newJob.metadata?.steps || [],
+                  created_at: newJob.created_at,
+                  updated_at: newJob.updated_at,
+                  result: newJob.metadata?.result
+                };
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
               event: 'UPDATE',
               schema: 'public',
               table: 'research_jobs',
-              filter: `id=eq.${currentJobId}`
+              filter: `main_job_id=eq.${currentJobId}`
             },
             (payload) => {
-              console.log('Realtime job update:', payload);
-
+              console.log('Realtime job UPDATE:', payload);
               const updatedJob = payload.new;
 
-              // Update job status from realtime data
-              jobStatus = {
-                job_id: String(updatedJob.id),
-                symbol: updatedJob.symbol,
-                status: updatedJob.status,
-                completed: updatedJob.status === 'completed',
-                error: updatedJob.error,
-                steps: updatedJob.metadata?.steps || [],
-                created_at: updatedJob.created_at,
-                updated_at: updatedJob.updated_at,
-                result: updatedJob.metadata?.result
-              };
+              // Update subjob if it has sub_job_id
+              if (updatedJob.sub_job_id) {
+                subJobs = subJobs.map(job =>
+                  job.sub_job_id === updatedJob.sub_job_id
+                    ? {
+                        ...job,
+                        status: updatedJob.status,
+                        updated_at: updatedJob.updated_at,
+                        metadata: updatedJob.metadata
+                      }
+                    : job
+                );
+              } else {
+                // Update main job status
+                jobStatus = {
+                  job_id: updatedJob.id,
+                  main_job_id: updatedJob.main_job_id,
+                  job_name: updatedJob.job_name,
+                  symbol: updatedJob.symbol,
+                  status: updatedJob.status,
+                  completed: updatedJob.status === 'completed',
+                  error: updatedJob.error,
+                  steps: updatedJob.metadata?.steps || [],
+                  created_at: updatedJob.created_at,
+                  updated_at: updatedJob.updated_at,
+                  result: updatedJob.metadata?.result
+                };
+              }
 
-              if (updatedJob.status === 'completed') {
+              // Check if main flow is completed
+              if (updatedJob.job_name === 'main_flow' && updatedJob.status === 'completed') {
                 console.log('Research completed:', updatedJob.metadata?.result);
                 researchResult = updatedJob.metadata?.result as ResearchResult;
                 isRunningResearch = false;
@@ -176,7 +248,7 @@
                   supabase.removeChannel(realtimeChannel);
                   realtimeChannel = null;
                 }
-              } else if (updatedJob.status === 'failed') {
+              } else if (updatedJob.job_name === 'main_flow' && updatedJob.status === 'failed') {
                 console.error('Research failed:', updatedJob.error);
                 alert(`Research failed: ${updatedJob.error}`);
                 isRunningResearch = false;
@@ -374,31 +446,61 @@
           </div>
 
           <!-- Progress indicator for running research -->
-          {#if isRunningResearch && jobStatus}
+          {#if isRunningResearch}
             <div class="mb-8">
-              <div class="flex justify-between text-sm text-base-content/60 mb-2">
-                <span>Research Progress</span>
-                <span>{jobStatus.steps?.length || 0} steps completed</span>
-              </div>
-              <progress class="progress progress-primary w-full" value="{jobStatus.steps?.length || 0}" max="{MAX_STEPS}"></progress>
-              
-              <!-- Current step indicator -->
-              {#if jobStatus.steps && jobStatus.steps.length > 0}
-                <div class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
-                    <div class="font-medium text-base-content">
-                      {jobStatus.steps[jobStatus.steps.length - 1].step || 'Processing'}
+              <!-- Subjobs progress -->
+              {#if subJobs.length > 0}
+                <div class="mb-4">
+                  <div class="flex justify-between text-sm text-base-content/60 mb-2">
+                    <span>Research Flows</span>
+                    <span>{subJobs.length} flows</span>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {#each subJobs as subJob (subJob.sub_job_id)}
+                      <div class="p-3 rounded-lg border {subJob.status === 'completed' ? 'bg-success/10 border-success/30' : subJob.status === 'running' ? 'bg-primary/10 border-primary/30' : subJob.status === 'failed' ? 'bg-error/10 border-error/30' : 'bg-base-200 border-base-300'}">
+                        <div class="flex items-center gap-2">
+                          {#if subJob.status === 'completed'}
+                            <div class="w-2 h-2 rounded-full bg-success"></div>
+                          {:else if subJob.status === 'running'}
+                            <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                          {:else if subJob.status === 'failed'}
+                            <div class="w-2 h-2 rounded-full bg-error"></div>
+                          {:else}
+                            <div class="w-2 h-2 rounded-full bg-base-300"></div>
+                          {/if}
+                          <span class="text-xs font-medium truncate">{subJob.job_name}</span>
+                        </div>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+
+              {#if jobStatus}
+                <div class="flex justify-between text-sm text-base-content/60 mb-2">
+                  <span>Main Flow Progress</span>
+                  <span>{jobStatus.steps?.length || 0} steps completed</span>
+                </div>
+                <progress class="progress progress-primary w-full" value="{jobStatus.steps?.length || 0}" max="{MAX_STEPS}"></progress>
+
+                <!-- Current step indicator -->
+                {#if jobStatus.steps && jobStatus.steps.length > 0}
+                  <div class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <div class="flex items-center gap-3">
+                      <div class="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
+                      <div class="font-medium text-base-content">
+                        {jobStatus.steps[jobStatus.steps.length - 1].step || 'Processing'}
+                      </div>
                     </div>
                   </div>
-                </div>
-              {:else}
-                <div class="mt-4 p-4 bg-primary/5 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="loading loading-dots loading-sm text-primary"></div>
-                    <p class="text-base-content/60">Initializing research pipeline...</p>
+                {:else}
+                  <div class="mt-4 p-4 bg-primary/5 rounded-lg">
+                    <div class="flex items-center gap-3">
+                      <div class="loading loading-dots loading-sm text-primary"></div>
+                      <p class="text-base-content/60">Initializing research pipeline...</p>
+                    </div>
                   </div>
-                </div>
+                {/if}
               {/if}
             </div>
           {/if}
