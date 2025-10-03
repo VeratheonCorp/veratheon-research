@@ -13,8 +13,9 @@
 - Used by 13 `*_reporting_task.py` files
 
 ### 3. Real-time Status Updates (`src/tasks/common/status_update_task.py`)
-- Redis pub/sub channel: `research_status_updates`
-- Publishes status updates for UI consumption
+- **NOT ACTUALLY USED** - Code exists but is never imported/called
+- Frontend uses simple HTTP polling every 3 seconds instead
+- Can be deleted during migration
 
 ## Supabase Schema to Create
 
@@ -38,9 +39,6 @@ create table public.research_jobs (
 
 create index idx_research_jobs_symbol_created on public.research_jobs(symbol, created_at desc);
 create index idx_research_jobs_status on public.research_jobs(status);
-
--- Enable Realtime for pub/sub replacement
-alter publication supabase_realtime add table research_jobs;
 ```
 
 ### Table 2: `research_cache` (New)
@@ -78,7 +76,6 @@ create index idx_research_cache_type_symbol on public.research_cache(report_type
 1. Create SQL migration file `supabase/migrations/001_redis_migration.sql` with both table definitions
 2. Apply migration to local Supabase instance
 3. Verify tables exist and indexes are created
-4. Enable Realtime for `research_jobs` table
 
 **Files to create:**
 - `supabase/migrations/001_redis_migration.sql`
@@ -126,10 +123,8 @@ create index idx_research_cache_type_symbol on public.research_cache(report_type
 
 **Actions:**
 1. Replace `from src.lib.redis_cache import get_redis_cache` with `from src.lib.supabase_cache import get_supabase_cache as get_redis_cache` in all 13 `*_reporting_task.py` files
-2. Replace `from src.lib.job_tracker import get_job_tracker, JobStatus` with `from src.lib.supabase_job_tracker import get_job_tracker, JobStatus` in:
-   - `server/api.py`
-   - Any flow/task files using job tracker
-3. Update `src/tasks/common/status_update_task.py` to use Supabase Realtime instead of Redis pub/sub
+2. Replace `from src.lib.job_tracker import get_job_tracker, JobStatus` with `from src.lib.supabase_job_tracker import get_job_tracker, JobStatus` in `server/api.py`
+3. Delete `src/tasks/common/status_update_task.py` (unused code)
 
 **Files to modify:**
 - `src/tasks/historical_earnings/historical_earnings_reporting_task.py`
@@ -146,7 +141,9 @@ create index idx_research_cache_type_symbol on public.research_cache(report_type
 - `src/tasks/earnings_projections/earnings_projections_reporting_task.py`
 - `src/tasks/common/peer_group_reporting_task.py`
 - `server/api.py`
-- `src/tasks/common/status_update_task.py`
+
+**Files to delete:**
+- `src/tasks/common/status_update_task.py` (unused code)
 
 ### STEP 4: Add RAG Integration for Comprehensive Reports
 
@@ -185,6 +182,7 @@ SUPABASE_SERVICE_KEY=your-service-role-key-here  # For backend operations
 **Files to delete:**
 - `src/lib/redis_cache.py`
 - `src/lib/job_tracker.py`
+- `src/tasks/common/status_update_task.py` (unused code - never imported)
 
 **Files to modify:**
 - `docker-compose.yml`
@@ -241,16 +239,17 @@ Update all cache retrieval tasks to use Supabase cache instead of Redis:
 - `CLAUDE.md`
 - `.windsurf/rules/architecture.md`
 
-### STEP 11: Update Frontend (SvelteKit UI)
+### STEP 11: (OPTIONAL) Add Supabase Realtime for Better UX
 
-**Actions:**
-1. Update `agent-ui/src/routes/api/status-updates/+server.ts` to subscribe to Supabase Realtime instead of Redis pub/sub
-2. Update any frontend code that polls for job status to use Realtime subscriptions
-3. Update `agent-ui/package.json` to include `@supabase/supabase-js` dependency
+**Status:** OPTIONAL - Current polling works fine
 
-**Files to modify:**
-- `agent-ui/src/routes/api/status-updates/+server.ts`
-- `agent-ui/package.json`
+**Actions (if implementing):**
+1. Enable Realtime on `research_jobs` table
+2. Update frontend to subscribe to job updates via Supabase Realtime
+3. Remove polling interval in favor of real-time subscriptions
+4. Add `@supabase/supabase-js` to `agent-ui/package.json`
+
+**Note:** Current implementation uses HTTP polling every 3 seconds. This works fine, but Supabase Realtime would provide instant updates and reduce backend load.
 
 ## Implementation Notes
 
@@ -283,16 +282,16 @@ Run cleanup jobs via:
 
 - ✓ All 13 reporting tasks successfully cache to Supabase
 - ✓ Job tracking fully functional via Supabase
-- ✓ Real-time status updates working via Supabase Realtime
+- ✓ Job status polling working correctly (HTTP polling maintained)
 - ✓ RAG embeddings generated for comprehensive reports
 - ✓ All tests passing
 - ✓ Redis completely removed from codebase
 - ✓ Docker compose works without Redis service
-- ✓ UI receives real-time updates via Supabase
+- ✓ UI polling works correctly (3-second intervals maintained)
 
 ## Files Summary
 
-**To Create (10 files):**
+**To Create (7 files):**
 1. `supabase/migrations/001_redis_migration.sql`
 2. `src/lib/supabase_client.py`
 3. `src/lib/supabase_job_tracker.py`
@@ -301,25 +300,37 @@ Run cleanup jobs via:
 6. `src/jobs/cleanup_expired_cache.py`
 7. `src/jobs/cleanup_old_jobs.py`
 
-**To Delete (2 files):**
+**To Delete (3 files):**
 1. `src/lib/redis_cache.py`
 2. `src/lib/job_tracker.py`
+3. `src/tasks/common/status_update_task.py`
 
-**To Modify (~30+ files):**
+**To Modify (~30 files):**
 - 13 reporting task files (import changes)
 - 12 cache retrieval task files (import changes)
 - `server/api.py` (import changes)
-- `src/tasks/common/status_update_task.py` (Realtime implementation)
 - `docker-compose.yml` (remove Redis)
 - `pyproject.toml` (remove redis dependency, add supabase)
 - `.env.example` (add Supabase vars)
 - `CLAUDE.md` (update docs)
 - `.windsurf/rules/architecture.md` (update architecture)
 - `tests/conftest.py` (Supabase fixtures)
-- `tests/unit/tasks/test_common_tasks.py` (update mocks)
-- `agent-ui/package.json` (add supabase-js)
-- `agent-ui/src/routes/api/status-updates/+server.ts` (Realtime)
+- `tests/unit/tasks/test_common_tasks.py` (remove status_update tests)
+
+## Key Findings
+
+**Redis Pub/Sub is NOT actually used:**
+- `src/tasks/common/status_update_task.py` exists but is never imported in source code (only in tests)
+- Frontend uses simple HTTP polling every 3 seconds via `/api/research/status/${symbol}`
+- No WebSocket, SSE, or Redis subscription on frontend
+- This unused code will be deleted during migration
+
+**Current Status Update Flow:**
+1. Backend writes job status to Redis (via `job_tracker.update_job_status()`)
+2. Frontend polls HTTP endpoint every 3 seconds
+3. Backend reads job status from Redis and returns to frontend
+4. Simple but effective - no need for complex real-time infrastructure
 
 ## Execution Order
 
-Execute steps in sequence 1→11. Do not skip steps. Each step should be completed and verified before moving to the next.
+Execute steps in sequence 1→10. Step 11 (Realtime) is optional. Each step should be completed and verified before moving to the next.
