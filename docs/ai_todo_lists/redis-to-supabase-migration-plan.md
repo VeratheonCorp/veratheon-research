@@ -314,24 +314,9 @@ Update all cache retrieval tasks to use Supabase cache instead of Redis:
 - `src/tasks/cache_retrieval/global_quote_cache_retrieval_task.py`
 - `src/tasks/cache_retrieval/earnings_projections_cache_retrieval_task.py`
 
-### STEP 8: Create Cleanup Jobs
 
-**Actions:**
-1. Create `src/jobs/cleanup_expired_cache.py` - Delete expired cache entries using `expires_at` (runs daily)
-2. Create `src/jobs/cleanup_old_jobs.py` - Delete jobs older than 7 days (runs daily)
-3. Document how to run these as cron jobs or background tasks
-
-**Files to create:**
-- `src/jobs/cleanup_expired_cache.py` (daily cleanup)
-- `src/jobs/cleanup_old_jobs.py` (daily cleanup)
-
-**Cleanup Process:**
-```python
-# Pseudocode for cleanup_expired_cache.py
-1. Query research_cache WHERE expires_at < NOW()
-2. Delete expired entries
-3. Log cleanup statistics
-```
+### STEP 8: Removed
+# Not needed
 
 **Note:** Using `expires_at` for cleanup - no archive table needed
 

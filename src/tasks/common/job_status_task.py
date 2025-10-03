@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from src.lib.job_tracker import get_job_tracker, JobStatus
+from src.lib.supabase_job_tracker import get_job_tracker, JobStatus
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ async def update_job_status_task(
     flow: Optional[str] = None
 ) -> bool:
     """
-    Task to update job status in Redis.
+    Task to update job status in Supabase.
     
     Args:
         job_id: Job UUID (if None, this is a no-op for backward compatibility)

@@ -12,7 +12,7 @@ from src.flows.subflows.key_insights_flow import key_insights_flow
 from src.flows.subflows.company_overview_flow import company_overview_flow
 from src.flows.subflows.global_quote_flow import global_quote_flow
 from src.tasks.common.job_status_task import update_job_status_task
-from src.lib.job_tracker import JobStatus
+from src.lib.supabase_job_tracker import JobStatus
 from src.tasks.common.peer_group_reporting_task import peer_group_reporting_task
 from src.tasks.common.reporting_directory_setup_task import ensure_reporting_directory_exists
 from src.research.forward_pe.forward_pe_models import ForwardPeValuation, ForwardPeSanityCheck
