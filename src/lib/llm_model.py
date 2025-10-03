@@ -4,6 +4,7 @@ import os
 MODEL_SELECTED = os.getenv("MODEL_SELECTED")
 LOCAL_OLLAMA_URL = os.getenv("LOCAL_OLLAMA_URL")
 NORD_OLLAMA_URL = os.getenv("NORD_OLLAMA_URL")
+XAI_API_KEY = os.getenv("XAI_API_KEY")
 
 local_gemma27b_model = LitellmModel(model="ollama/gemma3:27b-it-qat", api_key="ollama", base_url=LOCAL_OLLAMA_URL)
 local_gemma12b_model = LitellmModel(model="ollama/gemma3:12b-it-qat", api_key="ollama", base_url=LOCAL_OLLAMA_URL)
@@ -13,6 +14,7 @@ nord_gemma12b_model = LitellmModel(model="ollama/gemma3:12b-it-qat", api_key="ol
 nord_gemma4b_model = LitellmModel(model="ollama/gemma3:4b-it-qat", api_key="ollama", base_url=NORD_OLLAMA_URL)
 local_gptoss_model = LitellmModel(model="ollama/gpt-oss:20b", api_key="ollama", base_url=LOCAL_OLLAMA_URL)
 nord_gptoss_model = LitellmModel(model="ollama/gpt-oss:20b", api_key="ollama", base_url=NORD_OLLAMA_URL)
+xai_grok_4_fast_reasoning_model = LitellmModel(model="xai/grok-4-fast-reasoning", api_key=XAI_API_KEY)
 
 def get_model():
     if MODEL_SELECTED == "local_gemma27b":
@@ -31,6 +33,8 @@ def get_model():
         model = local_gptoss_model
     elif MODEL_SELECTED == "nord_gptoss":
         model = nord_gptoss_model
+    elif MODEL_SELECTED == "xai_grok_4_fast_reasoning":
+        model = xai_grok_4_fast_reasoning_model
     elif MODEL_SELECTED == "o4_mini":
         model = "o4-mini"
     else:
