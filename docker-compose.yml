@@ -10,11 +10,8 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=8085
-      - REDIS_URL=redis://localhost:6379/0
     volumes:
       - ./reports:/app/reports
-    depends_on:
-      - redis
     command: ["python", "-u", "server.py"]
 
   agent-ui:
@@ -23,7 +20,6 @@ services:
     network_mode: host
     environment:
       - API_URL=http://localhost:8085
-      - REDIS_URL=redis://localhost:6379/0
       # Configure undici timeouts for long-running requests
       - UNDICI_HEADERS_TIMEOUT=3600000
       - UNDICI_BODY_TIMEOUT=3600000
@@ -35,15 +31,3 @@ services:
     depends_on:
       - api
 
-  redis:
-    image: redis:7-alpine
-    container_name: market-research-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - ./redis_data:/data
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-
-volumes:
-  redis_data:
