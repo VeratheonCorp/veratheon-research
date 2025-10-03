@@ -6,6 +6,8 @@
   import { Search, ChartNoAxesCombined, CircleCheckBig, Lightbulb, TrendingUp, ListEnd } from '@lucide/svelte';
   import ReportStatusIndicator from '$lib/components/ReportStatusIndicator.svelte';
   import TickerSearch from '$lib/components/TickerSearch.svelte';
+  import { supabase } from '$lib/supabase';
+  import type { RealtimeChannel } from '@supabase/supabase-js';
 
   // Configuration
   const MAX_STEPS = 29;
@@ -55,7 +57,7 @@
     }, 10);
   }
 
-  let researchPollingInterval: ReturnType<typeof setInterval> | null = null;
+  let realtimeChannel: RealtimeChannel | null = null;
 
   // Update browser tab title with completion percentage
   $: {
@@ -109,70 +111,139 @@
       alert('Please enter a stock symbol');
       return;
     }
-    
+
     // Clear old data for new research run
     researchResult = null;
     jobStatus = null;
     currentJobId = null;
-    
+
     isRunningResearch = true;
-    
+
     try {
       // Start research and get job ID
       const startResult = await startResearch();
       console.log('Research started:', startResult);
-      
+
       currentJobId = startResult.job_id;
-      
-      // Poll for completion every 3 seconds
-      researchPollingInterval = setInterval(async () => {
-        try {
-          if (!currentJobId) return;
-          
-          const status = await checkJobStatus(currentJobId);
-          console.log('Polling job status:', status);
-          
-          jobStatus = status;
-          
-          if (status.completed) {
-            console.log('Research completed:', status.result);
-            researchResult = status.result as ResearchResult;
-            isRunningResearch = false;
-            
-            if (researchPollingInterval) {
-              clearInterval(researchPollingInterval);
-              researchPollingInterval = null;
-            }
-          } else if (status.error) {
-            console.error('Research failed:', status.error);
-            alert(`Research failed: ${status.error}`);
-            isRunningResearch = false;
-            
-            if (researchPollingInterval) {
-              clearInterval(researchPollingInterval);
-              researchPollingInterval = null;
-            }
-          }
-        } catch (error) {
-          console.error('Status check error:', error);
-          // Continue polling unless it's a critical error
+
+      // Get initial status
+      const initialStatus = await checkJobStatus(currentJobId);
+      jobStatus = initialStatus;
+
+      // Subscribe to real-time updates for this job
+      if (supabase) {
+        // Unsubscribe from previous channel if exists
+        if (realtimeChannel) {
+          await supabase.removeChannel(realtimeChannel);
+          realtimeChannel = null;
         }
-      }, 3000); // Poll every 3 seconds
-      
+
+        realtimeChannel = supabase
+          .channel(`research_job_${currentJobId}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'research_jobs',
+              filter: `id=eq.${currentJobId}`
+            },
+            (payload) => {
+              console.log('Realtime job update:', payload);
+
+              const updatedJob = payload.new;
+
+              // Update job status from realtime data
+              jobStatus = {
+                job_id: String(updatedJob.id),
+                symbol: updatedJob.symbol,
+                status: updatedJob.status,
+                completed: updatedJob.status === 'completed',
+                error: updatedJob.error,
+                steps: updatedJob.metadata?.steps || [],
+                created_at: updatedJob.created_at,
+                updated_at: updatedJob.updated_at,
+                result: updatedJob.metadata?.result
+              };
+
+              if (updatedJob.status === 'completed') {
+                console.log('Research completed:', updatedJob.metadata?.result);
+                researchResult = updatedJob.metadata?.result as ResearchResult;
+                isRunningResearch = false;
+
+                // Unsubscribe after completion
+                if (realtimeChannel) {
+                  supabase.removeChannel(realtimeChannel);
+                  realtimeChannel = null;
+                }
+              } else if (updatedJob.status === 'failed') {
+                console.error('Research failed:', updatedJob.error);
+                alert(`Research failed: ${updatedJob.error}`);
+                isRunningResearch = false;
+
+                // Unsubscribe after failure
+                if (realtimeChannel) {
+                  supabase.removeChannel(realtimeChannel);
+                  realtimeChannel = null;
+                }
+              }
+            }
+          )
+          .subscribe((status) => {
+            console.log('Realtime subscription status:', status);
+          });
+      } else {
+        console.warn('Supabase client not available, falling back to polling');
+        // Fallback to polling if Supabase is not available
+        startPolling();
+      }
+
     } catch (error) {
       console.error('Research error:', error);
       alert(`Research failed: ${error.message}`);
       isRunningResearch = false;
-      if (researchPollingInterval) {
-        clearInterval(researchPollingInterval);
-        researchPollingInterval = null;
+      if (realtimeChannel && supabase) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
       }
     }
   }
 
+  // Fallback polling function (used if Supabase Realtime is not available)
+  function startPolling() {
+    const pollInterval = setInterval(async () => {
+      try {
+        if (!currentJobId) {
+          clearInterval(pollInterval);
+          return;
+        }
+
+        const status = await checkJobStatus(currentJobId);
+        console.log('Polling job status:', status);
+
+        jobStatus = status;
+
+        if (status.completed) {
+          console.log('Research completed:', status.result);
+          researchResult = status.result as ResearchResult;
+          isRunningResearch = false;
+          clearInterval(pollInterval);
+        } else if (status.error) {
+          console.error('Research failed:', status.error);
+          alert(`Research failed: ${status.error}`);
+          isRunningResearch = false;
+          clearInterval(pollInterval);
+        }
+      } catch (error) {
+        console.error('Status check error:', error);
+      }
+    }, 3000);
+  }
+
   onDestroy(() => {
-    if (researchPollingInterval) {
-      clearInterval(researchPollingInterval);
+    if (realtimeChannel && supabase) {
+      supabase.removeChannel(realtimeChannel);
+      realtimeChannel = null;
     }
   });
 </script>

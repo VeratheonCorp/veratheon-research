@@ -46,9 +46,9 @@
 	},
 	"dependencies": {
 		"@lucide/svelte": "^0.543.0",
+		"@supabase/supabase-js": "^2.58.0",
 		"@types/lodash-es": "^4.17.12",
 		"lodash-es": "^4.17.21",
-		"marked": "^16.2.1",
-		"redis": "^5.8.2"
+		"marked": "^16.2.1"
 	}
 }

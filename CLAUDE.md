@@ -144,6 +144,16 @@ Required Supabase tables:
 
 For local development, run Supabase in a separate directory and use `supabase status` to get connection details.
 
+**Enable Realtime for research_jobs table** (required for frontend live updates):
+```sql
+alter publication supabase_realtime add table research_jobs;
+```
+
+**Frontend Configuration**:
+The SvelteKit UI uses Supabase Realtime for live job status updates instead of polling. Configure frontend environment variables in `agent-ui/.env`:
+- `VITE_SUPABASE_URL`: Same as backend SUPABASE_URL
+- `VITE_SUPABASE_ANON_KEY`: Same as backend SUPABASE_ANON_KEY
+
 ### Testing Strategy
 
 - Uses `pytest` with path configuration in `pyproject.toml`
