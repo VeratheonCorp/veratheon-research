@@ -55,6 +55,8 @@
   let jobStatus: JobStatus | null = null;
   let subJobs: SubJob[] = [];  // Track all subjobs
   let showModal = false;
+  let showFlows = true;  // Control flow boxes visibility
+  let selectedFlow: SubJob | null = null;  // Track selected flow for future report viewing
 
   function renderMarkdown(text: string) {
     return marked(text);
@@ -445,19 +447,45 @@
             {/if}
           </div>
 
-          <!-- Progress indicator for running research -->
-          {#if isRunningResearch}
-            <div class="mb-8">
-              <!-- Subjobs progress -->
-              {#if subJobs.length > 0}
-                <div class="mb-4">
-                  <div class="flex justify-between text-sm text-base-content/60 mb-2">
-                    <span>Research Flows</span>
-                    <span>{subJobs.length} flows</span>
-                  </div>
+          <!-- Research Flows - Collapsible -->
+          {#if subJobs.length > 0}
+            <div class="mb-8 border border-base-300 rounded-lg overflow-hidden">
+              <!-- Header with toggle -->
+              <button 
+                class="w-full p-4 bg-base-200 hover:bg-base-300 transition-colors flex items-center justify-between"
+                on:click={() => showFlows = !showFlows}
+              >
+                <div class="flex items-center gap-3">
+                  <ChartNoAxesCombined class="w-5 h-5 text-primary" />
+                  <span class="font-semibold text-base-content">Research Flows</span>
+                  <span class="badge badge-primary">{subJobs.length} flows</span>
+                  {#if !isRunningResearch}
+                    <span class="badge badge-success">Completed</span>
+                  {/if}
+                </div>
+                <svg 
+                  class="w-5 h-5 transition-transform {showFlows ? 'rotate-180' : ''}"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <!-- Collapsible content -->
+              {#if showFlows}
+                <div class="p-4" transition:slide>
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {#each subJobs as subJob (subJob.sub_job_id)}
-                      <div class="p-3 rounded-lg border {subJob.status === 'completed' ? 'bg-success/10 border-success/30' : subJob.status === 'running' ? 'bg-primary/10 border-primary/30' : subJob.status === 'failed' ? 'bg-error/10 border-error/30' : 'bg-base-200 border-base-300'}">
+                      <button
+                        class="p-3 rounded-lg border text-left transition-all hover:shadow-md {subJob.status === 'completed' ? 'bg-success/10 border-success/30 hover:bg-success/20' : subJob.status === 'running' ? 'bg-primary/10 border-primary/30 hover:bg-primary/20' : subJob.status === 'failed' ? 'bg-error/10 border-error/30 hover:bg-error/20' : 'bg-base-200 border-base-300 hover:bg-base-300'}"
+                        on:click={() => {
+                          selectedFlow = subJob;
+                          // TODO: Show individual flow report
+                          console.log('Selected flow:', subJob.job_name, subJob);
+                        }}
+                      >
                         <div class="flex items-center gap-2">
                           {#if subJob.status === 'completed'}
                             <div class="w-2 h-2 rounded-full bg-success"></div>
@@ -470,37 +498,10 @@
                           {/if}
                           <span class="text-xs font-medium truncate">{subJob.job_name}</span>
                         </div>
-                      </div>
+                      </button>
                     {/each}
                   </div>
                 </div>
-              {/if}
-
-              {#if jobStatus}
-                <div class="flex justify-between text-sm text-base-content/60 mb-2">
-                  <span>Main Flow Progress</span>
-                  <span>{jobStatus.steps?.length || 0} steps completed</span>
-                </div>
-                <progress class="progress progress-primary w-full" value="{jobStatus.steps?.length || 0}" max="{MAX_STEPS}"></progress>
-
-                <!-- Current step indicator -->
-                {#if jobStatus.steps && jobStatus.steps.length > 0}
-                  <div class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <div class="flex items-center gap-3">
-                      <div class="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
-                      <div class="font-medium text-base-content">
-                        {jobStatus.steps[jobStatus.steps.length - 1].step || 'Processing'}
-                      </div>
-                    </div>
-                  </div>
-                {:else}
-                  <div class="mt-4 p-4 bg-primary/5 rounded-lg">
-                    <div class="flex items-center gap-3">
-                      <div class="loading loading-dots loading-sm text-primary"></div>
-                      <p class="text-base-content/60">Initializing research pipeline...</p>
-                    </div>
-                  </div>
-                {/if}
               {/if}
             </div>
           {/if}
