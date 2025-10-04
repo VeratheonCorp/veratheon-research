@@ -2,6 +2,11 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { supabase } from '$lib/supabase';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
+	import type { User } from '$lib/types/auth';
 
 	let { children } = $props();
 
@@ -9,6 +14,8 @@
 	let theme = $state<Theme>('light');
 	let mobileMenuOpen = $state(false);
 	let showDisclaimer = $state(false);
+	let user = $state<User | null>(null);
+	let authLoading = $state(true);
 
 	const applyTheme = (t: Theme) => {
 		// add a temporary class to animate color changes
@@ -51,6 +58,7 @@
 	};
 
 	onMount(() => {
+		// Theme setup
 		let saved: Theme | null = null;
 		try {
 			const v = localStorage.getItem('theme');
@@ -81,8 +89,44 @@
 
 		// Add click outside listener
 		document.addEventListener('click', handleClickOutside);
+
+		// Auth check
+		const checkAuth = async () => {
+			const {
+				data: { user: currentUser }
+			} = await supabase!.auth.getUser();
+
+			user = currentUser;
+			authLoading = false;
+
+			// Redirect to login if not authenticated and not on login page
+			const currentPath = window.location.pathname;
+			if (!currentUser && currentPath !== '/login') {
+				goto('/login');
+			} else if (currentUser && currentPath === '/login') {
+				goto('/');
+			}
+		};
+
+		checkAuth();
+
+		// Listen for auth state changes
+		const {
+			data: { subscription }
+		} = supabase!.auth.onAuthStateChange((_event, session) => {
+			user = session?.user || null;
+			const currentPath = window.location.pathname;
+
+			if (!session?.user && currentPath !== '/login') {
+				goto('/login');
+			} else if (session?.user && currentPath === '/login') {
+				goto('/');
+			}
+		});
+
 		return () => {
 			document.removeEventListener('click', handleClickOutside);
+			subscription.unsubscribe();
 		};
 	});
 </script>
@@ -91,131 +135,162 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="flex min-h-dvh flex-col bg-base-200">
-  <div class="bg-base-100 shadow">
-    <div class="container mx-auto px-4">
-      <div class="flex justify-between items-center h-16">
-        <!-- Left: Title/Brand -->
-        <div>
-          <a class="text-xl font-bold" href="/">Market Research Agent</a>
-        </div>
-        
-        <!-- Middle: Navigation (desktop only) -->
-        <ul class="hidden md:flex space-x-4 mx-4">
-          <li><a href="/" class="font-medium hover:text-primary">Home</a></li>
-          <li><a href="/trades" class="font-medium hover:text-primary">Trades</a></li>
-        </ul>
-        
-        <!-- Right: Theme Toggle + Mobile Menu -->
-        <div class="flex items-center">
-          <!-- Theme Toggle Button -->
-          <button 
-            class="p-2 rounded-full hover:bg-base-200" 
-            aria-label="Toggle theme"
-            onclick={toggleTheme}
-          >
-            {#if theme === 'dark'}
-              <!-- Sun icon for light mode -->
-              <svg
-                class="h-5 w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="5"></circle>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
-              </svg>
-            {:else}
-              <!-- Moon icon for dark mode -->
-              <svg
-                class="h-5 w-5 fill-current"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-              </svg>
-            {/if}
-          </button>
-          
-          <!-- Mobile Menu Button (only on small screens) -->
-          <div class="md:hidden ml-2 relative mobile-menu-container">
-            <button 
-              class="p-2 rounded-full hover:bg-base-200" 
-              aria-label="Open menu"
-              onclick={toggleMobileMenu}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
-              </svg>
-            </button>
-            {#if mobileMenuOpen}
-              <div class="absolute right-0 mt-2 w-48 bg-base-100 rounded-md shadow-lg py-1 z-10">
-                <a href="/" class="block px-4 py-2 hover:bg-base-200">Home</a>
-                <a href="/trades" class="block px-4 py-2 hover:bg-base-200">Trades</a>
-              </div>
-            {/if}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+{#if authLoading}
+	<div class="flex min-h-dvh items-center justify-center bg-base-200">
+		<span class="loading loading-spinner loading-lg"></span>
+	</div>
+{:else}
+	<div class="flex min-h-dvh flex-col bg-base-200">
+		{#if user}
+			<div class="bg-base-100 shadow">
+				<div class="container mx-auto px-4">
+					<div class="flex justify-between items-center h-16">
+						<!-- Left: Title/Brand -->
+						<div>
+							<a class="text-xl font-bold" href="/">Market Research Agent</a>
+						</div>
 
-  <main class="container mx-auto w-full flex-1 px-4 py-6">
-    {@render children?.()}
-  </main>
+						<!-- Middle: Navigation (desktop only) -->
+						<ul class="hidden md:flex space-x-4 mx-4">
+							<li><a href="/" class="font-medium hover:text-primary">Home</a></li>
+							<li><a href="/trades" class="font-medium hover:text-primary">Trades</a></li>
+						</ul>
 
-  <footer class="footer-center footer bg-base-100 p-4 text-base-content">
-    <aside>
-      <div class="mt-2 flex items-center justify-center gap-4">
-        <a
-          href="https://svelte.dev"
-          target="_blank"
-          rel="noreferrer"
-          class="inline-flex items-center"
-          aria-label="Svelte"
-        >
-          <img
-            alt="Svelte logo"
-            src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Svelte_Logo.svg"
-            class="h-6 w-auto opacity-80 transition-opacity hover:opacity-100"
-          />
-        </a>
-        <a
-          href="https://tailwindcss.com"
-          target="_blank"
-          rel="noreferrer"
-          class="inline-flex items-center"
-          aria-label="Tailwind CSS"
-        >
-          <img
-            alt="Tailwind CSS logo"
-            src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg"
-            class="h-6 w-auto opacity-80 transition-opacity hover:opacity-100"
-          />
-        </a>
-        <a
-          href="https://daisyui.com"
-          target="_blank"
-          rel="noreferrer"
-          class="inline-flex items-center"
-          aria-label="daisyUI"
-        >
-          <img
-            alt="daisyUI logo"
-            src="https://img.daisyui.com/images/daisyui/mark.svg"
-            class="h-6 w-auto opacity-80 transition-opacity hover:opacity-100"
-          />
-        </a>
-      </div>
-    </aside>
-  </footer>
-</div>
+						<!-- Right: Theme Toggle + User Avatar + Mobile Menu -->
+						<div class="flex items-center gap-2">
+							<!-- Theme Toggle Button -->
+							<button
+								class="p-2 rounded-full hover:bg-base-200"
+								aria-label="Toggle theme"
+								onclick={toggleTheme}
+							>
+								{#if theme === 'dark'}
+									<!-- Sun icon for light mode -->
+									<svg
+										class="h-5 w-5"
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										aria-hidden="true"
+									>
+										<circle cx="12" cy="12" r="5"></circle>
+										<path
+											d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+										></path>
+									</svg>
+								{:else}
+									<!-- Moon icon for dark mode -->
+									<svg
+										class="h-5 w-5 fill-current"
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										aria-hidden="true"
+									>
+										<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+									</svg>
+								{/if}
+							</button>
+
+							<!-- User Avatar (desktop) -->
+							<div class="hidden md:block">
+								<UserAvatar {user} />
+							</div>
+
+							<!-- Mobile Menu Button (only on small screens) -->
+							<div class="md:hidden relative mobile-menu-container">
+								<button
+									class="p-2 rounded-full hover:bg-base-200"
+									aria-label="Open menu"
+									onclick={toggleMobileMenu}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-5 w-5"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										aria-hidden="true"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 6h16M4 12h8m-8 6h16"
+										/>
+									</svg>
+								</button>
+								{#if mobileMenuOpen}
+									<div class="absolute right-0 mt-2 w-48 bg-base-100 rounded-md shadow-lg py-1 z-10">
+										<a href="/" class="block px-4 py-2 hover:bg-base-200">Home</a>
+										<a href="/trades" class="block px-4 py-2 hover:bg-base-200">Trades</a>
+										<div class="border-t border-base-300 my-1"></div>
+										<a href="/settings" class="block px-4 py-2 hover:bg-base-200">Settings</a>
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<main class="container mx-auto w-full flex-1 px-4 py-6">
+			{@render children?.()}
+		</main>
+
+		{#if user}
+			<footer class="footer-center footer bg-base-100 p-4 text-base-content">
+				<aside>
+					<div class="mt-2 flex items-center justify-center gap-4">
+						<a
+							href="https://svelte.dev"
+							target="_blank"
+							rel="noreferrer"
+							class="inline-flex items-center"
+							aria-label="Svelte"
+						>
+							<img
+								alt="Svelte logo"
+								src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Svelte_Logo.svg"
+								class="h-6 w-auto opacity-80 transition-opacity hover:opacity-100"
+							/>
+						</a>
+						<a
+							href="https://tailwindcss.com"
+							target="_blank"
+							rel="noreferrer"
+							class="inline-flex items-center"
+							aria-label="Tailwind CSS"
+						>
+							<img
+								alt="Tailwind CSS logo"
+								src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg"
+								class="h-6 w-auto opacity-80 transition-opacity hover:opacity-100"
+							/>
+						</a>
+						<a
+							href="https://daisyui.com"
+							target="_blank"
+							rel="noreferrer"
+							class="inline-flex items-center"
+							aria-label="daisyUI"
+						>
+							<img
+								alt="daisyUI logo"
+								src="https://img.daisyui.com/images/daisyui/mark.svg"
+								class="h-6 w-auto opacity-80 transition-opacity hover:opacity-100"
+							/>
+						</a>
+					</div>
+				</aside>
+			</footer>
+		{/if}
+	</div>
+{/if}
 
 <!-- Disclaimer Modal -->
 {#if showDisclaimer}

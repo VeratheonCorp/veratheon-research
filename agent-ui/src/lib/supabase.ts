@@ -12,6 +12,11 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 // Create Supabase client (only in browser)
 export const supabase = browser
 	? createClient(supabaseUrl, supabaseAnonKey, {
+			auth: {
+				persistSession: true,
+				autoRefreshToken: true,
+				detectSessionInUrl: true
+			},
 			realtime: {
 				params: {
 					eventsPerSecond: 10
