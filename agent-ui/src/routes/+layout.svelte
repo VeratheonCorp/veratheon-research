@@ -76,17 +76,6 @@
 		theme = saved;
 		applyTheme(theme);
 
-		// Check if disclaimer has been accepted
-		try {
-			const accepted = sessionStorage.getItem('disclaimerAccepted');
-			if (!accepted) {
-				showDisclaimer = true;
-			}
-		} catch (e) {
-			// if sessionStorage fails, show disclaimer to be safe
-			showDisclaimer = true;
-		}
-
 		// Add click outside listener
 		document.addEventListener('click', handleClickOutside);
 
@@ -106,6 +95,19 @@
 			} else if (currentUser && currentPath === '/login') {
 				goto('/');
 			}
+
+			// Check if disclaimer has been accepted (only for authenticated users)
+			if (currentUser) {
+				try {
+					const accepted = sessionStorage.getItem('disclaimerAccepted');
+					if (!accepted) {
+						showDisclaimer = true;
+					}
+				} catch (e) {
+					// if sessionStorage fails, show disclaimer to be safe
+					showDisclaimer = true;
+				}
+			}
 		};
 
 		checkAuth();
@@ -121,6 +123,15 @@
 				goto('/login');
 			} else if (session?.user && currentPath === '/login') {
 				goto('/');
+				// Show disclaimer after successful login
+				try {
+					const accepted = sessionStorage.getItem('disclaimerAccepted');
+					if (!accepted) {
+						showDisclaimer = true;
+					}
+				} catch (e) {
+					showDisclaimer = true;
+				}
 			}
 		});
 

@@ -10,14 +10,14 @@
 		Mail,
 		Save,
 		X,
-		CheckCircle,
-		AlertCircle
+		CircleCheckBig,
+		CircleAlert
 	} from '@lucide/svelte';
 
 	type TabType = 'account' | 'model' | 'data';
 
 	let user = $state<any>(null);
-	let selectedModel = $state<ModelValue>('local_gemma27b');
+	let selectedModel = $state<ModelValue>('xai_grok_4_fast_reasoning');
 	let loading = $state(true);
 	let saving = $state(false);
 	let successMessage = $state('');
@@ -125,14 +125,14 @@
 					<div class="bg-base-100 rounded-lg shadow-md p-6">
 						{#if successMessage}
 							<div class="alert alert-success mb-4">
-								<CheckCircle class="h-5 w-5" />
+								<CircleCheckBig class="h-5 w-5" />
 								<span>{successMessage}</span>
 							</div>
 						{/if}
 
 						{#if errorMessage}
 							<div class="alert alert-error mb-4">
-								<AlertCircle class="h-5 w-5" />
+								<CircleAlert class="h-5 w-5" />
 								<span>{errorMessage}</span>
 							</div>
 						{/if}
