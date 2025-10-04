@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Market Research Agent API", version="0.1.0")
 
 class ResearchRequest(BaseModel):
-    symbol: str = "PG"
+    symbol: str
     force_recompute: bool = False
 
 class JobResponse(BaseModel):
@@ -94,57 +94,6 @@ async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks
 
     except Exception as e:
         logger.exception("Error starting research job")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/jobs/{job_id}")
-async def get_job_status(job_id: str):
-    """Get the status of a specific job by main_job_id (UUID)."""
-    try:
-        job_tracker = get_job_tracker()
-        # By default, use main_job_id for lookups
-        job_data = job_tracker.get_job_status(job_id, use_main_job_id=True)
-
-        if not job_data:
-            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-
-        return job_data
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception(f"Error getting job status for {job_id}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/jobs/symbol/{symbol}")
-async def get_job_by_symbol(symbol: str):
-    """Get the most recent job for a symbol (by main_job_id)."""
-    try:
-        job_tracker = get_job_tracker()
-        # Returns main_job_id by default
-        main_job_id = job_tracker.get_job_by_symbol(symbol, return_main_job_id=True)
-
-        if not main_job_id:
-            raise HTTPException(status_code=404, detail=f"No job found for symbol {symbol}")
-
-        job_data = job_tracker.get_job_status(main_job_id, use_main_job_id=True)
-        return job_data
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception(f"Error getting job by symbol {symbol}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/jobs")
-async def list_jobs(limit: int = 20):
-    """List recent jobs."""
-    try:
-        job_tracker = get_job_tracker()
-        jobs = job_tracker.list_jobs(limit=limit)
-        return {"jobs": jobs}
-        
-    except Exception as e:
-        logger.exception("Error listing jobs")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/report-status/{symbol}")
