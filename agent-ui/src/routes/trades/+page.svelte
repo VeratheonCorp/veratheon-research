@@ -21,7 +21,7 @@
 
 <div class="container mx-auto p-6">
   <div class="mb-8">
-    <h1 class="text-3xl font-bold text-primary mb-4">Trade Management</h1>
+    <h1 class="text-3xl font-bold text-primary mb-4">Trade Analysis (Coming Soon)</h1>
     <p class="text-base-content/70">Create and manage your trades based on market research insights.</p>
   </div>
 

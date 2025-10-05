@@ -20,9 +20,14 @@
 		goto('/settings');
 	};
 
-	// Get user initials for avatar
+	// Get user initials for avatar fallback
 	const getInitials = (email: string): string => {
 		return email.substring(0, 2).toUpperCase();
+	};
+
+	// Get avatar URL from user metadata (GitHub OAuth provides this)
+	const getAvatarUrl = (): string | null => {
+		return user.user_metadata?.avatar_url || null;
 	};
 
 	// Close dropdown when clicking outside
@@ -45,19 +50,39 @@
 
 <div class="relative user-avatar-container">
 	<button
-		class="btn btn-ghost btn-circle avatar placeholder"
+		class="btn btn-ghost btn-circle avatar"
 		aria-label="User menu"
 		onclick={toggleDropdown}
 	>
-		<div class="bg-neutral text-neutral-content rounded-full w-10">
-			<span class="text-sm">{getInitials(user.email || '')}</span>
+		<div class="w-10 rounded-full">
+			{#if getAvatarUrl()}
+				<img src={getAvatarUrl()} alt="User avatar" class="rounded-full" />
+			{:else}
+				<div class="bg-neutral text-neutral-content rounded-full w-10 h-10 flex items-center justify-center">
+					<span class="text-sm">{getInitials(user.email || '')}</span>
+				</div>
+			{/if}
 		</div>
 	</button>
 
 	{#if dropdownOpen}
 		<div class="absolute right-0 mt-2 w-52 bg-base-100 rounded-md shadow-lg py-1 z-50 border border-base-300">
-			<div class="px-4 py-2 border-b border-base-300">
-				<p class="text-sm font-medium truncate">{user.email}</p>
+			<div class="px-4 py-3 border-b border-base-300">
+				<div class="flex items-center gap-3">
+					{#if getAvatarUrl()}
+						<img src={getAvatarUrl()} alt="User avatar" class="w-10 h-10 rounded-full" />
+					{:else}
+						<div class="bg-neutral text-neutral-content rounded-full w-10 h-10 flex items-center justify-center">
+							<span class="text-sm">{getInitials(user.email || '')}</span>
+						</div>
+					{/if}
+					<div class="flex-1 min-w-0">
+						{#if user.user_metadata?.full_name}
+							<p class="text-sm font-medium truncate">{user.user_metadata.full_name}</p>
+						{/if}
+						<p class="text-xs text-base-content/70 truncate">{user.email}</p>
+					</div>
+				</div>
 			</div>
 			<button
 				class="block w-full text-left px-4 py-2 hover:bg-base-200 text-sm"

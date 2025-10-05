@@ -335,11 +335,10 @@
 </script>
 
 <div class="container mx-auto p-6">
-  <!-- Market Research Controls -->
   <div class="mb-8">
     <div class="card bg-base-100 shadow-lg border border-base-200">
       <div class="card-body p-6">
-        <h2 class="card-title text-xl font-bold text-primary mb-4">Market Research Controls</h2>
+        <h2 class="card-title text-xl font-bold text-primary mb-4">Consensus EPS Validation</h2>
         
         <div class="flex flex-wrap gap-6 items-end">
           <!-- Stock Symbol Input with Ticker Search -->
