@@ -30,13 +30,14 @@ app = FastAPI(title="Market Research Agent API", version="0.1.0")
 class ResearchRequest(BaseModel):
     symbol: str
     force_recompute: bool = False
+    model: str = "o4_mini"  # Default to o4_mini
 
 class JobResponse(BaseModel):
     job_id: str
     status: str
     message: str
 
-async def run_research_background(main_job_id: str, symbol: str, force_recompute: bool):
+async def run_research_background(main_job_id: str, symbol: str, force_recompute: bool, model: str):
     """Background task to run research and update job status."""
     job_tracker = get_job_tracker()
 
@@ -44,8 +45,8 @@ async def run_research_background(main_job_id: str, symbol: str, force_recompute
         # Update status to running (using main_job_id)
         job_tracker.update_job_status(main_job_id, JobStatus.RUNNING, step="Starting research flow", use_main_job_id=True)
 
-        # Run the research flow with main_job_id
-        result = await main_research_flow(symbol=symbol, force_recompute=force_recompute, job_id=main_job_id)
+        # Run the research flow with main_job_id and model
+        result = await main_research_flow(symbol=symbol, force_recompute=force_recompute, job_id=main_job_id, model=model)
 
         # Mark as completed with result (using main_job_id)
         job_tracker.update_job_status(main_job_id, JobStatus.COMPLETED, step="Research completed", result=result, use_main_job_id=True)
@@ -75,6 +76,7 @@ async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks
             symbol=symbol_upper,
             metadata={
                 "force_recompute": req.force_recompute,
+                "model": req.model,
                 "requested_at": datetime.now().isoformat()
             },
             is_sub_job=False,  # This is the main job
@@ -83,8 +85,8 @@ async def start_research(req: ResearchRequest, background_tasks: BackgroundTasks
 
         main_job_id = job_result["main_job_id"]
 
-        # Start background task with main_job_id
-        background_tasks.add_task(run_research_background, main_job_id, req.symbol, req.force_recompute)
+        # Start background task with main_job_id and model
+        background_tasks.add_task(run_research_background, main_job_id, req.symbol, req.force_recompute, req.model)
 
         return JobResponse(
             job_id=main_job_id,  # Return main_job_id (UUID) to UI

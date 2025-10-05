@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+from src.lib.llm_model import set_model_context
+from src.lib.supabase_logger import log_info
 from src.flows.subflows.forward_pe_flow import forward_pe_flow, forward_pe_sanity_check_flow
 from src.flows.subflows.trade_ideas_flow import trade_ideas_flow
 from src.flows.subflows.news_sentiment_flow import news_sentiment_flow
@@ -51,13 +53,26 @@ async def main_research_flow(
     symbol: str,
     force_recompute: bool = False,
     job_id: str = None,
+    model: str = "o4_mini",
 ) -> dict:
 
     start_time = time.time()
-    logger.info(f"Main research flow started for {symbol}")
-    
+    logger.info(f"Main research flow started for {symbol} using model {model}")
+
+    # Set the model context for all downstream agents in this async context
+    set_model_context(model)
+
+    # Log model selection to system logs
+    log_info(
+        component="main_research_flow",
+        message=f"Research flow initialized with model: {model}",
+        job_id=job_id,
+        symbol=symbol,
+        metadata={"model": model, "force_recompute": force_recompute}
+    )
+
     await ensure_reporting_directory_exists()
-    
+
     await update_job_status_task(job_id, JobStatus.RUNNING, "Starting main research flow", "main_research_flow", symbol)
 
     # Company overview provides foundational business context

@@ -1,42 +1,35 @@
 from agents.extensions.models.litellm_model import LitellmModel
 import os
+from contextvars import ContextVar
 
-MODEL_SELECTED = os.getenv("MODEL_SELECTED")
-LOCAL_OLLAMA_URL = os.getenv("LOCAL_OLLAMA_URL")
-NORD_OLLAMA_URL = os.getenv("NORD_OLLAMA_URL")
 XAI_API_KEY = os.getenv("XAI_API_KEY")
 
-local_gemma27b_model = LitellmModel(model="ollama/gemma3:27b-it-qat", api_key="ollama", base_url=LOCAL_OLLAMA_URL)
-local_gemma12b_model = LitellmModel(model="ollama/gemma3:12b-it-qat", api_key="ollama", base_url=LOCAL_OLLAMA_URL)
-local_gemma4b_model = LitellmModel(model="ollama/gemma3:4b-it-qat", api_key="ollama", base_url=LOCAL_OLLAMA_URL)
-nord_gemma27b_model = LitellmModel(model="ollama/gemma3:27b-it-qat", api_key="ollama", base_url=NORD_OLLAMA_URL)
-nord_gemma12b_model = LitellmModel(model="ollama/gemma3:12b-it-qat", api_key="ollama", base_url=NORD_OLLAMA_URL)
-nord_gemma4b_model = LitellmModel(model="ollama/gemma3:4b-it-qat", api_key="ollama", base_url=NORD_OLLAMA_URL)
-local_gptoss_model = LitellmModel(model="ollama/gpt-oss:20b", api_key="ollama", base_url=LOCAL_OLLAMA_URL)
-nord_gptoss_model = LitellmModel(model="ollama/gpt-oss:20b", api_key="ollama", base_url=NORD_OLLAMA_URL)
 xai_grok_4_fast_reasoning_model = LitellmModel(model="xai/grok-4-fast-reasoning", api_key=XAI_API_KEY)
 
-def get_model():
-    if MODEL_SELECTED == "local_gemma27b":
-        model = local_gemma27b_model
-    elif MODEL_SELECTED == "nord_gemma27b":
-        model = nord_gemma27b_model
-    elif MODEL_SELECTED == "local_gemma12b":
-        model = local_gemma12b_model
-    elif MODEL_SELECTED == "nord_gemma12b":
-        model = nord_gemma12b_model
-    elif MODEL_SELECTED == "local_gemma4b":
-        model = local_gemma4b_model
-    elif MODEL_SELECTED == "nord_gemma4b":
-        model = nord_gemma4b_model
-    elif MODEL_SELECTED == "local_gptoss":
-        model = local_gptoss_model
-    elif MODEL_SELECTED == "nord_gptoss":
-        model = nord_gptoss_model
-    elif MODEL_SELECTED == "xai_grok_4_fast_reasoning":
+# Context variable to store the selected model for the current async context
+_model_context: ContextVar[str] = ContextVar("model_context", default="o4_mini")
+
+def set_model_context(model: str):
+    """Set the model for the current async context."""
+    _model_context.set(model)
+
+def get_model(requested_model: str = None):
+    """
+    Get the model to use for inference.
+
+    Args:
+        requested_model: Optional model override. If not provided, uses the context model.
+
+    Returns:
+        The model instance or string identifier.
+    """
+    # Use the provided model, otherwise get from context
+    model_choice = requested_model if requested_model is not None else _model_context.get()
+
+    if model_choice == "xai_grok_4_fast_reasoning":
         model = xai_grok_4_fast_reasoning_model
-    elif MODEL_SELECTED == "o4_mini":
+    elif model_choice == "o4_mini":
         model = "o4-mini"
     else:
-        raise ValueError("No valid model selected")
+        raise ValueError(f"No valid model selected: {model_choice}")
     return model

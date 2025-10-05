@@ -91,21 +91,33 @@
 
   // Start research and return job ID
   async function startResearch() {
+    // Get preferred model from localStorage, default to o4_mini
+    let preferredModel = 'o4_mini';
+    try {
+      const savedModel = localStorage.getItem('preferredModel');
+      if (savedModel) {
+        preferredModel = savedModel;
+      }
+    } catch (e) {
+      console.warn('Failed to read preferred model from localStorage:', e);
+    }
+
     const response = await fetch('/api/research/start', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         symbol: stockSymbol.trim().toUpperCase(),
-        force_recompute: forceRecompute
+        force_recompute: forceRecompute,
+        model: preferredModel
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to start research: ${response.statusText}`);
     }
-    
+
     return await response.json();
   }
 
