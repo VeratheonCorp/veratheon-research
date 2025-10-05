@@ -116,8 +116,7 @@ The agent performs comprehensive stock research through these sequential steps:
 Required in `.env` file:
 - `ALPHA_VANTAGE_API_KEY`: For financial data
 - `OPENAI_API_KEY`: For AI model access (if using OpenAI)
-- `MODEL_SELECTED`: Model choice (local_gemma27b, nord_gemma27b, local_gemma12b, nord_gemma12b, local_gemma4b, nord_gemma4b, local_gptoss, nord_gptoss, o4_mini)
-- `LOCAL_OLLAMA_URL`/`NORD_OLLAMA_URL`: Ollama server URLs (when using Ollama models)
+- `X_API_KEY`: For API access
 
 Optional in `.env` file:
 - `HOST`: Server host (default: 0.0.0.0)
