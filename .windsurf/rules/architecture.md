@@ -58,7 +58,7 @@ npm run lint       # Linting
 
 ## Architecture
 
-This is a **market research agent** for stock analysis using async flows and OpenAI Agents SDK with FastAPI backend and SvelteKit UI.
+This is a **stock research agent** for stock analysis using async flows and OpenAI Agents SDK with FastAPI backend and SvelteKit UI.
 
 ### Key Architectural Principles
 

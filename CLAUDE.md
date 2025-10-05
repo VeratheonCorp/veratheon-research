@@ -73,7 +73,7 @@ npm run check      # Svelte type checking
 
 ## Architecture
 
-This is a **market research agent** for stock analysis using async flows with OpenAI Agents SDK, featuring a FastAPI backend and SvelteKit UI frontend.
+This is a **Veratheon Research Agent** for stock analysis using async flows with OpenAI Agents SDK, featuring a FastAPI backend and SvelteKit UI frontend.
 
 ### Key Architectural Principles
 

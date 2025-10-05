@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Market Research Agent",
+            "name": "Python: Veratheon Research",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",

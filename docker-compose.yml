@@ -1,9 +1,9 @@
 version: "3.9"
 
 services:
-  api:
+  veratheon-research:
     build: .
-    container_name: market-research-api
+    container_name: veratheon-research
     network_mode: host
     env_file:
       - .env
@@ -14,9 +14,9 @@ services:
       - ./reports:/app/reports
     command: ["python", "-u", "server.py"]
 
-  agent-ui:
-    build: ./agent-ui
-    container_name: market-research-ui
+  veratheon-ui:
+    build: ../veratheon-ui
+    container_name: veratheon-ui
     network_mode: host
     environment:
       - API_URL=http://localhost:8085
@@ -26,8 +26,7 @@ services:
       - UNDICI_CONNECT_TIMEOUT=30000
       - NODE_OPTIONS=--max-http-header-size=32768
     volumes:
-      - ./agent-ui:/app
+      - ../veratheon-ui:/app
       - /app/node_modules
     depends_on:
-      - api
-
+      - veratheon-research

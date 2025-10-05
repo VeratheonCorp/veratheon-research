@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Market Research Agent API", version="0.1.0")
+app = FastAPI(title="Veratheon Research API", version="0.1.0")
 
 class ResearchRequest(BaseModel):
     symbol: str

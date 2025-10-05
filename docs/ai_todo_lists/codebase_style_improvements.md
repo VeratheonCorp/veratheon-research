@@ -1,6 +1,6 @@
 # Codebase Style Improvements
 
-This document identifies opportunities to improve style consistency across the market research agent codebase, based on analysis performed during EPS validation feature implementation.
+This document identifies opportunities to improve style consistency across the veratheon research codebase, based on analysis performed during EPS validation feature implementation.
 
 ## Issue #1: Inconsistent Pydantic Model Field Definitions
 

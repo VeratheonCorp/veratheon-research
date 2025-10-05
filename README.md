@@ -1,4 +1,4 @@
-# Market Research Agent
+# Veratheon Research
 
 ## Overview
 
