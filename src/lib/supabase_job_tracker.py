@@ -181,7 +181,9 @@ class JobTracker:
             if use_sub_job_id:
                 self.client.table("research_jobs").update(update_data).eq("sub_job_id", job_id).execute()
             elif use_main_job_id:
-                self.client.table("research_jobs").update(update_data).eq("main_job_id", job_id).execute()
+                # When using main_job_id, only update the main job row (where job_name='main_flow')
+                # This prevents accidentally updating all subjobs with the same main_job_id
+                self.client.table("research_jobs").update(update_data).eq("main_job_id", job_id).eq("job_name", "main_flow").execute()
             else:
                 self.client.table("research_jobs").update(update_data).eq("id", job_id).execute()
 
