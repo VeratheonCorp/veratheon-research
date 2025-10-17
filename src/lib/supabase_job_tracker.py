@@ -139,7 +139,9 @@ class JobTracker:
             if use_sub_job_id:
                 current_job = self.client.table("research_jobs").select("*").eq("sub_job_id", job_id).execute()
             elif use_main_job_id:
-                current_job = self.client.table("research_jobs").select("*").eq("main_job_id", job_id).execute()
+                # When using main_job_id, only get the main job row (where job_name='main_flow')
+                # This prevents accidentally getting a subjob's data
+                current_job = self.client.table("research_jobs").select("*").eq("main_job_id", job_id).eq("job_name", "main_flow").execute()
             else:
                 current_job = self.client.table("research_jobs").select("*").eq("id", job_id).execute()
 
@@ -207,7 +209,9 @@ class JobTracker:
         """
         try:
             if use_main_job_id:
-                response = self.client.table("research_jobs").select("*").eq("main_job_id", job_id).execute()
+                # When using main_job_id, only get the main job row (where job_name='main_flow')
+                # This prevents accidentally getting a subjob's data
+                response = self.client.table("research_jobs").select("*").eq("main_job_id", job_id).eq("job_name", "main_flow").execute()
             else:
                 response = self.client.table("research_jobs").select("*").eq("id", job_id).execute()
 
